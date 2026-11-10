@@ -17,24 +17,39 @@ from .const import (
     CONF_CONTROL_MODE_ENTITY,
     CONF_DEFAULT_EFFICIENCY,
     CONF_DISCHARGED_ENERGY_ENTITY,
+    CONF_FORCE_DISCHARGE_POWER_ENTITY,
     CONF_FORCE_MODE_ENTITY,
     CONF_FORCE_POWER_ENTITY,
+    CONF_HOUSE_POWER,
     CONF_LOOKAHEAD_HOURS,
     CONF_MARGIN,
+    CONF_MAX_DISCHARGE_POWER_ENTITY,
     CONF_MAX_POWER_ENTITY,
     CONF_MIN_LOOKAHEAD_HOURS,
     CONF_MIN_POWER,
+    CONF_MIN_SOC,
+    CONF_MIN_SOC_ENTITY,
     CONF_PRICE_ATTRIBUTE,
     CONF_PRICE_ENTITY,
+    CONF_RESERVE_MIN_SOC,
+    CONF_SELL_MARGIN,
+    CONF_SELL_PRICE_FACTOR,
+    CONF_SELL_PRICE_OFFSET,
     CONF_SOC_ENTITY,
     CONF_TOP_HOURS,
     DEFAULT_CAPACITY_KWH,
     DEFAULT_EFFICIENCY,
+    DEFAULT_HOUSE_POWER,
     DEFAULT_LOOKAHEAD_HOURS,
     DEFAULT_MARGIN,
     DEFAULT_MIN_LOOKAHEAD_HOURS,
     DEFAULT_MIN_POWER,
+    DEFAULT_MIN_SOC,
     DEFAULT_PRICE_ATTRIBUTE,
+    DEFAULT_RESERVE_MIN_SOC,
+    DEFAULT_SELL_MARGIN,
+    DEFAULT_SELL_PRICE_FACTOR,
+    DEFAULT_SELL_PRICE_OFFSET,
     DEFAULT_TOP_HOURS,
     DOMAIN,
 )
@@ -50,6 +65,9 @@ ENTITY_FIELDS: tuple[tuple[str, str, bool, tuple[str, ...]], ...] = (
     (CONF_CAPACITY_ENTITY, "sensor", False, ("marstek_battery_total_energy", "battery_total_energy")),
     (CONF_CHARGED_ENERGY_ENTITY, "sensor", False, ("marstek_total_charging_energy", "total_charging_energy")),
     (CONF_DISCHARGED_ENERGY_ENTITY, "sensor", False, ("marstek_total_discharging_energy", "total_discharging_energy")),
+    (CONF_FORCE_DISCHARGE_POWER_ENTITY, "number", False, ("forcible_discharge_power",)),
+    (CONF_MAX_DISCHARGE_POWER_ENTITY, "number", False, ("marstek_max_discharge_power", "max_discharge_power")),
+    (CONF_MIN_SOC_ENTITY, "number", False, ("discharging_cutoff_capacity",)),
 )
 
 OPTIONAL_KEYS = tuple(key for key, _, required, _ in ENTITY_FIELDS if not required)
@@ -77,15 +95,13 @@ def _entity_schema(hass: HomeAssistant, current: dict[str, Any]) -> dict[Any, An
 
 
 def _number(minimum: float, maximum: float, step: float, unit: str | None = None) -> selector.NumberSelector:
-    return selector.NumberSelector(
-        selector.NumberSelectorConfig(
-            min=minimum,
-            max=maximum,
-            step=step,
-            unit_of_measurement=unit,
-            mode=selector.NumberSelectorMode.BOX,
-        )
+    config = selector.NumberSelectorConfig(
+        min=minimum, max=maximum, step=step, mode=selector.NumberSelectorMode.BOX
     )
+    if unit is not None:
+        # Een lege eenheid wordt door Home Assistant geweigerd; dan weglaten.
+        config["unit_of_measurement"] = unit
+    return selector.NumberSelector(config)
 
 
 def _param_schema(current: dict[str, Any]) -> dict[Any, Any]:
@@ -102,6 +118,12 @@ def _param_schema(current: dict[str, Any]) -> dict[Any, Any]:
         vol.Required(CONF_LOOKAHEAD_HOURS, default=default(CONF_LOOKAHEAD_HOURS, DEFAULT_LOOKAHEAD_HOURS)): _number(2, 48, 1),
         vol.Required(CONF_MIN_LOOKAHEAD_HOURS, default=default(CONF_MIN_LOOKAHEAD_HOURS, DEFAULT_MIN_LOOKAHEAD_HOURS)): _number(1, 48, 1),
         vol.Required(CONF_MIN_POWER, default=default(CONF_MIN_POWER, DEFAULT_MIN_POWER)): _number(100, 5000, 50, "W"),
+        vol.Required(CONF_SELL_MARGIN, default=default(CONF_SELL_MARGIN, DEFAULT_SELL_MARGIN)): _number(0, 1, 0.005, "€/kWh"),
+        vol.Required(CONF_HOUSE_POWER, default=default(CONF_HOUSE_POWER, DEFAULT_HOUSE_POWER)): _number(0, 5000, 10, "W"),
+        vol.Required(CONF_RESERVE_MIN_SOC, default=default(CONF_RESERVE_MIN_SOC, DEFAULT_RESERVE_MIN_SOC)): _number(0, 100, 1, "%"),
+        vol.Required(CONF_MIN_SOC, default=default(CONF_MIN_SOC, DEFAULT_MIN_SOC)): _number(0, 100, 1, "%"),
+        vol.Required(CONF_SELL_PRICE_FACTOR, default=default(CONF_SELL_PRICE_FACTOR, DEFAULT_SELL_PRICE_FACTOR)): _number(0, 2, 0.001),
+        vol.Required(CONF_SELL_PRICE_OFFSET, default=default(CONF_SELL_PRICE_OFFSET, DEFAULT_SELL_PRICE_OFFSET)): _number(0, 1, 0.001, "€/kWh"),
     }
 
 

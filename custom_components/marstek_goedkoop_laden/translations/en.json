@@ -13,7 +13,10 @@
           "max_power_entity": "Maximum charge power",
           "capacity_entity": "Battery capacity (sensor)",
           "charged_energy_entity": "Total charged energy",
-          "discharged_energy_entity": "Total discharged energy"
+          "discharged_energy_entity": "Total discharged energy",
+          "force_discharge_power_entity": "Forcible discharge power",
+          "max_discharge_power_entity": "Maximum discharge power",
+          "min_soc_entity": "Discharge cut-off (SoC)"
         },
         "data_description": {
           "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
@@ -22,7 +25,10 @@
           "force_power_entity": "Set to the spread-out power while charging.",
           "max_power_entity": "Sets the number of charge hours and the upper limit of the power. Empty = 2500 W.",
           "capacity_entity": "Empty = the fixed capacity from the options.",
-          "charged_energy_entity": "Together with the discharged energy this sets the efficiency. Empty = fixed efficiency."
+          "charged_energy_entity": "Together with the discharged energy this sets the efficiency. Empty = fixed efficiency.",
+          "force_discharge_power_entity": "Needed for selling. Empty = selling is not possible.",
+          "max_discharge_power_entity": "Upper limit of the sell power. Empty = 2500 W.",
+          "min_soc_entity": "The Marstek does not discharge below this SoC. Empty = the fixed value from the options."
         }
       }
     },
@@ -52,7 +58,16 @@
           "top_hours": "Number of most expensive hours to compare with",
           "lookahead_hours": "Hours to look ahead",
           "min_lookahead_hours": "Minimum known hours ahead",
-          "min_power": "Minimum charge power"
+          "min_power": "Minimum charge power",
+          "force_discharge_power_entity": "Forcible discharge power",
+          "max_discharge_power_entity": "Maximum discharge power",
+          "min_soc_entity": "Discharge cut-off (SoC)",
+          "sell_margin": "Selling: minimum gain per kWh",
+          "house_power": "Selling: average own consumption",
+          "reserve_min_soc": "Selling: minimum reserve",
+          "min_soc": "Discharge cut-off",
+          "sell_price_factor": "Sell price: factor",
+          "sell_price_offset": "Sell price: deduction"
         },
         "data_description": {
           "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
@@ -65,7 +80,15 @@
           "default_efficiency": "Used when the energy counters are not set.",
           "margin": "After the charging loss, charging has to gain at least this amount.",
           "top_hours": "An hour is cheap enough when its price is below the efficiency times the average of these most expensive hours after it, minus the margin.",
-          "min_lookahead_hours": "Hours with fewer known prices after them are ignored."
+          "min_lookahead_hours": "Hours with fewer known prices after them are ignored.",
+          "force_discharge_power_entity": "Needed for selling. Empty = selling is not possible.",
+          "max_discharge_power_entity": "Upper limit of the sell power. Empty = 2500 W.",
+          "min_soc_entity": "The Marstek does not discharge below this SoC. Empty = the fixed value from the options.",
+          "sell_margin": "Selling only happens when the sell price exceeds the cost of recharging (charge price divided by the efficiency) plus this amount.",
+          "house_power": "Sets the reserve: this power times the hours until recharging stays in the battery.",
+          "reserve_min_soc": "Never sell below this SoC.",
+          "min_soc": "Only used when no discharge cut-off entity is set.",
+          "sell_price_factor": "Sell price = hourly price times this factor, minus the deduction. With net metering: 1 and 0. Without, for example 0.826 and 0.108 for the bare market price."
         }
       }
     }
@@ -97,11 +120,23 @@
       },
       "laadprijs": {
         "name": "Average charge price"
+      },
+      "verkoopplan": {
+        "name": "Sell plan",
+        "state": {
+          "verkopen": "Selling",
+          "gepland": "Planned",
+          "geen": "No selling",
+          "onbekend": "Unknown"
+        }
       }
     },
     "switch": {
       "prijssturing": {
         "name": "Price control"
+      },
+      "verkoop": {
+        "name": "Selling"
       }
     }
   }

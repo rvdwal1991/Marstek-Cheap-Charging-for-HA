@@ -134,5 +134,78 @@ class PlannerTest(unittest.TestCase):
         self.assertLessEqual(result.power_w, 600)
 
 
+def sell(now, soc, house=150.0, selling=False, previous=(), margin=0.10, factor=1.0, offset=0.0):
+    charge = plan(now, soc)
+    return planner.compute_sell_plan(
+        charge_plan=charge,
+        now=at(now),
+        soc=soc,
+        capacity_kwh=5.12,
+        max_power_w=2500,
+        efficiency=ETA,
+        min_soc=12,
+        selling=selling,
+        previous_hours=previous,
+        params=planner.SellParams(margin=margin, house_power_w=house, price_factor=factor, price_offset=offset),
+        tz=TZ,
+    )
+
+
+class SellPlannerTest(unittest.TestCase):
+    def test_overschot_in_duurste_uur(self):
+        result = sell("2026-11-10T15:10:00", 95)
+        self.assertEqual(result.status, "gepland")
+        self.assertEqual([h.astimezone(TZ).strftime("%H:%M") for h in result.sell_hours], ["16:00"])
+        self.assertGreater(result.energy_kwh, 1.0)
+        self.assertIn("Verkopen om 16:00", result.text)
+        self.assertIn("terugladen vanaf 03:00", result.text)
+
+    def test_verkoopt_in_het_uur_zelf(self):
+        result = sell("2026-11-10T16:05:00", 95)
+        self.assertEqual(result.status, "verkopen")
+        self.assertLessEqual(result.power_w, 2500)
+
+    def test_geen_overschot_bij_normaal_winterverbruik(self):
+        # 400 W huisverbruik tot 03:00 vraagt de hele accu: er valt niets te verkopen.
+        result = sell("2026-11-10T16:05:00", 95, house=400.0)
+        self.assertEqual(result.status, "geen")
+        self.assertIn("geen overschot", result.text)
+        self.assertEqual(result.reserve_soc, 100.0)
+
+    def test_reserve_blijft_staan(self):
+        result = sell("2026-11-10T16:05:00", 95)
+        self.assertGreaterEqual(result.reserve_soc, 15.0)
+        self.assertLess(result.energy_kwh, (95 - result.reserve_soc) / 100 * 5.12)
+
+    def test_stopt_op_de_reserve(self):
+        first = sell("2026-11-10T16:05:00", 95)
+        # De reserve zakt mee met de tijd tot het terugladen; onder de reserve stopt de verkoop.
+        later = sell("2026-11-10T16:40:00", 95, selling=True, previous=first.sell_hours)
+        self.assertLess(later.reserve_soc, first.reserve_soc)
+        low = sell("2026-11-10T16:40:00", later.reserve_soc - 1, selling=True, previous=first.sell_hours)
+        self.assertEqual(low.status, "geen")
+
+    def test_opbrengst_te_laag(self):
+        result = sell("2026-11-10T16:05:00", 95, margin=0.40)
+        self.assertEqual(result.status, "geen")
+        self.assertIn("opbrengst is te laag", result.text)
+
+    def test_kale_prijs_na_salderen(self):
+        # Na 2027: alleen de kale marktprijs; dan loont verkopen op deze dag niet.
+        result = sell("2026-11-10T16:05:00", 95, factor=1 / 1.21, offset=0.108)
+        self.assertEqual(result.status, "geen")
+
+    def test_niet_tijdens_of_zonder_laadvenster(self):
+        self.assertEqual(sell("2026-11-11T03:10:00", 95).status, "geen")
+        self.assertEqual(sell("2026-11-11T12:00:00", 95).status, "geen")
+        self.assertEqual(sell("2026-11-10T16:05:00", None).status, "onbekend")
+
+    def test_lopende_verkoop_houdt_zijn_uren(self):
+        first = sell("2026-11-10T16:05:00", 95)
+        later = sell("2026-11-10T16:30:00", 80, selling=True, previous=first.sell_hours)
+        self.assertEqual(later.status, "verkopen")
+        self.assertEqual(later.sell_hours, first.sell_hours)
+
+
 if __name__ == "__main__":
     unittest.main()

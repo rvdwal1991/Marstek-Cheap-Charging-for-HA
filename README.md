@@ -7,7 +7,8 @@ stroomcontract, zodat hij vol is voordat de stroom duur wordt.
 
 Het uitgangspunt is **zelfvoorzienend zijn**. De batterij blijft gewoon zelf regelen
 (anti-feed, nul op de meter). Deze integratie doet maar één ding erbij: op de goedkoopste
-uren uit het net bijladen. Er wordt nooit geforceerd ontladen en er wordt niet gehandeld.
+uren uit het net bijladen. Daarnaast is er een aparte, standaard uitgeschakelde optie om
+**overschot te verkopen** in de duurste uren.
 
 ## Wat hij doet
 
@@ -30,6 +31,31 @@ zodra de prijzen van morgen bekend zijn (bij Zonneplan rond 14:00–15:00).
 Voorbeeld (10 november 2026, accu op 12 %): goedkoop venster 23:00–07:00, bijladen om 02:00,
 03:00 en 04:00 op ongeveer 1900 W voor gemiddeld € 0,37, daarna overdag € 0,55–0,67.
 
+## Verkopen (optioneel)
+
+Verkopen heeft een eigen schakelaar en staat los van het bijladen. Er wordt alleen verkocht
+wat echt over is. In een uur wordt verkocht als dit allemaal geldt:
+
+1. **Er komt een goedkope laadbeurt aan**: er ligt een laadvenster met gepubliceerde prijzen
+   in het verschiet, dus bekend is wat terugladen kost.
+2. **De opbrengst is duidelijk hoger dan terugladen**: verkoopprijs ≥ laadprijs gedeeld door
+   het rendement, plus de verkoopmarge (standaard € 0,10 per kWh).
+3. **Er is overschot boven de reserve**. De reserve is de ontlaadgrens van de Marstek plus het
+   verwachte eigen verbruik tot het terugladen (gemiddeld huisverbruik × uren), met een
+   instelbaar minimum (standaard 20 %).
+4. **Het is een van de duurste uren** tot het laadvenster.
+
+Het verkoopvermogen wordt net als bij laden uitgesmeerd over de gekozen uren. Op de reserve
+stopt de verkoop en gaat de Marstek terug naar anti-feed.
+
+In de winter is er zelden overschot: met een accu van 5 kWh vraagt het eigen verbruik tot de
+volgende laadbeurt meestal de hele lading. De optie doet vooral iets als de zon de accu vult
+en er 's avonds een prijspiek is.
+
+**Na het einde van de salderingsregeling** (1 januari 2027) levert terugleveren minder op dan
+de uurprijs. Stel dan *Verkoopprijs: factor* en *aftrek* in: verkoopprijs = uurprijs × factor −
+aftrek. Voor de kale marktprijs bij Zonneplan is dat ongeveer 0,826 en € 0,108.
+
 ## Aansturing van de Marstek
 
 De integratie stuurt via de RS485-besturing (LilyGO T-CAN485 met ESPHome):
@@ -39,6 +65,8 @@ De integratie stuurt via de RS485-besturing (LilyGO T-CAN485 met ESPHome):
 | Start bijladen | laadvermogen instellen → *Forcible charge/discharge* op `charge` → *RS485 Control Mode* op `enable` |
 | Tijdens bijladen | laadvermogen bijstellen (stappen van 100 W) |
 | Klaar, of prijssturing uit | *RS485 Control Mode* op `disable`, forceren terug op `charge`, laadvermogen terug naar het maximum |
+| Start verkopen | ontlaadvermogen instellen → forceren op `discharge` → *RS485 Control Mode* op `enable` |
+| Verkoop klaar, of verkoop uit | zelfde als bij klaar: terug naar de rusttoestand |
 
 Forceer-**ont**laden dat je zelf start blijft ongemoeid. Forceer-laden dat je zelf start wordt
 teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
@@ -48,6 +76,8 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | Entiteit | Inhoud |
 |---|---|
 | `switch.*_prijssturing` | Aan: het laadplan wordt uitgevoerd. Uit: de Marstek regelt alles zelf. Uitzetten zet de Marstek direct terug op anti-feed. |
+| `switch.*_verkoop` | Aan: overschot wordt in de duurste uren verkocht. Staat los van de prijssturing. |
+| `sensor.*_verkoopplan` | Status: `verkopen`, `gepland`, `geen` of `onbekend`. Attributen: `verkoopuren`, `vermogen`, `overschot_kwh`, `reserve_soc`, `drempelprijs`, `terugkoopprijs` en `tekst`. |
 | `sensor.*_laadplan` | Status: `laden`, `gepland`, `klaar`, `vol`, `geen` of `onbekend`. Attributen: `laaduren`, `venster`, `eind`, `uren_nodig`, `vermogen`, `klaar_tot` en `tekst` (leesbare samenvatting). |
 | `sensor.*_gepland_laadvermogen` | Het uitgesmeerde laadvermogen in W. |
 | `sensor.*_bij_te_laden` | Energie uit het net die nodig is om vol te komen, in kWh. |
@@ -88,6 +118,10 @@ Via *Configureren* op de integratie:
 | Minimaal laadvermogen | 400 W | Ondergrens bij het uitsmeren. |
 | Rendement | 0,77 | Alleen gebruikt als de energietellers niet zijn ingevuld. |
 | Accucapaciteit | 5,12 kWh | Alleen gebruikt als er geen capaciteitssensor is ingevuld. |
+| Verkoop: minimale winst per kWh | € 0,10 | Wat verkopen na terugladen minstens moet opleveren. |
+| Verkoop: gemiddeld eigen verbruik | 400 W | Bepaalt de reserve tot het terugladen. |
+| Verkoop: minimale reserve | 20 % | Onder deze SoC wordt nooit verkocht. |
+| Verkoopprijs: factor en aftrek | 1 en € 0 | Verkoopprijs = uurprijs × factor − aftrek. |
 
 Het maximale laadvermogen (de *Max. Charge power* van de Marstek) bepaalt het aantal laaduren.
 Zet je dat lager, dan plant hij meer uren en laadt hij rustiger.
@@ -135,7 +169,8 @@ series:
 
 ## Ontwikkelen
 
-De rekenregel staat los van Home Assistant in `planner.py` en heeft tests met echte prijzen:
+De rekenregel staat los van Home Assistant in `planner.py` en heeft tests met echte prijzen.
+De aansturing wordt getest tegen een nagebootst Home Assistant (`tests/test_sturing.py`):
 
 ```bash
 python3 -m unittest discover -s tests -v

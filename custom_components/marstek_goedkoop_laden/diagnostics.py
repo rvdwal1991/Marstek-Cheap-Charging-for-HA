@@ -21,6 +21,17 @@ async def async_get_config_entry_diagnostics(
     return {
         "instellingen": coordinator.conf,
         "prijssturing_aan": coordinator.enabled,
+        "verkoop_aan": coordinator.sell_enabled,
+        "verkoopplan": {
+            "status": coordinator.sell_plan.status,
+            "verkoopuren": [h.isoformat() for h in coordinator.sell_plan.sell_hours],
+            "vermogen_w": coordinator.sell_plan.power_w,
+            "overschot_kwh": coordinator.sell_plan.energy_kwh,
+            "reserve_soc": coordinator.sell_plan.reserve_soc,
+            "drempelprijs": coordinator.sell_plan.threshold,
+            "terugkoopprijs": coordinator.sell_plan.refill_price,
+            "tekst": coordinator.sell_plan.text,
+        },
         "laatste_opdracht": coordinator.last_command,
         "invoer": inputs,
         "prijzen": [

@@ -257,3 +257,162 @@ def compute_plan(
         ),
         **common,
     )
+
+
+# --------------------------------------------------------------------- verkoop
+
+SELL_SELLING = "verkopen"
+SELL_PLANNED = "gepland"
+SELL_NONE = "geen"
+SELL_UNKNOWN = "onbekend"
+SELL_STATUSES = [SELL_SELLING, SELL_PLANNED, SELL_NONE, SELL_UNKNOWN]
+
+# Deel van de accu-energie dat bij ontladen op het net belandt.
+DISCHARGE_EFFICIENCY = 0.88
+# Extra SoC boven de ontlaadgrens van de Marstek die altijd blijft staan.
+MIN_SOC_BUFFER = 3.0
+# Aantal goedkoopste uren van het laadvenster waarmee de terugkoopprijs wordt bepaald.
+REFILL_HOURS = 3
+
+
+@dataclass(frozen=True)
+class SellParams:
+    """Instellingen voor verkopen."""
+
+    margin: float = 0.10
+    house_power_w: float = 400.0
+    reserve_min_soc: float = 20.0
+    price_factor: float = 1.0
+    price_offset: float = 0.0
+    min_power_w: int = 400
+    min_surplus_kwh: float = 0.3
+
+
+@dataclass(frozen=True)
+class SellPlan:
+    """Het verkoopplan op dit moment."""
+
+    status: str = SELL_UNKNOWN
+    sell_hours: tuple[datetime, ...] = ()
+    power_w: int | None = None
+    energy_kwh: float = 0.0
+    reserve_soc: float | None = None
+    average_price: float | None = None
+    threshold: float | None = None
+    refill_price: float | None = None
+    text: str = "Geen prijzen of SoC beschikbaar"
+
+
+def compute_sell_plan(
+    *,
+    charge_plan: Plan,
+    now: datetime,
+    soc: float | None,
+    capacity_kwh: float,
+    max_power_w: float,
+    efficiency: float,
+    min_soc: float,
+    selling: bool,
+    previous_hours: tuple[datetime, ...] = (),
+    params: SellParams | None = None,
+    tz: tzinfo | None = None,
+) -> SellPlan:
+    """Bepaal of en wanneer er overschot aan het net wordt verkocht.
+
+    Verkopen gebeurt alleen als alles hieronder geldt:
+    1. er ligt een goedkoop laadvenster met gepubliceerde prijzen in het verschiet;
+    2. de verkoopprijs is hoger dan terugladen kost (laadprijs / rendement) plus de marge;
+    3. er is overschot boven de reserve: de ondergrens plus het verwachte eigen
+       verbruik tot het terugladen;
+    4. het uur hoort bij de duurste uren tot dat laadvenster.
+
+    selling        : de integratie is nu zelf aan het verkopen.
+    previous_hours : de verkoopuren van het vorige plan (om een lopende verkoop af te maken).
+    """
+    params = params or SellParams()
+    prices = list(charge_plan.prices)
+    if soc is None or not prices:
+        return SellPlan()
+
+    def local(moment: datetime) -> datetime:
+        return moment.astimezone(tz) if tz else moment
+
+    def export(price: float) -> float:
+        return price * params.price_factor - params.price_offset
+
+    window = set(charge_plan.window)
+    window_slots = [slot for slot in prices if slot.start in window]
+    if not window_slots:
+        return SellPlan(status=SELL_NONE, text="Geen verkoop: er is nog geen goedkoop laadvenster bekend")
+    if min(slot.start for slot in window_slots) <= now:
+        return SellPlan(status=SELL_NONE, text="Geen verkoop: het goedkope laadvenster loopt")
+
+    cheapest = sorted(window_slots, key=lambda s: (s.price, s.start))
+    refill = cheapest[: min(REFILL_HOURS, len(cheapest))]
+    refill_price = sum(s.price for s in refill) / len(refill)
+    refill_at = cheapest[0].start
+    threshold = refill_price / efficiency + params.margin
+
+    hours_until = max((refill_at - now).total_seconds() / 3600.0, 0.0)
+    own_use_kwh = params.house_power_w / 1000.0 * hours_until / DISCHARGE_EFFICIENCY
+    reserve_soc = min(
+        100.0,
+        max(
+            min_soc + MIN_SOC_BUFFER,
+            params.reserve_min_soc,
+            min_soc + own_use_kwh / capacity_kwh * 100.0,
+        ),
+    )
+    surplus = (soc - reserve_soc) / 100.0 * capacity_kwh * DISCHARGE_EFFICIENCY
+    common = dict(
+        reserve_soc=round(reserve_soc, 1), threshold=round(threshold, 4), refill_price=round(refill_price, 4)
+    )
+
+    candidates = [
+        slot
+        for slot in prices
+        if slot.start < refill_at and slot.start not in window and export(slot.price) >= threshold
+    ]
+    if not candidates:
+        best = max((export(s.price) for s in prices if s.start < refill_at), default=None)
+        detail = f" (hoogste € {_euro(best)}, nodig € {_euro(threshold)})" if best is not None else ""
+        return SellPlan(status=SELL_NONE, text=f"Geen verkoop: de opbrengst is te laag{detail}", **common)
+
+    if surplus <= (0.0 if selling else params.min_surplus_kwh):
+        return SellPlan(
+            status=SELL_NONE,
+            text=f"Geen verkoop: geen overschot boven de reserve van {round(reserve_soc)} %",
+            **common,
+        )
+
+    needed = max(1, math.ceil(surplus / (max_power_w / 1000.0 * POWER_DERATE)))
+    previous = set(previous_hours)
+    kept = [slot for slot in candidates if slot.start in previous]
+    if selling and kept and kept[0].start <= now:
+        chosen = kept
+    else:
+        ranked = sorted(candidates, key=lambda s: (-export(s.price), s.start))[:needed]
+        chosen = sorted(ranked, key=lambda s: s.start)
+
+    remaining = sum((s.end - max(now, s.start)).total_seconds() / 3600.0 for s in chosen)
+    raw = surplus / max(remaining * TIME_DERATE, MIN_REMAINING_HOURS) * 1000.0
+    power = int(math.ceil(raw / POWER_STEP_W) * POWER_STEP_W)
+    power = int(min(max(power, params.min_power_w), max_power_w))
+
+    average = sum(export(s.price) for s in chosen) / len(chosen)
+    day = "morgen " if local(chosen[0].start).date() != local(now).date() else ""
+    times = ", ".join(local(s.start).strftime("%H:%M") for s in chosen)
+    text = (
+        f"Verkopen {day}om {times} op ca. {power} W "
+        f"({_euro(surplus, 1)} kWh boven reserve {round(reserve_soc)} %, gem. € {_euro(average)}) · "
+        f"terugladen vanaf {local(refill_at).strftime('%H:%M')} voor ca. € {_euro(refill_price)}"
+    )
+    return SellPlan(
+        status=SELL_SELLING if chosen[0].start <= now else SELL_PLANNED,
+        sell_hours=tuple(s.start for s in chosen),
+        power_w=power,
+        energy_kwh=round(surplus, 2),
+        average_price=round(average, 4),
+        text=text,
+        **common,
+    )

@@ -13,7 +13,10 @@
           "max_power_entity": "Maximaal laadvermogen",
           "capacity_entity": "Accucapaciteit (sensor)",
           "charged_energy_entity": "Totaal geladen energie",
-          "discharged_energy_entity": "Totaal ontladen energie"
+          "discharged_energy_entity": "Totaal ontladen energie",
+          "force_discharge_power_entity": "Forcible discharge power",
+          "max_discharge_power_entity": "Maximaal ontlaadvermogen",
+          "min_soc_entity": "Ontlaadgrens (SoC)"
         },
         "data_description": {
           "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
@@ -22,7 +25,10 @@
           "force_power_entity": "Wordt tijdens het bijladen op het uitgesmeerde vermogen gezet.",
           "max_power_entity": "Bepaalt het aantal laaduren en de bovengrens van het vermogen. Leeg = 2500 W.",
           "capacity_entity": "Leeg = de vaste capaciteit uit de instellingen.",
-          "charged_energy_entity": "Samen met de ontladen energie bepaalt dit het rendement. Leeg = vast rendement."
+          "charged_energy_entity": "Samen met de ontladen energie bepaalt dit het rendement. Leeg = vast rendement.",
+          "force_discharge_power_entity": "Nodig voor verkopen. Leeg = verkopen is niet mogelijk.",
+          "max_discharge_power_entity": "Bovengrens van het verkoopvermogen. Leeg = 2500 W.",
+          "min_soc_entity": "Onder deze SoC ontlaadt de Marstek niet. Leeg = de vaste waarde uit de instellingen."
         }
       }
     },
@@ -52,7 +58,16 @@
           "top_hours": "Aantal duurste uren om mee te vergelijken",
           "lookahead_hours": "Aantal uren vooruit kijken",
           "min_lookahead_hours": "Minimaal aantal bekende uren vooruit",
-          "min_power": "Minimaal laadvermogen"
+          "min_power": "Minimaal laadvermogen",
+          "force_discharge_power_entity": "Forcible discharge power",
+          "max_discharge_power_entity": "Maximaal ontlaadvermogen",
+          "min_soc_entity": "Ontlaadgrens (SoC)",
+          "sell_margin": "Verkoop: minimale winst per kWh",
+          "house_power": "Verkoop: gemiddeld eigen verbruik",
+          "reserve_min_soc": "Verkoop: minimale reserve",
+          "min_soc": "Ontlaadgrens",
+          "sell_price_factor": "Verkoopprijs: factor",
+          "sell_price_offset": "Verkoopprijs: aftrek"
         },
         "data_description": {
           "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
@@ -65,7 +80,15 @@
           "default_efficiency": "Wordt gebruikt als de energietellers niet zijn ingevuld.",
           "margin": "Bijladen moet na aftrek van het laadverlies minstens dit bedrag opleveren.",
           "top_hours": "Een uur is goedkoop genoeg als de prijs lager is dan het rendement maal het gemiddelde van deze duurste uren erna, min de marge.",
-          "min_lookahead_hours": "Uren waarvan minder prijzen erna bekend zijn, tellen niet mee."
+          "min_lookahead_hours": "Uren waarvan minder prijzen erna bekend zijn, tellen niet mee.",
+          "force_discharge_power_entity": "Nodig voor verkopen. Leeg = verkopen is niet mogelijk.",
+          "max_discharge_power_entity": "Bovengrens van het verkoopvermogen. Leeg = 2500 W.",
+          "min_soc_entity": "Onder deze SoC ontlaadt de Marstek niet. Leeg = de vaste waarde uit de instellingen.",
+          "sell_margin": "Verkopen gebeurt alleen als de verkoopprijs hoger is dan terugladen kost (laadprijs gedeeld door het rendement) plus dit bedrag.",
+          "house_power": "Bepaalt de reserve: dit vermogen maal de uren tot het terugladen blijft in de accu staan.",
+          "reserve_min_soc": "Onder deze SoC wordt nooit verkocht.",
+          "min_soc": "Alleen gebruikt als er geen entiteit voor de ontlaadgrens is ingevuld.",
+          "sell_price_factor": "Verkoopprijs = uurprijs maal deze factor, min de aftrek. Met salderen: 1 en 0. Zonder salderen bijvoorbeeld 0,826 en 0,108 voor de kale marktprijs."
         }
       }
     }
@@ -97,11 +120,23 @@
       },
       "laadprijs": {
         "name": "Gemiddelde laadprijs"
+      },
+      "verkoopplan": {
+        "name": "Verkoopplan",
+        "state": {
+          "verkopen": "Verkopen",
+          "gepland": "Gepland",
+          "geen": "Geen verkoop",
+          "onbekend": "Onbekend"
+        }
       }
     },
     "switch": {
       "prijssturing": {
         "name": "Prijssturing"
+      },
+      "verkoop": {
+        "name": "Verkoop"
       }
     }
   }

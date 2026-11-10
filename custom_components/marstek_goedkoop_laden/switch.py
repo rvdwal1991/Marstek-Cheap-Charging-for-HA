@@ -19,7 +19,7 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Maak de schakelaar aan."""
-    async_add_entities([PriceControlSwitch(entry.runtime_data)])
+    async_add_entities([PriceControlSwitch(entry.runtime_data), SellSwitch(entry.runtime_data)])
 
 
 class PriceControlSwitch(ChargePlanEntity, SwitchEntity):
@@ -41,3 +41,25 @@ class PriceControlSwitch(ChargePlanEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         await self.coordinator.async_set_enabled(False)
+
+
+class SellSwitch(ChargePlanEntity, SwitchEntity):
+    """Aan: overschot wordt in de duurste uren aan het net verkocht."""
+
+    def __init__(self, coordinator: ChargePlanCoordinator) -> None:
+        super().__init__(coordinator, "verkoop")
+
+    @property
+    def is_on(self) -> bool:
+        return self.coordinator.sell_enabled
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return {"laatste_opdracht": self.coordinator.last_command}
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self.coordinator.async_set_sell_enabled(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        await self.coordinator.async_set_sell_enabled(False)
+

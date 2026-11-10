@@ -20,7 +20,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import ChargePlanCoordinator
 from .entity import ChargePlanEntity
-from .planner import STATUSES, Plan
+from .planner import SELL_STATUSES, STATUSES, Plan, SellPlan
 
 
 def _iso(moment: datetime | None) -> str | None:
@@ -37,6 +37,19 @@ def _plan_attributes(plan: Plan) -> dict[str, Any]:
         "vermogen": plan.power_w,
         "klaar_tot": _iso(plan.done_until),
         "tekst": plan.text,
+    }
+
+
+def _sell_attributes(sell: SellPlan) -> dict[str, Any]:
+    return {
+        "verkoopuren": [h.isoformat() for h in sell.sell_hours],
+        "vermogen": sell.power_w,
+        "overschot_kwh": sell.energy_kwh,
+        "reserve_soc": sell.reserve_soc,
+        "gemiddelde_prijs": sell.average_price,
+        "drempelprijs": sell.threshold,
+        "terugkoopprijs": sell.refill_price,
+        "tekst": sell.text,
     }
 
 
@@ -95,7 +108,11 @@ async def async_setup_entry(
 ) -> None:
     """Maak de sensoren aan."""
     coordinator: ChargePlanCoordinator = entry.runtime_data
-    async_add_entities(ChargePlanSensor(coordinator, description) for description in SENSORS)
+    entities: list[SensorEntity] = [
+        ChargePlanSensor(coordinator, description) for description in SENSORS
+    ]
+    entities.append(SellPlanSensor(coordinator))
+    async_add_entities(entities)
 
 
 class ChargePlanSensor(ChargePlanEntity, SensorEntity):
@@ -118,3 +135,22 @@ class ChargePlanSensor(ChargePlanEntity, SensorEntity):
         if self.entity_description.attributes_fn is None:
             return None
         return self.entity_description.attributes_fn(self.coordinator.data)
+
+
+class SellPlanSensor(ChargePlanEntity, SensorEntity):
+    """Het verkoopplan: of en wanneer er overschot aan het net wordt verkocht."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = SELL_STATUSES
+
+    def __init__(self, coordinator: ChargePlanCoordinator) -> None:
+        super().__init__(coordinator, "verkoopplan")
+
+    @property
+    def native_value(self) -> str:
+        return self.coordinator.sell_plan.status
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return _sell_attributes(self.coordinator.sell_plan)
+

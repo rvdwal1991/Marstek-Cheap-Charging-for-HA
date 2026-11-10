@@ -22,25 +22,40 @@ from .const import (
     CONF_CONTROL_MODE_ENTITY,
     CONF_DEFAULT_EFFICIENCY,
     CONF_DISCHARGED_ENERGY_ENTITY,
+    CONF_FORCE_DISCHARGE_POWER_ENTITY,
     CONF_FORCE_MODE_ENTITY,
     CONF_FORCE_POWER_ENTITY,
+    CONF_HOUSE_POWER,
     CONF_LOOKAHEAD_HOURS,
     CONF_MARGIN,
+    CONF_MAX_DISCHARGE_POWER_ENTITY,
     CONF_MAX_POWER_ENTITY,
     CONF_MIN_LOOKAHEAD_HOURS,
     CONF_MIN_POWER,
+    CONF_MIN_SOC,
+    CONF_MIN_SOC_ENTITY,
     CONF_PRICE_ATTRIBUTE,
     CONF_PRICE_ENTITY,
+    CONF_RESERVE_MIN_SOC,
+    CONF_SELL_MARGIN,
+    CONF_SELL_PRICE_FACTOR,
+    CONF_SELL_PRICE_OFFSET,
     CONF_SOC_ENTITY,
     CONF_TOP_HOURS,
     DEFAULT_CAPACITY_KWH,
     DEFAULT_EFFICIENCY,
+    DEFAULT_HOUSE_POWER,
     DEFAULT_LOOKAHEAD_HOURS,
     DEFAULT_MARGIN,
     DEFAULT_MAX_POWER,
     DEFAULT_MIN_LOOKAHEAD_HOURS,
     DEFAULT_MIN_POWER,
+    DEFAULT_MIN_SOC,
     DEFAULT_PRICE_ATTRIBUTE,
+    DEFAULT_RESERVE_MIN_SOC,
+    DEFAULT_SELL_MARGIN,
+    DEFAULT_SELL_PRICE_FACTOR,
+    DEFAULT_SELL_PRICE_OFFSET,
     DEFAULT_TOP_HOURS,
     DOMAIN,
     FORCE_CHARGE,
@@ -51,13 +66,17 @@ from .const import (
     UPDATE_INTERVAL_SECONDS,
 )
 from .planner import (
+    SELL_SELLING,
     STATUS_CHARGING,
     Plan,
     PlanMemory,
     PlanParams,
     PriceSlot,
+    SellParams,
+    SellPlan,
     clamp_efficiency,
     compute_plan,
+    compute_sell_plan,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -130,6 +149,11 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         )
         self.conf: dict[str, Any] = {**entry.data, **entry.options}
         self.enabled = False
+        self.sell_enabled = False
+        self.sell_plan = SellPlan()
+        # Waar als de integratie zelf een verkoop (forceer-ontladen) heeft gestart.
+        self._selling = False
+        self._sell_hours: tuple[datetime, ...] = ()
         self.inputs: dict[str, Any] = {}
         self.last_command: str | None = None
         self._memory = PlanMemory()
@@ -144,11 +168,16 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         """Lees de bewaarde toestand (sturing aan/uit en het vorige plan)."""
         data = await self._store.async_load() or {}
         self.enabled = bool(data.get("enabled", False))
+        self.sell_enabled = bool(data.get("sell_enabled", False))
+        self._selling = bool(data.get("selling", False))
 
         def moment(value: Any) -> datetime | None:
             return dt_util.parse_datetime(value) if isinstance(value, str) else None
 
         hours = tuple(h for h in (moment(v) for v in data.get("charge_hours", [])) if h)
+        self._sell_hours = tuple(
+            h for h in (moment(v) for v in data.get("sell_hours", [])) if h
+        )
         self._memory = PlanMemory(
             status=data.get("status", PlanMemory().status),
             charge_hours=hours,
@@ -161,6 +190,9 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self._store.async_delay_save(
             lambda: {
                 "enabled": self.enabled,
+                "sell_enabled": self.sell_enabled,
+                "selling": self._selling,
+                "sell_hours": [h.isoformat() for h in self._sell_hours],
                 "status": memory.status,
                 "charge_hours": [h.isoformat() for h in memory.charge_hours],
                 "window_end": memory.window_end.isoformat() if memory.window_end else None,
@@ -202,6 +234,11 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             or float(self.conf.get(CONF_CAPACITY_KWH, DEFAULT_CAPACITY_KWH)),
             "max_power_w": self._number(CONF_MAX_POWER_ENTITY) or DEFAULT_MAX_POWER,
             "force_power_w": self._number(CONF_FORCE_POWER_ENTITY),
+            "max_discharge_power_w": self._number(CONF_MAX_DISCHARGE_POWER_ENTITY)
+            or DEFAULT_MAX_POWER,
+            "force_discharge_power_w": self._number(CONF_FORCE_DISCHARGE_POWER_ENTITY),
+            "min_soc": self._number(CONF_MIN_SOC_ENTITY)
+            or float(self.conf.get(CONF_MIN_SOC, DEFAULT_MIN_SOC)),
             "efficiency": clamp_efficiency(
                 self._number(CONF_CHARGED_ENERGY_ENTITY),
                 self._number(CONF_DISCHARGED_ENERGY_ENTITY),
@@ -222,6 +259,23 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             margin=float(conf.get(CONF_MARGIN, DEFAULT_MARGIN)),
             min_power_w=int(conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
         )
+
+    @property
+    def sell_params(self) -> SellParams:
+        conf = self.conf
+        return SellParams(
+            margin=float(conf.get(CONF_SELL_MARGIN, DEFAULT_SELL_MARGIN)),
+            house_power_w=float(conf.get(CONF_HOUSE_POWER, DEFAULT_HOUSE_POWER)),
+            reserve_min_soc=float(conf.get(CONF_RESERVE_MIN_SOC, DEFAULT_RESERVE_MIN_SOC)),
+            price_factor=float(conf.get(CONF_SELL_PRICE_FACTOR, DEFAULT_SELL_PRICE_FACTOR)),
+            price_offset=float(conf.get(CONF_SELL_PRICE_OFFSET, DEFAULT_SELL_PRICE_OFFSET)),
+            min_power_w=int(conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
+        )
+
+    @property
+    def can_sell(self) -> bool:
+        """Verkopen kan alleen als de entiteit voor het ontlaadvermogen is ingesteld."""
+        return bool(self.conf.get(CONF_FORCE_DISCHARGE_POWER_ENTITY))
 
     # ------------------------------------------------------------------ update
 
@@ -244,8 +298,31 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         if plan.memory() != self._memory:
             self._memory = plan.memory()
             self._save()
-        if self.enabled:
-            await self._async_apply(plan, inputs)
+
+        now = dt_util.utcnow()
+        if not self.can_sell:
+            sell = SellPlan(text="Verkopen is niet ingesteld: kies de entiteit voor het ontlaadvermogen")
+        else:
+            sell = compute_sell_plan(
+                charge_plan=plan,
+                now=now,
+                soc=inputs["soc"],
+                capacity_kwh=inputs["capacity_kwh"],
+                max_power_w=inputs["max_discharge_power_w"],
+                efficiency=inputs["efficiency"],
+                min_soc=inputs["min_soc"],
+                selling=self._selling,
+                previous_hours=self._sell_hours,
+                params=self.sell_params,
+                tz=dt_util.DEFAULT_TIME_ZONE,
+            )
+        self.sell_plan = sell
+        if sell.sell_hours != self._sell_hours:
+            self._sell_hours = sell.sell_hours
+            self._save()
+
+        if self.enabled or self.sell_enabled or self._selling:
+            await self._async_apply(plan, sell, inputs)
         return plan
 
     @callback
@@ -278,11 +355,11 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             blocking=True,
         )
 
-    async def _async_set_power(self, watts: float) -> None:
+    async def _async_set_number(self, key: str, watts: float) -> None:
         await self.hass.services.async_call(
             "number",
             "set_value",
-            {"entity_id": self.conf[CONF_FORCE_POWER_ENTITY], "value": int(watts)},
+            {"entity_id": self.conf[key], "value": int(watts)},
             blocking=True,
         )
 
@@ -291,27 +368,57 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self._settle_until = dt_util.utcnow() + timedelta(seconds=COMMAND_SETTLE_SECONDS)
         _LOGGER.info("Marstek: %s", command)
 
-    async def _async_apply(self, plan: Plan, inputs: dict[str, Any]) -> None:
-        """Breng de Marstek in de toestand die bij het plan hoort."""
+    def _set_selling(self, selling: bool) -> None:
+        if self._selling != selling:
+            self._selling = selling
+            self._save()
+
+    async def _async_apply(self, plan: Plan, sell: SellPlan, inputs: dict[str, Any]) -> None:
+        """Breng de Marstek in de toestand die bij de plannen hoort."""
         control, force = inputs["control_mode"], inputs["force_mode"]
         if control is None or force is None:
             return  # Marstek niet bereikbaar: niets sturen.
         if self._settle_until is not None and dt_util.utcnow() < self._settle_until:
             return
-        if control == MODE_ENABLE and force == FORCE_DISCHARGE:
+        if control == MODE_ENABLE and force == FORCE_DISCHARGE and not self._selling:
             return  # Handmatig forceer-ontladen laten we met rust.
 
+        want_charge = self.enabled and plan.status == STATUS_CHARGING and bool(plan.power_w)
+        want_sell = (
+            not want_charge
+            and self.sell_enabled
+            and self.can_sell
+            and sell.status == SELL_SELLING
+            and bool(sell.power_w)
+        )
+
         try:
-            if plan.status == STATUS_CHARGING and plan.power_w:
+            if want_charge:
                 current = inputs["force_power_w"]
                 if current is None or abs(current - plan.power_w) >= 50:
-                    await self._async_set_power(plan.power_w)
+                    await self._async_set_number(CONF_FORCE_POWER_ENTITY, plan.power_w)
                     self._settle(f"laadvermogen {plan.power_w} W")
                 if not inputs["charging"]:
                     await self._async_select(CONF_FORCE_MODE_ENTITY, FORCE_CHARGE)
                     await self._async_select(CONF_CONTROL_MODE_ENTITY, MODE_ENABLE)
+                    self._set_selling(False)
                     self._settle(f"bijladen gestart op {plan.power_w} W")
-            elif control == MODE_ENABLE:
+            elif want_sell:
+                current = inputs["force_discharge_power_w"]
+                if current is None or abs(current - sell.power_w) >= 50:
+                    await self._async_set_number(CONF_FORCE_DISCHARGE_POWER_ENTITY, sell.power_w)
+                    self._settle(f"verkoopvermogen {sell.power_w} W")
+                if not (self._selling and control == MODE_ENABLE and force == FORCE_DISCHARGE):
+                    await self._async_select(CONF_FORCE_MODE_ENTITY, FORCE_DISCHARGE)
+                    await self._async_select(CONF_CONTROL_MODE_ENTITY, MODE_ENABLE)
+                    self._set_selling(True)
+                    self._settle(f"verkopen gestart op {sell.power_w} W")
+            elif self._selling:
+                await self._async_release(inputs)
+                self._settle("verkopen gestopt, terug naar anti-feed")
+            elif control == MODE_ENABLE and (self.enabled or force == FORCE_STOP):
+                # Forceer-laden dat niet bij het plan hoort alleen terugzetten als
+                # de prijssturing aan staat.
                 await self._async_release(inputs)
                 self._settle("bijladen gestopt, terug naar anti-feed")
             elif force == FORCE_STOP:
@@ -330,7 +437,14 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         await self._async_select(CONF_FORCE_MODE_ENTITY, FORCE_CHARGE)
         current = inputs["force_power_w"]
         if current is None or abs(current - inputs["max_power_w"]) >= 1:
-            await self._async_set_power(inputs["max_power_w"])
+            await self._async_set_number(CONF_FORCE_POWER_ENTITY, inputs["max_power_w"])
+        if self.can_sell:
+            current = inputs["force_discharge_power_w"]
+            if current is None or abs(current - inputs["max_discharge_power_w"]) >= 1:
+                await self._async_set_number(
+                    CONF_FORCE_DISCHARGE_POWER_ENTITY, inputs["max_discharge_power_w"]
+                )
+        self._set_selling(False)
 
     async def async_set_enabled(self, enabled: bool) -> None:
         """Zet de prijssturing aan of uit."""
@@ -346,4 +460,17 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                     self._settle("prijssturing uit, terug naar anti-feed")
                 except Exception:  # noqa: BLE001
                     _LOGGER.exception("Terugzetten van de Marstek mislukt")
+        await self.async_refresh()
+
+    async def async_set_sell_enabled(self, enabled: bool) -> None:
+        """Zet het verkopen aan of uit."""
+        self.sell_enabled = enabled
+        self._save()
+        self._settle_until = None
+        if not enabled and self._selling:
+            try:
+                await self._async_release(self._read_inputs())
+                self._settle("verkoop uit, terug naar anti-feed")
+            except Exception:  # noqa: BLE001
+                _LOGGER.exception("Terugzetten van de Marstek mislukt")
         await self.async_refresh()
