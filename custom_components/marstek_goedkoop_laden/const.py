@@ -43,6 +43,6 @@ FORCE_DISCHARGE = "discharge"
 FORCE_STOP = "stop"
 
 # Na een stuuropdracht even niets nieuws sturen: de Marstek meldt zijn nieuwe
-# toestand pas na een paar seconden terug.
-COMMAND_SETTLE_SECONDS = 12
+# toestand pas terug bij de volgende uitlezing, en dat kan tientallen seconden duren.
+COMMAND_SETTLE_SECONDS = 30
 UPDATE_INTERVAL_SECONDS = 60

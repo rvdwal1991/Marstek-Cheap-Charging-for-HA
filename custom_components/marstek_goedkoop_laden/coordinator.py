@@ -314,14 +314,20 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             elif control == MODE_ENABLE:
                 await self._async_release(inputs)
                 self._settle("bijladen gestopt, terug naar anti-feed")
+            elif force == FORCE_STOP:
+                # Rusttoestand herstellen: RS485 uit met forceren op charge, zodat
+                # handmatig forceer-laden werkt zoals de gebruiker gewend is.
+                await self._async_select(CONF_FORCE_MODE_ENTITY, FORCE_CHARGE)
+                self._settle("forceren terug op charge (rusttoestand)")
         except Exception:  # noqa: BLE001 - een mislukte opdracht mag de berekening niet stoppen
             _LOGGER.exception("Aansturen van de Marstek mislukt")
 
     async def _async_release(self, inputs: dict[str, Any]) -> None:
         """Zet de Marstek terug in zijn rusttoestand: RS485 uit, anti-feed."""
         await self._async_select(CONF_CONTROL_MODE_ENTITY, MODE_DISABLE)
-        if inputs["force_mode"] != FORCE_CHARGE:
-            await self._async_select(CONF_FORCE_MODE_ENTITY, FORCE_CHARGE)
+        # Altijd sturen, ook als Home Assistant al 'charge' toont: de toestand
+        # van de selects loopt achter op de Marstek.
+        await self._async_select(CONF_FORCE_MODE_ENTITY, FORCE_CHARGE)
         current = inputs["force_power_w"]
         if current is None or abs(current - inputs["max_power_w"]) >= 1:
             await self._async_set_power(inputs["max_power_w"])
