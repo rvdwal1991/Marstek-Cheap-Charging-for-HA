@@ -1,0 +1,108 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Pick the price sensor and the Marstek entities (LilyGO RS485). Recognised entities are filled in already.",
+        "data": {
+          "price_entity": "Price sensor",
+          "soc_entity": "State of charge",
+          "control_mode_entity": "RS485 control mode",
+          "force_mode_entity": "Forcible charge/discharge",
+          "force_power_entity": "Forcible charge power",
+          "max_power_entity": "Maximum charge power",
+          "capacity_entity": "Battery capacity (sensor)",
+          "charged_energy_entity": "Total charged energy",
+          "discharged_energy_entity": "Total discharged energy"
+        },
+        "data_description": {
+          "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
+          "control_mode_entity": "Master switch for forcing: enable or disable.",
+          "force_mode_entity": "Direction when forcing: charge, discharge or stop.",
+          "force_power_entity": "Set to the spread-out power while charging.",
+          "max_power_entity": "Sets the number of charge hours and the upper limit of the power. Empty = 2500 W.",
+          "capacity_entity": "Empty = the fixed capacity from the options.",
+          "charged_energy_entity": "Together with the discharged energy this sets the efficiency. Empty = fixed efficiency."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This Marstek is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "description": "Change the entities or the planning rule. The integration reloads afterwards.",
+        "data": {
+          "price_entity": "Price sensor",
+          "soc_entity": "State of charge",
+          "control_mode_entity": "RS485 control mode",
+          "force_mode_entity": "Forcible charge/discharge",
+          "force_power_entity": "Forcible charge power",
+          "max_power_entity": "Maximum charge power",
+          "capacity_entity": "Battery capacity (sensor)",
+          "charged_energy_entity": "Total charged energy",
+          "discharged_energy_entity": "Total discharged energy",
+          "price_attribute": "Attribute holding the prices",
+          "capacity_kwh": "Battery capacity",
+          "default_efficiency": "Round-trip efficiency",
+          "margin": "Minimum gain per kWh",
+          "top_hours": "Number of most expensive hours to compare with",
+          "lookahead_hours": "Hours to look ahead",
+          "min_lookahead_hours": "Minimum known hours ahead",
+          "min_power": "Minimum charge power"
+        },
+        "data_description": {
+          "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
+          "control_mode_entity": "Master switch for forcing: enable or disable.",
+          "force_mode_entity": "Direction when forcing: charge, discharge or stop.",
+          "force_power_entity": "Set to the spread-out power while charging.",
+          "max_power_entity": "Sets the number of charge hours and the upper limit of the power. Empty = 2500 W.",
+          "capacity_entity": "Empty = the fixed capacity from the options.",
+          "charged_energy_entity": "Together with the discharged energy this sets the efficiency. Empty = fixed efficiency.",
+          "default_efficiency": "Used when the energy counters are not set.",
+          "margin": "After the charging loss, charging has to gain at least this amount.",
+          "top_hours": "An hour is cheap enough when its price is below the efficiency times the average of these most expensive hours after it, minus the margin.",
+          "min_lookahead_hours": "Hours with fewer known prices after them are ignored."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "laadplan": {
+        "name": "Charge plan",
+        "state": {
+          "laden": "Charging",
+          "gepland": "Planned",
+          "klaar": "Done",
+          "vol": "Battery full",
+          "geen": "No charge moment",
+          "onbekend": "Unknown"
+        }
+      },
+      "laadvermogen": {
+        "name": "Planned charge power"
+      },
+      "bij_te_laden": {
+        "name": "Energy to charge"
+      },
+      "start_bijladen": {
+        "name": "Charge start"
+      },
+      "einde_bijladen": {
+        "name": "Charge end"
+      },
+      "laadprijs": {
+        "name": "Average charge price"
+      }
+    },
+    "switch": {
+      "prijssturing": {
+        "name": "Price control"
+      }
+    }
+  }
+}

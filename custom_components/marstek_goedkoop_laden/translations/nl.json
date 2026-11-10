@@ -1,0 +1,108 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Kies de prijssensor en de entiteiten van de Marstek (LilyGO RS485). Wat herkend is, staat al ingevuld.",
+        "data": {
+          "price_entity": "Prijssensor",
+          "soc_entity": "Laadniveau (SoC)",
+          "control_mode_entity": "RS485 Control Mode",
+          "force_mode_entity": "Forcible charge/discharge",
+          "force_power_entity": "Forcible charge power",
+          "max_power_entity": "Maximaal laadvermogen",
+          "capacity_entity": "Accucapaciteit (sensor)",
+          "charged_energy_entity": "Totaal geladen energie",
+          "discharged_energy_entity": "Totaal ontladen energie"
+        },
+        "data_description": {
+          "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
+          "control_mode_entity": "Hoofdschakelaar voor forceren: enable of disable.",
+          "force_mode_entity": "Richting bij forceren: charge, discharge of stop.",
+          "force_power_entity": "Wordt tijdens het bijladen op het uitgesmeerde vermogen gezet.",
+          "max_power_entity": "Bepaalt het aantal laaduren en de bovengrens van het vermogen. Leeg = 2500 W.",
+          "capacity_entity": "Leeg = de vaste capaciteit uit de instellingen.",
+          "charged_energy_entity": "Samen met de ontladen energie bepaalt dit het rendement. Leeg = vast rendement."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Deze Marstek is al ingesteld."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Instellingen",
+        "description": "Pas de entiteiten of de rekenregel aan. De integratie wordt daarna herladen.",
+        "data": {
+          "price_entity": "Prijssensor",
+          "soc_entity": "Laadniveau (SoC)",
+          "control_mode_entity": "RS485 Control Mode",
+          "force_mode_entity": "Forcible charge/discharge",
+          "force_power_entity": "Forcible charge power",
+          "max_power_entity": "Maximaal laadvermogen",
+          "capacity_entity": "Accucapaciteit (sensor)",
+          "charged_energy_entity": "Totaal geladen energie",
+          "discharged_energy_entity": "Totaal ontladen energie",
+          "price_attribute": "Attribuut met de prijzen",
+          "capacity_kwh": "Accucapaciteit",
+          "default_efficiency": "Rendement laden en ontladen",
+          "margin": "Minimale winst per kWh",
+          "top_hours": "Aantal duurste uren om mee te vergelijken",
+          "lookahead_hours": "Aantal uren vooruit kijken",
+          "min_lookahead_hours": "Minimaal aantal bekende uren vooruit",
+          "min_power": "Minimaal laadvermogen"
+        },
+        "data_description": {
+          "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
+          "control_mode_entity": "Hoofdschakelaar voor forceren: enable of disable.",
+          "force_mode_entity": "Richting bij forceren: charge, discharge of stop.",
+          "force_power_entity": "Wordt tijdens het bijladen op het uitgesmeerde vermogen gezet.",
+          "max_power_entity": "Bepaalt het aantal laaduren en de bovengrens van het vermogen. Leeg = 2500 W.",
+          "capacity_entity": "Leeg = de vaste capaciteit uit de instellingen.",
+          "charged_energy_entity": "Samen met de ontladen energie bepaalt dit het rendement. Leeg = vast rendement.",
+          "default_efficiency": "Wordt gebruikt als de energietellers niet zijn ingevuld.",
+          "margin": "Bijladen moet na aftrek van het laadverlies minstens dit bedrag opleveren.",
+          "top_hours": "Een uur is goedkoop genoeg als de prijs lager is dan het rendement maal het gemiddelde van deze duurste uren erna, min de marge.",
+          "min_lookahead_hours": "Uren waarvan minder prijzen erna bekend zijn, tellen niet mee."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "laadplan": {
+        "name": "Laadplan",
+        "state": {
+          "laden": "Bijladen",
+          "gepland": "Gepland",
+          "klaar": "Klaar",
+          "vol": "Accu vol",
+          "geen": "Geen laadmoment",
+          "onbekend": "Onbekend"
+        }
+      },
+      "laadvermogen": {
+        "name": "Gepland laadvermogen"
+      },
+      "bij_te_laden": {
+        "name": "Bij te laden"
+      },
+      "start_bijladen": {
+        "name": "Start bijladen"
+      },
+      "einde_bijladen": {
+        "name": "Einde bijladen"
+      },
+      "laadprijs": {
+        "name": "Gemiddelde laadprijs"
+      }
+    },
+    "switch": {
+      "prijssturing": {
+        "name": "Prijssturing"
+      }
+    }
+  }
+}

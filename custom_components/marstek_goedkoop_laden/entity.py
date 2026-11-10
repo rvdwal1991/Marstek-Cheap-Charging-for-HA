@@ -1,0 +1,28 @@
+"""Gedeelde basis voor de entiteiten."""
+
+from __future__ import annotations
+
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
+from .const import DOMAIN
+from .coordinator import ChargePlanCoordinator
+
+
+class ChargePlanEntity(CoordinatorEntity[ChargePlanCoordinator]):
+    """Entiteit die aan het laadplan hangt."""
+
+    _attr_has_entity_name = True
+
+    def __init__(self, coordinator: ChargePlanCoordinator, key: str) -> None:
+        super().__init__(coordinator)
+        entry_id = coordinator.config_entry.entry_id
+        self._attr_unique_id = f"{entry_id}_{key}"
+        self._attr_translation_key = key
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry_id)},
+            name="Marstek Goedkoop Laden",
+            manufacturer="rvdwal1991",
+            model="Laadplan op uurprijzen",
+            entry_type=DeviceEntryType.SERVICE,
+        )
