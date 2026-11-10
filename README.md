@@ -54,6 +54,10 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | `sensor.*_start_bijladen` / `*_einde_bijladen` | Begin en einde van de geplande laadbeurt. |
 | `sensor.*_gemiddelde_laadprijs` | Gemiddelde prijs van de laaduren in €/kWh. |
 
+De namen hierboven horen bij een Nederlandstalige installatie. Staat de systeemtaal van Home
+Assistant op Engels, dan heten ze `*_charge_plan`, `*_price_control` enzovoort; hernoem ze dan
+naar wens.
+
 ## Installatie
 
 1. Kopieer `custom_components/marstek_goedkoop_laden` naar `/config/custom_components/`
