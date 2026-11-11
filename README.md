@@ -26,7 +26,7 @@ uren uit het net bijladen. Daarnaast is er een aparte, standaard uitgeschakelde 
    naar anti-feed. In hetzelfde venster start hij niet opnieuw en hij houdt de lading niet vast.
 
 Er wordt alleen gerekend met **gepubliceerde** prijzen. Het plan voor de nacht ontstaat dus
-zodra de prijzen van morgen bekend zijn (bij Zonneplan rond 14:00–15:00).
+zodra de prijzen van morgen bekend zijn (bij Zonneplan tussen 13:00 en 15:00).
 
 Voorbeeld (10 november 2026, accu op 12 %): goedkoop venster 23:00–07:00, bijladen om 02:00,
 03:00 en 04:00 op ongeveer 1900 W voor gemiddeld € 0,37, daarna overdag € 0,55–0,67.
