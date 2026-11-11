@@ -188,7 +188,7 @@ class SturingTest(unittest.TestCase):
         run(coordinator.async_refresh())
         self.assertEqual(
             hass.calls,
-            [("number.laadvermogen", 1900), ("select.forceer", "charge"), ("select.rs485", "enable")],
+            [("number.laadvermogen", 2100), ("select.forceer", "charge"), ("select.rs485", "enable")],
         )
 
         # Binnen de wachttijd na een opdracht wordt er niets nieuws gestuurd.
@@ -222,6 +222,32 @@ class SturingTest(unittest.TestCase):
         hass.set("sensor.soc", 95)
         run(coordinator.async_refresh())
         self.assertEqual(coordinator.data.status, "klaar")
+        self.assertEqual(hass.calls, [])
+
+    def test_ontlaadvermogen_blijft_staan_na_laden(self):
+        # De laadpaal-begrenzer zet 's nachts het maximale ontlaadvermogen op 150 W.
+        # Dat mag na het bijladen niet in het forceer-ontlaadvermogen belanden.
+        at("2026-11-11T02:10:00")
+        hass, coordinator = make(12)
+        hass.set("number.max_ontladen", 150)
+        run(coordinator.async_set_enabled(True))
+        at("2026-11-11T05:00:10")
+        hass.set("sensor.soc", 97)
+        run(coordinator.async_refresh())
+        self.assertEqual(coordinator.data.status, "klaar")
+        self.assertEqual(hass.get("select.rs485"), "disable")
+        self.assertEqual(hass.get("number.ontlaadvermogen"), "2500")
+        self.assertNotIn("number.ontlaadvermogen", [c[0] for c in hass.calls])
+
+    def test_vermogen_springt_niet_heen_en_weer(self):
+        at("2026-11-11T02:10:00")
+        hass, coordinator = make(12)
+        run(coordinator.async_set_enabled(True))
+        hass.calls.clear()
+        # Een stap van 100 W verschil onderweg leidt niet tot een nieuwe opdracht.
+        hass.set("number.laadvermogen", coordinator.data.power_w + 100)
+        at("2026-11-11T02:11:00")
+        run(coordinator.async_refresh())
         self.assertEqual(hass.calls, [])
 
     def test_uitzetten_tijdens_laden_geeft_vrij(self):
@@ -261,7 +287,9 @@ class SturingTest(unittest.TestCase):
         at("2026-11-10T16:00:20")
         run(coordinator.async_refresh())
         self.assertEqual(coordinator.sell_plan.status, "verkopen")
-        self.assertEqual([c[0] for c in hass.calls], ["number.ontlaadvermogen", "select.forceer", "select.rs485"])
+        # (Het vermogen wordt alleen gezet als het afwijkt van wat er al stond.)
+        self.assertEqual([c[0] for c in hass.calls][-2:], ["select.forceer", "select.rs485"])
+        self.assertEqual(float(hass.get("number.ontlaadvermogen")), coordinator.sell_plan.power_w)
         self.assertEqual(hass.get("select.forceer"), "discharge")
         self.assertEqual(hass.get("select.rs485"), "enable")
 

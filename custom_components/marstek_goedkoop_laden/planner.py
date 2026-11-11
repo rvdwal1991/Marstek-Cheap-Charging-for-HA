@@ -37,11 +37,12 @@ CHARGE_EFFICIENCY = 0.88
 # Het aantal laaduren rekent met 90 % van het maximale vermogen, omdat de
 # Marstek bij hoge SoC terugregelt.
 POWER_DERATE = 0.9
-# Het uitgesmeerde vermogen mikt op klaar zijn na 92 % van de resterende tijd.
-TIME_DERATE = 0.92
+# Het uitgesmeerde vermogen mikt op klaar zijn na 85 % van de resterende tijd,
+# zodat de accu ook echt vol is aan het eind van het laatste laaduur.
+TIME_DERATE = 0.85
 # Ondergrens voor de resterende tijd, zodat het vermogen aan het eind van het
 # laatste laaduur niet omhoog schiet.
-MIN_REMAINING_HOURS = 0.5
+MIN_REMAINING_HOURS = 0.25
 POWER_STEP_W = 100
 
 

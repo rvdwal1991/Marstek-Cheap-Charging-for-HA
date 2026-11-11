@@ -56,10 +56,10 @@ class PlannerTest(unittest.TestCase):
         result = plan("2026-11-10T19:40:00", 12)
         self.assertEqual(result.status, "gepland")
         self.assertEqual(hours(result), ["11 02:00", "11 03:00", "11 04:00"])
-        self.assertEqual(result.power_w, 1900)
+        self.assertEqual(result.power_w, 2100)
         self.assertEqual(result.window[0].astimezone(TZ).strftime("%d %H:%M"), "10 23:00")
         self.assertEqual(result.window_end.astimezone(TZ).strftime("%d %H:%M"), "11 07:00")
-        self.assertIn("Laden morgen om 02:00, 03:00, 04:00 op ca. 1900 W", result.text)
+        self.assertIn("Laden morgen om 02:00, 03:00, 04:00 op ca. 2100 W", result.text)
         self.assertIn("klaar om 05:00", result.text)
 
     def test_minder_uren_bij_vollere_accu(self):
@@ -76,12 +76,12 @@ class PlannerTest(unittest.TestCase):
         memory = plan("2026-11-11T01:59:00", 12).memory()
         start = plan("2026-11-11T02:00:30", 12, charging=True, memory=memory)
         self.assertEqual(start.status, "laden")
-        self.assertEqual(start.power_w, 1900)
+        self.assertEqual(start.power_w, 2100)
 
         # Onderweg blijven de drie uren staan en blijft het vermogen gelijkmatig.
         halfway = plan("2026-11-11T02:40:00", 38, charging=True, memory=start.memory())
         self.assertEqual(hours(halfway), ["11 02:00", "11 03:00", "11 04:00"])
-        self.assertLessEqual(halfway.power_w, 1900)
+        self.assertLessEqual(halfway.power_w, 2100)
 
         later = plan("2026-11-11T04:30:00", 88, charging=True, memory=halfway.memory())
         self.assertEqual(hours(later), ["11 04:00"])
@@ -131,7 +131,7 @@ class PlannerTest(unittest.TestCase):
         memory = planner.PlanMemory("laden", (at("2026-11-11T04:00:00"),), at("2026-11-11T07:00:00"))
         result = plan("2026-11-11T04:55:00", 96, charging=True, memory=memory)
         self.assertEqual(result.status, "laden")
-        self.assertLessEqual(result.power_w, 600)
+        self.assertLessEqual(result.power_w, 1000)
 
 
 def sell(now, soc, house=150.0, selling=False, previous=(), margin=0.10, factor=1.0, offset=0.0):

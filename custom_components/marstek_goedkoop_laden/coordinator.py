@@ -153,6 +153,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self.sell_plan = SellPlan()
         # Waar als de integratie zelf een verkoop (forceer-ontladen) heeft gestart.
         self._selling = False
+        # Het forceer-ontlaadvermogen van voor de verkoop, om na afloop terug te zetten.
+        self._discharge_power_before: float | None = None
         self._sell_hours: tuple[datetime, ...] = ()
         self.inputs: dict[str, Any] = {}
         self.last_command: str | None = None
@@ -170,6 +172,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self.enabled = bool(data.get("enabled", False))
         self.sell_enabled = bool(data.get("sell_enabled", False))
         self._selling = bool(data.get("selling", False))
+        self._discharge_power_before = data.get("discharge_power_before")
 
         def moment(value: Any) -> datetime | None:
             return dt_util.parse_datetime(value) if isinstance(value, str) else None
@@ -192,6 +195,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 "enabled": self.enabled,
                 "sell_enabled": self.sell_enabled,
                 "selling": self._selling,
+                "discharge_power_before": self._discharge_power_before,
                 "sell_hours": [h.isoformat() for h in self._sell_hours],
                 "status": memory.status,
                 "charge_hours": [h.isoformat() for h in memory.charge_hours],
@@ -368,6 +372,17 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self._settle_until = dt_util.utcnow() + timedelta(seconds=COMMAND_SETTLE_SECONDS)
         _LOGGER.info("Marstek: %s", command)
 
+    @staticmethod
+    def _power_differs(current: float | None, target: float, running: bool) -> bool:
+        """Moet het vermogen opnieuw worden gezet?
+
+        Bij de start altijd; onderweg pas bij een verschil van 150 W of meer,
+        zodat het niet elke minuut tussen twee stappen heen en weer springt.
+        """
+        if current is None:
+            return True
+        return abs(current - target) >= (150 if running else 50)
+
     def _set_selling(self, selling: bool) -> None:
         if self._selling != selling:
             self._selling = selling
@@ -395,7 +410,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         try:
             if want_charge:
                 current = inputs["force_power_w"]
-                if current is None or abs(current - plan.power_w) >= 50:
+                if self._power_differs(current, plan.power_w, inputs["charging"]):
                     await self._async_set_number(CONF_FORCE_POWER_ENTITY, plan.power_w)
                     self._settle(f"laadvermogen {plan.power_w} W")
                 if not inputs["charging"]:
@@ -405,7 +420,10 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                     self._settle(f"bijladen gestart op {plan.power_w} W")
             elif want_sell:
                 current = inputs["force_discharge_power_w"]
-                if current is None or abs(current - sell.power_w) >= 50:
+                if not self._selling and self._discharge_power_before is None:
+                    self._discharge_power_before = current
+                    self._save()
+                if self._power_differs(current, sell.power_w, self._selling):
                     await self._async_set_number(CONF_FORCE_DISCHARGE_POWER_ENTITY, sell.power_w)
                     self._settle(f"verkoopvermogen {sell.power_w} W")
                 if not (self._selling and control == MODE_ENABLE and force == FORCE_DISCHARGE):
@@ -438,12 +456,14 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         current = inputs["force_power_w"]
         if current is None or abs(current - inputs["max_power_w"]) >= 1:
             await self._async_set_number(CONF_FORCE_POWER_ENTITY, inputs["max_power_w"])
-        if self.can_sell:
-            current = inputs["force_discharge_power_w"]
-            if current is None or abs(current - inputs["max_discharge_power_w"]) >= 1:
-                await self._async_set_number(
-                    CONF_FORCE_DISCHARGE_POWER_ENTITY, inputs["max_discharge_power_w"]
-                )
+        # Het forceer-ontlaadvermogen alleen terugzetten als wij het voor een
+        # verkoop hebben veranderd, en dan naar de waarde van daarvoor.
+        if self.can_sell and self._discharge_power_before is not None:
+            await self._async_set_number(
+                CONF_FORCE_DISCHARGE_POWER_ENTITY, self._discharge_power_before
+            )
+            self._discharge_power_before = None
+            self._save()
         self._set_selling(False)
 
     async def async_set_enabled(self, enabled: bool) -> None:
