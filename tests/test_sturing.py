@@ -422,6 +422,38 @@ class SturingTest(unittest.TestCase):
         self.assertEqual(coordinator.flow["tijdlijn"][1]["soort"], "eind")
         self.assertIn("staat uit", coordinator.flow["tijdlijn"][1]["detail"])
 
+    def test_gerealiseerde_opbrengst(self):
+        at("2026-11-11T01:59:00")
+        hass, coordinator = make(12)
+        run(coordinator.async_set_enabled(True))
+        # 02:00-05:00: de integratie laadt; de teller loopt 4 kWh op in stappen.
+        at("2026-11-11T02:00:20")
+        run(coordinator.async_refresh())
+        self.assertEqual(hass.get("select.rs485"), "enable")
+        geladen = 1837.74
+        for minute in range(10, 170, 10):
+            at(f"2026-11-11T{2 + minute // 60:02d}:{minute % 60:02d}:00")
+            geladen += 0.25
+            hass.set("sensor.geladen", round(geladen, 2))
+            run(coordinator.async_refresh())
+        ledger = coordinator.ledger
+        self.assertAlmostEqual(ledger.day_charged_kwh, 4.0, places=2)
+        self.assertAlmostEqual(ledger.stock_kwh, 4.0 * (1418.82 / 1837.74), places=2)
+        self.assertEqual(round(ledger.day_gain, 2), 0.0)
+        # 08:00, prijs ca. 0,55: 1 kWh uit de accu gebruikt.
+        at("2026-11-11T08:10:00")
+        hass.set("sensor.soc", 80)
+        run(coordinator.async_refresh())
+        at("2026-11-11T08:20:00")
+        hass.set("sensor.ontladen", 1419.82)
+        run(coordinator.async_refresh())
+        self.assertGreater(ledger.day_gain, 0.03)
+        self.assertLess(ledger.day_gain, 0.20)
+        result = coordinator.flow["resultaat"]
+        self.assertEqual(result["vandaag"], round(ledger.day_gain, 2))
+        self.assertEqual(result["week"], round(ledger.week_gain, 2))
+        self.assertGreater(result["voorraad_kwh"], 1.5)
+
 
 if __name__ == "__main__":
     unittest.main()

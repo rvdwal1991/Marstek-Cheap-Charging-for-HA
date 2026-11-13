@@ -1,13 +1,18 @@
 /*
- * Marstek Goedkoop Laden - stroomschemakaart
+ * Marstek Goedkoop Laden - dashboardkaarten
  *
- * Toont de tijdlijn van vandaag en per onderdeel (bijladen, verkoop, negatieve
- * prijs) de controles die tot de uitkomst leiden. Leest alles uit het attribuut
- * `stroomschema` van de laadplan-sensor.
+ * Alle kaarten lezen het attribuut `stroomschema` van de laadplan-sensor.
  *
- *   type: custom:marstek-goedkoop-laden-card
+ *   type: custom:marstek-goedkoop-laden-card            stroomschema (tijdlijn + controles)
+ *   type: custom:marstek-goedkoop-laden-compact-card    hetzelfde, compact
+ *   type: custom:marstek-goedkoop-laden-opbrengst-card  alleen de opbrengsten
+ *
+ * Opties voor alle kaarten:
  *   entity: sensor.marstek_goedkoop_laden_laadplan   (optioneel)
  *   title: Prijssturing                              (optioneel)
+ * Extra voor de eerste twee:
+ *   opbrengst: true | false   toon ook de opbrengst (standaard: uit bij de
+ *                             gewone kaart, één regel bij de compacte kaart)
  */
 const DEFAULT_ENTITY = "sensor.marstek_goedkoop_laden_laadplan";
 
@@ -22,7 +27,9 @@ const ICONS = {
 const STYLE = `
   :host { display: block; }
   ha-card { padding: 16px; }
+  ha-card.compact { padding: 12px 14px; }
   .title { font-size: 16px; font-weight: 500; margin: 0 0 12px; color: var(--primary-text-color); }
+  .compact .title { font-size: 14px; margin-bottom: 8px; }
   .head { display: flex; align-items: center; gap: 6px; font-size: 12px; margin: 0 0 8px;
           color: var(--secondary-text-color); }
   .head ha-icon { --mdc-icon-size: 16px; }
@@ -50,50 +57,63 @@ const STYLE = `
   .eind .text b { color: var(--secondary-text-color); }
   .nu .dot { border: 2px solid var(--primary-color); color: var(--primary-color); }
   .divider { border-top: 1px solid var(--divider-color); margin: 14px 0; }
+  .compact .divider { margin: 8px 0; }
   .lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; }
   .lane.uit .step { opacity: 0.55; }
   .empty { font-size: 14px; color: var(--secondary-text-color); }
+
+  .crow { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; column-gap: 8px;
+          align-items: center; min-height: 24px; font-size: 13px; }
+  .crow .pip { width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; justify-self: center;
+               border: 1px solid var(--divider-color); }
+  .crow.nu .pip { border: 2px solid var(--primary-color); }
+  .crow.actie .pip, .crow.ok .pip { background: var(--success-color, #43a047); border-color: var(--success-color, #43a047); }
+  .crow.stop .pip { background: var(--error-color, #db4437); border-color: var(--error-color, #db4437); }
+  .crow.eind .pip { border-style: dashed; }
+  .crow ha-icon { --mdc-icon-size: 16px; color: var(--secondary-text-color); justify-self: center; display: flex; }
+  .crow .main { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                color: var(--secondary-text-color); }
+  .crow .main b { font-weight: 500; color: var(--primary-text-color); }
+  .crow .out { white-space: nowrap; font-weight: 500; color: var(--secondary-text-color); }
+  .crow .out.actie { color: var(--success-color, #43a047); }
+  .crow.uit { opacity: 0.6; }
+
   .result { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; align-items: center; }
   .total { font-size: 24px; font-weight: 500; line-height: 1.2; white-space: nowrap; color: var(--primary-text-color); }
-  .total.plus, .amount.plus { color: var(--success-color, #43a047); }
-  .total.min, .amount.min { color: var(--error-color, #db4437); }
+  .plus { color: var(--success-color, #43a047) !important; }
+  .min { color: var(--error-color, #db4437) !important; }
   .total small { display: block; font-size: 12px; font-weight: 400; color: var(--secondary-text-color); }
   .rows { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; font-size: 12px;
          line-height: 16px; color: var(--secondary-text-color); }
   .row b { font-weight: 500; font-size: 13px; color: var(--primary-text-color); }
   .amount { font-size: 13px; font-weight: 500; white-space: nowrap; color: var(--primary-text-color); }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+  .tile { border: 1px solid var(--divider-color); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+  .tile small { display: block; font-size: 12px; color: var(--secondary-text-color); white-space: nowrap;
+                overflow: hidden; text-overflow: ellipsis; }
+  .tile b { display: block; font-size: 20px; font-weight: 500; line-height: 1.3; white-space: nowrap;
+            color: var(--primary-text-color); }
+  .note { font-size: 12px; line-height: 16px; color: var(--secondary-text-color); margin-top: 12px; }
 `;
-
-function formatEuro(value) {
-  const sign = value > 0.004 ? "+ " : value < -0.004 ? "− " : "";
-  return `${sign}€ ${Math.abs(value).toFixed(2).replace(".", ",")}`;
-}
-
-function tone(value) {
-  return value > 0.004 ? "plus" : value < -0.004 ? "min" : "";
-}
-
-function renderResult(result) {
-  if (!result || !Array.isArray(result.regels)) return "";
-  const rows = result.regels.map((line) => `
-    <div class="row">
-      <div><b>${escapeHtml(line.titel)}</b><br>${escapeHtml(line.detail)}</div>
-      <div class="amount ${line.bedrag == null ? "" : tone(line.bedrag)}">${line.bedrag == null ? "–" : formatEuro(line.bedrag)}</div>
-    </div>`).join("");
-  return `
-    <div class="divider"></div>
-    <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>Verwachte opbrengst van dit plan (schatting)</span></div>
-    <div class="result">
-      <div class="total ${tone(result.totaal)}">${formatEuro(result.totaal)}<small>totaal</small></div>
-      <div class="rows">${rows}</div>
-    </div>`;
-}
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (c) => (
     { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
   ));
+}
+
+function number(value, digits) {
+  return Number(value || 0).toFixed(digits).replace(".", ",");
+}
+
+function formatEuro(value) {
+  const sign = value > 0.004 ? "+ " : value < -0.004 ? "− " : "";
+  return `${sign}€ ${number(Math.abs(value || 0), 2)}`;
+}
+
+function tone(value) {
+  return value > 0.004 ? "plus" : value < -0.004 ? "min" : "";
 }
 
 function renderSteps(steps) {
@@ -111,7 +131,42 @@ function renderSteps(steps) {
   }).join("");
 }
 
-class MarstekGoedkoopLadenCard extends HTMLElement {
+function laneSteps(lane) {
+  return lane.aan
+    ? lane.stappen || []
+    : [{ titel: "Staat uit", detail: "Zet de schakelaar aan om dit te gebruiken", soort: "eind" }];
+}
+
+function renderExpectedRows(result) {
+  return (result.regels || []).map((line) => `
+    <div class="row">
+      <div><b>${escapeHtml(line.titel)}</b><br>${escapeHtml(line.detail)}</div>
+      <div class="amount ${line.bedrag == null ? "" : tone(line.bedrag)}">${line.bedrag == null ? "–" : formatEuro(line.bedrag)}</div>
+    </div>`).join("");
+}
+
+function renderExpected(result) {
+  if (!result || !Array.isArray(result.regels)) return "";
+  return `
+    <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>Verwachte opbrengst van dit plan (schatting)</span></div>
+    <div class="result">
+      <div class="total ${tone(result.totaal)}">${formatEuro(result.totaal)}<small>totaal</small></div>
+      <div class="rows">${renderExpectedRows(result)}</div>
+    </div>`;
+}
+
+function renderGainLine(result) {
+  if (!result) return "";
+  const part = (label, value) => `${label} <b class="${tone(value)}">${formatEuro(value || 0)}</b>`;
+  return `
+    <div class="crow">
+      <ha-icon icon="mdi:cash-multiple"></ha-icon>
+      <div class="main">${part("Vandaag", result.vandaag)} · ${part("week", result.week)} · ${part("verwacht", result.totaal)}</div>
+      <div></div>
+    </div>`;
+}
+
+class MarstekBaseCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -134,19 +189,19 @@ class MarstekGoedkoopLadenCard extends HTMLElement {
     this._render();
   }
 
-  getCardSize() {
-    return 6;
-  }
-
   getGridOptions() {
     return { columns: 12, min_columns: 6 };
+  }
+
+  _clock() {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   }
 
   _render() {
     const state = this._hass && this._hass.states[this._config.entity];
     const flow = state && state.attributes && state.attributes.stroomschema;
-    const now = new Date();
-    const clock = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const clock = this._clock();
     const signature = JSON.stringify([this._config, flow || (state ? "geen" : "weg"), clock]);
     if (signature === this._signature) return;
     this._signature = signature;
@@ -155,45 +210,135 @@ class MarstekGoedkoopLadenCard extends HTMLElement {
     if (!state) {
       body = `<div class="empty">Entiteit ${escapeHtml(this._config.entity)} niet gevonden.</div>`;
     } else if (!flow || !Array.isArray(flow.tijdlijn)) {
-      body = '<div class="empty">Nog geen stroomschema beschikbaar.</div>';
+      body = '<div class="empty">Nog geen gegevens beschikbaar.</div>';
     } else {
-      const timeline = flow.tijdlijn.map((item) => (
-        item.soort === "nu" ? { ...item, titel: `Nu · ${clock}` } : item
-      ));
-      const lanes = (flow.banen || []).map((lane) => {
-        const steps = lane.aan
-          ? lane.stappen || []
-          : [{ titel: "Staat uit", detail: "Zet de schakelaar aan om dit te gebruiken", soort: "eind" }];
-        return `
-          <div class="lane ${lane.aan ? "aan" : "uit"}">
-            <div class="head">
-              <ha-icon icon="${escapeHtml(lane.icoon || "mdi:help-circle-outline")}"></ha-icon>
-              <span>${escapeHtml(lane.titel)} · ${lane.aan ? "aan" : '<span class="off">uit</span>'}</span>
-            </div>
-            ${renderSteps(steps)}
-          </div>`;
-      }).join("");
-      body = `
-        <div class="head"><ha-icon icon="mdi:clock-outline"></ha-icon><span>Vandaag</span></div>
-        ${renderSteps(timeline)}
-        ${renderResult(flow.resultaat)}
-        <div class="divider"></div>
-        <div class="lanes">${lanes}</div>`;
+      body = this._body(flow, clock);
     }
-
     const title = this._config.title ? `<div class="title">${escapeHtml(this._config.title)}</div>` : "";
-    this.shadowRoot.innerHTML = `<style>${STYLE}</style><ha-card>${title}${body}</ha-card>`;
+    this.shadowRoot.innerHTML = `<style>${STYLE}</style><ha-card class="${this._cardClass()}">${title}${body}</ha-card>`;
+  }
+
+  _cardClass() {
+    return "";
+  }
+
+  _timeline(flow, clock) {
+    return flow.tijdlijn.map((item) => (
+      item.soort === "nu" ? { ...item, titel: `Nu · ${clock}` } : item
+    ));
   }
 }
 
-if (!customElements.get("marstek-goedkoop-laden-card")) {
-  customElements.define("marstek-goedkoop-laden-card", MarstekGoedkoopLadenCard);
+class MarstekGoedkoopLadenCard extends MarstekBaseCard {
+  getCardSize() {
+    return this._config.compact ? 3 : 6;
+  }
+
+  _cardClass() {
+    return this._config.compact ? "compact" : "";
+  }
+
+  _body(flow, clock) {
+    return this._config.compact ? this._compact(flow, clock) : this._full(flow, clock);
+  }
+
+  _full(flow, clock) {
+    const lanes = (flow.banen || []).map((lane) => `
+      <div class="lane ${lane.aan ? "aan" : "uit"}">
+        <div class="head">
+          <ha-icon icon="${escapeHtml(lane.icoon || "mdi:help-circle-outline")}"></ha-icon>
+          <span>${escapeHtml(lane.titel)} · ${lane.aan ? "aan" : '<span class="off">uit</span>'}</span>
+        </div>
+        ${renderSteps(laneSteps(lane))}
+      </div>`).join("");
+    const result = this._config.opbrengst === true && flow.resultaat
+      ? `<div class="divider"></div>${renderExpected(flow.resultaat)}`
+      : "";
+    return `
+      <div class="head"><ha-icon icon="mdi:clock-outline"></ha-icon><span>Vandaag</span></div>
+      ${renderSteps(this._timeline(flow, clock))}
+      ${result}
+      <div class="divider"></div>
+      <div class="lanes">${lanes}</div>`;
+  }
+
+  _compact(flow, clock) {
+    const timeline = this._timeline(flow, clock).map((item) => {
+      const kind = ICONS[item.soort] ? item.soort : "eind";
+      return `
+        <div class="crow ${kind}">
+          <div class="pip"></div>
+          <div class="main"><b>${escapeHtml(item.titel)}</b> · ${escapeHtml(item.detail)}</div>
+          <div></div>
+        </div>`;
+    }).join("");
+    const lanes = (flow.banen || []).map((lane) => {
+      const steps = laneSteps(lane);
+      const last = steps[steps.length - 1] || { titel: "", detail: "", soort: "eind" };
+      const stop = steps.find((item) => item.soort === "stop");
+      const reason = !lane.aan ? "" : stop ? `${stop.titel} (${stop.detail})` : last.detail;
+      return `
+        <div class="crow ${lane.aan ? "" : "uit"}">
+          <ha-icon icon="${escapeHtml(lane.icoon || "mdi:help-circle-outline")}"></ha-icon>
+          <div class="main"><b>${escapeHtml(lane.titel)}</b>${reason ? ` · ${escapeHtml(reason)}` : ""}</div>
+          <div class="out ${last.soort === "actie" ? "actie" : ""}">${escapeHtml(lane.aan ? last.titel : "Uit")}</div>
+        </div>`;
+    }).join("");
+    const gain = this._config.opbrengst === false ? "" : renderGainLine(flow.resultaat);
+    return `${timeline}<div class="divider"></div>${lanes}${gain ? `<div class="divider"></div>${gain}` : ""}`;
+  }
 }
+
+class MarstekGoedkoopLadenCompactCard extends MarstekGoedkoopLadenCard {
+  setConfig(config) {
+    super.setConfig({ ...(config || {}), compact: true });
+  }
+}
+
+class MarstekGoedkoopLadenOpbrengstCard extends MarstekBaseCard {
+  getCardSize() {
+    return 4;
+  }
+
+  _body(flow) {
+    const result = flow.resultaat;
+    if (!result) return '<div class="empty">Nog geen opbrengst beschikbaar.</div>';
+    const tile = (label, value) => `
+      <div class="tile"><small>${label}</small><b class="${tone(value)}">${formatEuro(value || 0)}</b></div>`;
+    const stock = result.voorraad_kwh > 0.005
+      ? `Nog in de accu: ${number(result.voorraad_kwh, 1)} kWh bijgeladen stroom`
+        + (result.voorraad_prijs != null ? ` (kostprijs € ${number(result.voorraad_prijs, 2)} per kWh)` : "")
+        + ". Dat telt pas mee als het wordt gebruikt."
+      : "Er zit geen bijgeladen stroom meer in de accu.";
+    const today = result.geladen_kwh > 0.005
+      ? `Vandaag bijgeladen: ${number(result.geladen_kwh, 1)} kWh voor € ${number(result.laadkosten, 2)}`
+        + `, waarvan ${number(result.gebruikt_kwh, 1)} kWh gebruikt. `
+      : "";
+    return `
+      <div class="tiles">
+        ${tile("Vandaag", result.vandaag)}
+        ${tile("Deze week", result.week)}
+        ${tile("Verwacht (plan)", result.totaal)}
+      </div>
+      <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>Verwachte opbrengst van dit plan (schatting)</span></div>
+      <div class="rows">${renderExpectedRows(result)}</div>
+      <div class="note">${escapeHtml(today + stock)}</div>`;
+  }
+}
+
+const CARDS = [
+  ["marstek-goedkoop-laden-card", MarstekGoedkoopLadenCard, "Marstek Goedkoop Laden",
+    "Tijdlijn en controles van het laadplan als stroomschema."],
+  ["marstek-goedkoop-laden-compact-card", MarstekGoedkoopLadenCompactCard, "Marstek Goedkoop Laden (compact)",
+    "Het stroomschema in een paar regels."],
+  ["marstek-goedkoop-laden-opbrengst-card", MarstekGoedkoopLadenOpbrengstCard, "Marstek Goedkoop Laden (opbrengst)",
+    "Opbrengst van vandaag, deze week en het huidige plan."],
+];
+
 window.customCards = window.customCards || [];
-if (!window.customCards.some((card) => card.type === "marstek-goedkoop-laden-card")) {
-  window.customCards.push({
-    type: "marstek-goedkoop-laden-card",
-    name: "Marstek Goedkoop Laden",
-    description: "Tijdlijn en controles van het laadplan als stroomschema.",
-  });
+for (const [type, cls, name, description] of CARDS) {
+  if (!customElements.get(type)) customElements.define(type, cls);
+  if (!window.customCards.some((card) => card.type === type)) {
+    window.customCards.push({ type, name, description });
+  }
 }

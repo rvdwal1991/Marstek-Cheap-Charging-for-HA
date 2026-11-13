@@ -18,6 +18,8 @@ from homeassistant.const import UnitOfEnergy, UnitOfPower
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from homeassistant.util import dt as dt_util
+
 from .coordinator import ChargePlanCoordinator
 from .entity import ChargePlanEntity
 from .planner import SELL_STATUSES, STATUSES, Plan, SellPlan
@@ -113,6 +115,8 @@ async def async_setup_entry(
     ]
     entities.append(SellPlanSensor(coordinator))
     entities.append(ExpectedGainSensor(coordinator))
+    entities.append(RealizedGainSensor(coordinator, "opbrengst_vandaag"))
+    entities.append(RealizedGainSensor(coordinator, "opbrengst_deze_week"))
     async_add_entities(entities)
 
 
@@ -179,4 +183,47 @@ class ExpectedGainSensor(ChargePlanEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         return {"regels": self.coordinator.flow.get("resultaat", {}).get("regels", [])}
+
+
+class RealizedGainSensor(ChargePlanEntity, SensorEntity):
+    """Gerealiseerde opbrengst van vandaag of van deze week (zie ledger.py)."""
+
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_state_class = SensorStateClass.TOTAL
+    _attr_native_unit_of_measurement = "EUR"
+    _attr_suggested_display_precision = 2
+    _attr_icon = "mdi:cash-check"
+
+    def __init__(self, coordinator: ChargePlanCoordinator, key: str) -> None:
+        super().__init__(coordinator, key)
+        self._week = key == "opbrengst_deze_week"
+
+    @property
+    def native_value(self) -> float:
+        ledger = self.coordinator.ledger
+        return round(ledger.week_gain if self._week else ledger.day_gain, 2)
+
+    @property
+    def last_reset(self) -> datetime | None:
+        ledger = self.coordinator.ledger
+        start = ledger.week_start if self._week else ledger.day_start
+        return dt_util.parse_datetime(start) if start else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        ledger = self.coordinator.ledger
+        attributes: dict[str, Any] = {
+            "voorraad_kwh": round(ledger.stock_kwh, 2),
+            "voorraad_kostprijs": round(ledger.stock_price, 3) if ledger.stock_price is not None else None,
+        }
+        if not self._week:
+            attributes.update(
+                {
+                    "bijgeladen_kwh": round(ledger.day_charged_kwh, 2),
+                    "laadkosten": round(ledger.day_charge_cost, 2),
+                    "gebruikt_kwh": round(ledger.day_used_kwh, 2),
+                    "verkocht_kwh": round(ledger.day_sold_kwh, 2),
+                }
+            )
+        return attributes
 

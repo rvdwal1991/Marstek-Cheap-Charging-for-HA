@@ -134,6 +134,12 @@
       },
       "verwachte_opbrengst": {
         "name": "Expected gain"
+      },
+      "opbrengst_vandaag": {
+        "name": "Gain today"
+      },
+      "opbrengst_deze_week": {
+        "name": "Gain this week"
       }
     },
     "switch": {

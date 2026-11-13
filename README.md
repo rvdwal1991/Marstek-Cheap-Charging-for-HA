@@ -93,6 +93,7 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | `sensor.*_gepland_laadvermogen` | Het uitgesmeerde laadvermogen in W. |
 | `sensor.*_bij_te_laden` | Energie uit het net die nodig is om vol te komen, in kWh. |
 | `sensor.*_start_bijladen` / `*_einde_bijladen` | Begin en einde van de geplande laadbeurt. |
+| `sensor.*_opbrengst_vandaag` / `*_opbrengst_deze_week` | Gerealiseerde opbrengst in euro sinds 00:00 en sinds maandag 00:00 (zie *Opbrengst*). Attributen: de voorraad en, bij vandaag, wat er is bijgeladen en gebruikt. |
 | `sensor.*_verwachte_opbrengst` | Geschatte opbrengst van de huidige plannen in euro (bijladen plus verkoop); attribuut `regels` met de uitsplitsing. |
 | `sensor.*_gemiddelde_laadprijs` | Gemiddelde prijs van de laaduren in €/kWh. |
 
@@ -141,34 +142,57 @@ Zet je dat lager, dan plant hij meer uren en laadt hij rustiger.
 
 ## Dashboard
 
-### Stroomschemakaart
+### Kaarten van de integratie
 
-De integratie levert een eigen kaart mee; er hoeft geen resource te worden toegevoegd.
+De integratie levert drie kaarten mee; er hoeft geen resource te worden toegevoegd. Ververs de
+browser na het installeren of bijwerken.
+
+| Kaart | Inhoud |
+|---|---|
+| `custom:marstek-goedkoop-laden-card` | Stroomschema: de tijdlijn van vandaag en per onderdeel (bijladen, verkoop, negatieve prijs) welke controles slagen en op welke het stopt. |
+| `custom:marstek-goedkoop-laden-compact-card` | Hetzelfde in een paar regels: de tijdlijn, per onderdeel de uitkomst met de reden, en één regel met de opbrengst. |
+| `custom:marstek-goedkoop-laden-opbrengst-card` | Alleen de opbrengst: vandaag, deze week en de verwachting van het huidige plan. |
 
 ```yaml
 type: custom:marstek-goedkoop-laden-card
 entity: sensor.marstek_goedkoop_laden_laadplan   # optioneel
 title: Prijssturing                              # optioneel
+opbrengst: false                                 # optioneel, zie hieronder
 ```
 
-Bovenaan staat de tijdlijn: wat de Marstek nu doet, wat er gepland is en wanneer hij weer zelf
-regelt. Daaronder staat per onderdeel (bijladen, verkoop, negatieve prijs) welke controles
-slagen en op welke het stopt. Groen is geslaagd, rood is de controle waarop het stopt, gestreept
-is een uitkomst waarbij niets gebeurt. De kaart leest het attribuut `stroomschema` van de
-laadplan-sensor. Ververs de browser na het installeren of bijwerken van de integratie.
+`opbrengst` bepaalt of de stroomschemakaart ook de opbrengst toont: standaard uit bij de gewone
+kaart, standaard één regel bij de compacte kaart. In het stroomschema is groen een geslaagde
+controle, rood de controle waarop het stopt en gestreept een uitkomst waarbij niets gebeurt.
+Alle kaarten lezen het attribuut `stroomschema` van de laadplan-sensor.
 
-#### Verwachte opbrengst
+## Opbrengst
 
-De kaart toont ook een schatting van wat het huidige plan oplevert:
+Er zijn twee soorten opbrengst: wat het huidige plan naar verwachting oplevert, en wat er
+werkelijk is verdiend.
+
+### Verwacht (schatting vooraf)
 
 - **Bijladen**: wat de in te kopen stroom kost, tegenover wat die later waard is. Die waarde
   is het rendement maal de gemiddelde prijs van de dure uren waarmee het laaduur is vergeleken.
-  Er wordt dus aangenomen dat de bijgeladen stroom in die dure uren wordt gebruikt.
-- **Verkoop**: de opbrengst van het overschot, min wat terugladen kost (laadprijs gedeeld door
-  het rendement).
+- **Verkoop**: de opbrengst van het overschot, min wat terugladen kost.
 
-Het is een schatting vooraf, geen afrekening: het werkelijke resultaat hangt af van wanneer de
-stroom echt wordt gebruikt. Tijdens een laadbeurt telt alleen wat nog geladen moet worden.
+Tijdens een laadbeurt telt alleen wat nog geladen moet worden.
+
+### Vandaag en deze week (gerealiseerd)
+
+1. Stroom die de integratie uit het net bijlaadt (laadplan of negatieve prijs) wordt een
+   **voorraad**: bruikbare kWh = geladen kWh × rendement, met als kostprijs wat die stroom op
+   dat moment kostte.
+2. Ontlaadt de accu daarna voor eigen verbruik, dan wordt eerst die voorraad opgebruikt. De
+   opbrengst is `ontladen kWh × (stroomprijs op dat moment − kostprijs per bruikbare kWh)`.
+3. Bij verkoop is de opbrengst `verkochte kWh × verkoopprijs − kostprijs`; voor stroom die niet
+   uit de voorraad komt (zonnestroom) is de kostprijs wat terugladen kost.
+4. **Vandaag** is de som sinds 00:00, **deze week** sinds maandag 00:00.
+
+Wat nog in de voorraad zit, is nog niet verdiend en telt pas mee als het wordt gebruikt. Stroom
+die de zon in de accu stopt en die je later zelf gebruikt telt niet mee: dat doet de Marstek
+ook zonder deze integratie. De bedragen komen uit de energietellers van de Marstek en de
+uurprijs van dat moment; een tellersprong na een storing wordt niet geboekt.
 
 ### Losse kaarten
 

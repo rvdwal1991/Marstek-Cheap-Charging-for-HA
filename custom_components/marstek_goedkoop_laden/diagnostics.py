@@ -23,6 +23,7 @@ async def async_get_config_entry_diagnostics(
         "prijssturing_aan": coordinator.enabled,
         "verkoop_aan": coordinator.sell_enabled,
         "negatieve_prijs_aan": coordinator.negative_enabled,
+        "boekhouding": coordinator.ledger.to_dict(),
         "negatieve_prijs_actief": coordinator.negative_active,
         "verkoopplan": {
             "status": coordinator.sell_plan.status,

@@ -68,6 +68,7 @@ from .const import (
     MODE_ENABLE,
     UPDATE_INTERVAL_SECONDS,
 )
+from .ledger import Ledger
 from .planner import (
     FULL_SOC,
     SELL_SELLING,
@@ -172,6 +173,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self.flow: dict[str, Any] = {"tijdlijn": [], "banen": []}
         # Verwachte opbrengst van de huidige plannen, in euro (schatting).
         self.expected_gain: float = 0.0
+        # Boekhouding van de gerealiseerde opbrengst (vandaag en deze week).
+        self.ledger = Ledger()
         self.last_command: str | None = None
         self._memory = PlanMemory()
         self._store: Store[dict[str, Any]] = Store(
@@ -190,6 +193,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self._negative_charging = bool(data.get("negative_charging", False))
         self._selling = bool(data.get("selling", False))
         self._discharge_power_before = data.get("discharge_power_before")
+        self.ledger = Ledger.from_dict(data.get("ledger"))
 
         def moment(value: Any) -> datetime | None:
             return dt_util.parse_datetime(value) if isinstance(value, str) else None
@@ -215,6 +219,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 "negative_charging": self._negative_charging,
                 "selling": self._selling,
                 "discharge_power_before": self._discharge_power_before,
+                "ledger": self.ledger.to_dict(),
                 "sell_hours": [h.isoformat() for h in self._sell_hours],
                 "status": memory.status,
                 "charge_hours": [h.isoformat() for h in memory.charge_hours],
@@ -257,6 +262,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             or float(self.conf.get(CONF_CAPACITY_KWH, DEFAULT_CAPACITY_KWH)),
             "max_power_w": self._number(CONF_MAX_POWER_ENTITY) or DEFAULT_MAX_POWER,
             "force_power_w": self._number(CONF_FORCE_POWER_ENTITY),
+            "charged_total": self._number(CONF_CHARGED_ENERGY_ENTITY),
+            "discharged_total": self._number(CONF_DISCHARGED_ENERGY_ENTITY),
             "max_discharge_power_w": self._number(CONF_MAX_DISCHARGE_POWER_ENTITY)
             or DEFAULT_MAX_POWER,
             "force_discharge_power_w": self._number(CONF_FORCE_DISCHARGE_POWER_ENTITY),
@@ -351,6 +358,36 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self.negative_active = bool(
             self.negative_enabled and slot is not None and soc is not None and soc < FULL_SOC
         )
+
+        # Gerealiseerde opbrengst bijwerken aan de hand van de energietellers.
+        current = next((s for s in plan.prices if s.start <= now < s.end), None)
+        price_now = current.price if current else None
+        sell_params = self.sell_params
+        if self.ledger.update(
+            now=dt_util.now(),
+            charged=inputs["charged_total"],
+            discharged=inputs["discharged_total"],
+            price=price_now,
+            grid_charging=bool(
+                inputs["charging"]
+                and (
+                    self.negative_active
+                    or self._negative_charging
+                    or (self.enabled and plan.status == STATUS_CHARGING)
+                )
+            ),
+            selling=self._selling,
+            export_price=(
+                price_now * sell_params.price_factor - sell_params.price_offset
+                if price_now is not None
+                else None
+            ),
+            replacement_cost=(
+                sell.refill_price / inputs["efficiency"] if sell.refill_price else None
+            ),
+            efficiency=inputs["efficiency"],
+        ):
+            self._save()
 
         if (
             self.enabled
@@ -518,7 +555,19 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
 
         return {
             "tijdlijn": timeline,
-            "resultaat": {"totaal": round(total, 2), "regels": lines},
+            "resultaat": {
+                "totaal": round(total, 2),
+                "regels": lines,
+                "vandaag": round(self.ledger.day_gain, 2),
+                "week": round(self.ledger.week_gain, 2),
+                "geladen_kwh": round(self.ledger.day_charged_kwh, 2),
+                "laadkosten": round(self.ledger.day_charge_cost, 2),
+                "gebruikt_kwh": round(self.ledger.day_used_kwh + self.ledger.day_sold_kwh, 2),
+                "voorraad_kwh": round(self.ledger.stock_kwh, 2),
+                "voorraad_prijs": (
+                    round(self.ledger.stock_price, 3) if self.ledger.stock_price is not None else None
+                ),
+            },
             "banen": [
                 {"titel": "Bijladen", "icoon": "mdi:battery-charging", "aan": self.enabled, "stappen": list(plan.steps)},
                 {"titel": "Verkoop", "icoon": "mdi:transmission-tower-export", "aan": self.sell_enabled, "stappen": sell_steps},
