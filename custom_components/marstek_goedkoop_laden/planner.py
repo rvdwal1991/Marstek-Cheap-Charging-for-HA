@@ -417,3 +417,15 @@ def compute_sell_plan(
         text=text,
         **common,
     )
+
+
+# ------------------------------------------------------------- negatieve prijs
+
+
+def negative_price_slot(prices: list[PriceSlot] | tuple[PriceSlot, ...], now: datetime, limit: float = 0.0) -> PriceSlot | None:
+    """Het lopende prijsvak als de prijs daarvan onder de grens ligt, anders None."""
+    for slot in prices:
+        if slot.start <= now < slot.end:
+            return slot if slot.price < limit else None
+    return None
+

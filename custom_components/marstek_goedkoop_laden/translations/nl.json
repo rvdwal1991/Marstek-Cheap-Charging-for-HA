@@ -67,7 +67,8 @@
           "reserve_min_soc": "Verkoop: minimale reserve",
           "min_soc": "Ontlaadgrens",
           "sell_price_factor": "Verkoopprijs: factor",
-          "sell_price_offset": "Verkoopprijs: aftrek"
+          "sell_price_offset": "Verkoopprijs: aftrek",
+          "negative_price_limit": "Negatieve prijs: grens"
         },
         "data_description": {
           "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
@@ -88,7 +89,8 @@
           "house_power": "Bepaalt de reserve: dit vermogen maal de uren tot het terugladen blijft in de accu staan.",
           "reserve_min_soc": "Onder deze SoC wordt nooit verkocht.",
           "min_soc": "Alleen gebruikt als er geen entiteit voor de ontlaadgrens is ingevuld.",
-          "sell_price_factor": "Verkoopprijs = uurprijs maal deze factor, min de aftrek. Met salderen: 1 en 0. Zonder salderen bijvoorbeeld 0,826 en 0,108 voor de kale marktprijs."
+          "sell_price_factor": "Verkoopprijs = uurprijs maal deze factor, min de aftrek. Met salderen: 1 en 0. Zonder salderen bijvoorbeeld 0,826 en 0,108 voor de kale marktprijs.",
+          "negative_price_limit": "Onder deze uurprijs laadt de accu altijd op vol vermogen (als de schakelaar aan staat). Standaard 0: alleen bij een echt negatieve prijs."
         }
       }
     }
@@ -137,6 +139,9 @@
       },
       "verkoop": {
         "name": "Verkoop"
+      },
+      "negatieve_prijs": {
+        "name": "Laden bij negatieve prijs"
       }
     }
   }

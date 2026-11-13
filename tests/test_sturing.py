@@ -327,6 +327,70 @@ class SturingTest(unittest.TestCase):
         self.assertEqual(coordinator.sell_plan.status, "onbekend")
         self.assertEqual(hass.calls, [])
 
+    def test_negatieve_prijs_laadt_op_vol_vermogen(self):
+        # Standaard aan, ook als prijssturing en verkoop uit staan.
+        at("2026-11-11T13:10:00")
+        hass, coordinator = make(40)
+        forecast = [dict(row) for row in FORECAST]
+        for row in forecast:
+            if row["start_date"].startswith("2026-11-11T13:00"):
+                row["price_tax_included"] = {"amount": -250000}
+        hass.values["sensor.prijs"] = _State("0", {"forecast": forecast})
+        hass.set("number.laadvermogen", 1200)
+        self.assertTrue(coordinator.negative_enabled)
+        run(coordinator.async_refresh())
+        self.assertTrue(coordinator.negative_active)
+        self.assertEqual(coordinator.data.status, "laden")
+        self.assertIn("Negatieve prijs", coordinator.data.text)
+        self.assertEqual(
+            hass.calls,
+            [("number.laadvermogen", 2500), ("select.forceer", "charge"), ("select.rs485", "enable")],
+        )
+
+        # Vol: vrijgeven.
+        hass.calls.clear()
+        at("2026-11-11T13:40:00")
+        hass.set("sensor.soc", 99)
+        run(coordinator.async_refresh())
+        self.assertFalse(coordinator.negative_active)
+        self.assertEqual(hass.get("select.rs485"), "disable")
+
+    def test_negatieve_prijs_voorbij_geeft_vrij(self):
+        at("2026-11-11T13:10:00")
+        hass, coordinator = make(40)
+        forecast = [dict(row) for row in FORECAST]
+        for row in forecast:
+            if row["start_date"].startswith("2026-11-11T13:00"):
+                row["price_tax_included"] = {"amount": -250000}
+        hass.values["sensor.prijs"] = _State("0", {"forecast": forecast})
+        run(coordinator.async_refresh())
+        self.assertEqual(hass.get("select.rs485"), "enable")
+        at("2026-11-11T14:00:30")
+        run(coordinator.async_refresh())
+        self.assertEqual(hass.get("select.rs485"), "disable")
+        self.assertEqual(hass.get("select.forceer"), "charge")
+
+    def test_negatieve_prijs_uit_doet_niets(self):
+        at("2026-11-11T13:10:00")
+        hass, coordinator = make(40)
+        forecast = [dict(row) for row in FORECAST]
+        for row in forecast:
+            if row["start_date"].startswith("2026-11-11T13:00"):
+                row["price_tax_included"] = {"amount": -250000}
+        hass.values["sensor.prijs"] = _State("0", {"forecast": forecast})
+        run(coordinator.async_set_negative_enabled(False))
+        self.assertEqual(hass.calls, [])
+        self.assertFalse(coordinator.negative_active)
+
+    def test_positieve_prijs_laat_handmatig_met_rust(self):
+        # Alleen de negatieve-prijsoptie aan: handmatig forceren blijft staan.
+        at("2026-11-11T13:10:00")
+        hass, coordinator = make(40)
+        hass.set("select.rs485", "enable")
+        hass.set("select.forceer", "stop")
+        run(coordinator.async_refresh())
+        self.assertEqual(hass.calls, [])
+
 
 if __name__ == "__main__":
     unittest.main()

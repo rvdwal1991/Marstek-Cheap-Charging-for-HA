@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timedelta
 import logging
 from typing import Any
@@ -34,6 +35,7 @@ from .const import (
     CONF_MIN_POWER,
     CONF_MIN_SOC,
     CONF_MIN_SOC_ENTITY,
+    CONF_NEGATIVE_PRICE_LIMIT,
     CONF_PRICE_ATTRIBUTE,
     CONF_PRICE_ENTITY,
     CONF_RESERVE_MIN_SOC,
@@ -51,6 +53,7 @@ from .const import (
     DEFAULT_MIN_LOOKAHEAD_HOURS,
     DEFAULT_MIN_POWER,
     DEFAULT_MIN_SOC,
+    DEFAULT_NEGATIVE_PRICE_LIMIT,
     DEFAULT_PRICE_ATTRIBUTE,
     DEFAULT_RESERVE_MIN_SOC,
     DEFAULT_SELL_MARGIN,
@@ -66,6 +69,7 @@ from .const import (
     UPDATE_INTERVAL_SECONDS,
 )
 from .planner import (
+    FULL_SOC,
     SELL_SELLING,
     STATUS_CHARGING,
     Plan,
@@ -77,6 +81,7 @@ from .planner import (
     clamp_efficiency,
     compute_plan,
     compute_sell_plan,
+    negative_price_slot,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -151,6 +156,11 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self.enabled = False
         self.sell_enabled = False
         self.sell_plan = SellPlan()
+        # Laden op vol vermogen bij een negatieve prijs: staat standaard aan.
+        self.negative_enabled = True
+        self.negative_active = False
+        # Waar als de integratie zelf zo'n laadbeurt heeft gestart.
+        self._negative_charging = False
         # Waar als de integratie zelf een verkoop (forceer-ontladen) heeft gestart.
         self._selling = False
         # Het forceer-ontlaadvermogen van voor de verkoop, om na afloop terug te zetten.
@@ -171,6 +181,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         data = await self._store.async_load() or {}
         self.enabled = bool(data.get("enabled", False))
         self.sell_enabled = bool(data.get("sell_enabled", False))
+        self.negative_enabled = bool(data.get("negative_enabled", True))
+        self._negative_charging = bool(data.get("negative_charging", False))
         self._selling = bool(data.get("selling", False))
         self._discharge_power_before = data.get("discharge_power_before")
 
@@ -194,6 +206,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             lambda: {
                 "enabled": self.enabled,
                 "sell_enabled": self.sell_enabled,
+                "negative_enabled": self.negative_enabled,
+                "negative_charging": self._negative_charging,
                 "selling": self._selling,
                 "discharge_power_before": self._discharge_power_before,
                 "sell_hours": [h.isoformat() for h in self._sell_hours],
@@ -325,8 +339,35 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             self._sell_hours = sell.sell_hours
             self._save()
 
-        if self.enabled or self.sell_enabled or self._selling:
+        # Negatieve prijs: nu laden op vol vermogen, los van het plan.
+        limit = float(self.conf.get(CONF_NEGATIVE_PRICE_LIMIT, DEFAULT_NEGATIVE_PRICE_LIMIT))
+        slot = negative_price_slot(plan.prices, now, limit)
+        soc = inputs["soc"]
+        self.negative_active = bool(
+            self.negative_enabled and slot is not None and soc is not None and soc < FULL_SOC
+        )
+
+        if (
+            self.enabled
+            or self.sell_enabled
+            or self._selling
+            or self.negative_active
+            or self._negative_charging
+        ):
             await self._async_apply(plan, sell, inputs)
+
+        if self.negative_active and slot is not None:
+            # Alleen de weergave: het bewaarde plan blijft het echte laadplan.
+            power = int(inputs["max_power_w"])
+            price = f"{slot.price:.2f}".replace(".", ",")
+            hours = tuple(sorted({slot.start, *plan.charge_hours}))
+            return replace(
+                plan,
+                status=STATUS_CHARGING,
+                charge_hours=hours,
+                power_w=power,
+                text=f"Negatieve prijs (€ {price}): laden op vol vermogen ({power} W)",
+            )
         return plan
 
     @callback
@@ -383,6 +424,11 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             return True
         return abs(current - target) >= (150 if running else 50)
 
+    def _set_negative_charging(self, charging: bool) -> None:
+        if self._negative_charging != charging:
+            self._negative_charging = charging
+            self._save()
+
     def _set_selling(self, selling: bool) -> None:
         if self._selling != selling:
             self._selling = selling
@@ -398,9 +444,16 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         if control == MODE_ENABLE and force == FORCE_DISCHARGE and not self._selling:
             return  # Handmatig forceer-ontladen laten we met rust.
 
-        want_charge = self.enabled and plan.status == STATUS_CHARGING and bool(plan.power_w)
+        want_negative = self.negative_active
+        want_charge = (
+            not want_negative
+            and self.enabled
+            and plan.status == STATUS_CHARGING
+            and bool(plan.power_w)
+        )
         want_sell = (
-            not want_charge
+            not want_negative
+            and not want_charge
             and self.sell_enabled
             and self.can_sell
             and sell.status == SELL_SELLING
@@ -408,7 +461,20 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         )
 
         try:
-            if want_charge:
+            if want_negative:
+                power = int(inputs["max_power_w"])
+                current = inputs["force_power_w"]
+                if current is None or abs(current - power) >= 50:
+                    await self._async_set_number(CONF_FORCE_POWER_ENTITY, power)
+                    self._settle(f"laadvermogen {power} W (negatieve prijs)")
+                if not inputs["charging"]:
+                    await self._async_select(CONF_FORCE_MODE_ENTITY, FORCE_CHARGE)
+                    await self._async_select(CONF_CONTROL_MODE_ENTITY, MODE_ENABLE)
+                    self._set_selling(False)
+                    self._settle(f"negatieve prijs: laden op vol vermogen ({power} W)")
+                self._set_negative_charging(True)
+            elif want_charge:
+                self._set_negative_charging(False)
                 current = inputs["force_power_w"]
                 if self._power_differs(current, plan.power_w, inputs["charging"]):
                     await self._async_set_number(CONF_FORCE_POWER_ENTITY, plan.power_w)
@@ -434,12 +500,15 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             elif self._selling:
                 await self._async_release(inputs)
                 self._settle("verkopen gestopt, terug naar anti-feed")
-            elif control == MODE_ENABLE and (self.enabled or force == FORCE_STOP):
+            elif self._negative_charging:
+                await self._async_release(inputs)
+                self._settle("negatieve prijs voorbij of accu vol, terug naar anti-feed")
+            elif self.enabled and control == MODE_ENABLE:
                 # Forceer-laden dat niet bij het plan hoort alleen terugzetten als
                 # de prijssturing aan staat.
                 await self._async_release(inputs)
                 self._settle("bijladen gestopt, terug naar anti-feed")
-            elif force == FORCE_STOP:
+            elif (self.enabled or self.sell_enabled) and force == FORCE_STOP:
                 # Rusttoestand herstellen: RS485 uit met forceren op charge, zodat
                 # handmatig forceer-laden werkt zoals de gebruiker gewend is.
                 await self._async_select(CONF_FORCE_MODE_ENTITY, FORCE_CHARGE)
@@ -465,6 +534,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             self._discharge_power_before = None
             self._save()
         self._set_selling(False)
+        self._set_negative_charging(False)
 
     async def async_set_enabled(self, enabled: bool) -> None:
         """Zet de prijssturing aan of uit."""
@@ -494,3 +564,17 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             except Exception:  # noqa: BLE001
                 _LOGGER.exception("Terugzetten van de Marstek mislukt")
         await self.async_refresh()
+
+    async def async_set_negative_enabled(self, enabled: bool) -> None:
+        """Zet laden bij een negatieve prijs aan of uit."""
+        self.negative_enabled = enabled
+        self._save()
+        self._settle_until = None
+        if not enabled and self._negative_charging:
+            try:
+                await self._async_release(self._read_inputs())
+                self._settle("laden bij negatieve prijs uit, terug naar anti-feed")
+            except Exception:  # noqa: BLE001
+                _LOGGER.exception("Terugzetten van de Marstek mislukt")
+        await self.async_refresh()
+

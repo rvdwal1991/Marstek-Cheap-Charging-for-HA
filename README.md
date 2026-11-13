@@ -31,6 +31,16 @@ zodra de prijzen van morgen bekend zijn (bij Zonneplan tussen 13:00 en 15:00).
 Voorbeeld (10 november 2026, accu op 12 %): goedkoop venster 23:00–07:00, bijladen om 02:00,
 03:00 en 04:00 op ongeveer 1900 W voor gemiddeld € 0,37, daarna overdag € 0,55–0,67.
 
+## Laden bij een negatieve prijs
+
+Is de uurprijs negatief, dan laadt de accu altijd op vol vermogen tot hij vol is, los van het
+laadplan en ook als de prijssturing uit staat. Dit heeft een eigen schakelaar die **standaard
+aan** staat. Zodra de prijs weer positief is of de accu vol is, gaat de Marstek terug naar
+anti-feed.
+
+De grens is instelbaar (*Negatieve prijs: grens*, standaard € 0,00). Er wordt gekeken naar de
+prijs uit de prijssensor, bij Zonneplan dus de prijs inclusief belastingen.
+
 ## Verkopen (optioneel)
 
 Verkopen heeft een eigen schakelaar en staat los van het bijladen. Er wordt alleen verkocht
@@ -76,6 +86,7 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | Entiteit | Inhoud |
 |---|---|
 | `switch.*_prijssturing` | Aan: het laadplan wordt uitgevoerd. Uit: de Marstek regelt alles zelf. Uitzetten zet de Marstek direct terug op anti-feed. |
+| `switch.*_laden_bij_negatieve_prijs` | Aan (standaard): bij een negatieve uurprijs altijd laden op vol vermogen. Attribuut `nu_actief`. |
 | `switch.*_verkoop` | Aan: overschot wordt in de duurste uren verkocht. Staat los van de prijssturing. |
 | `sensor.*_verkoopplan` | Status: `verkopen`, `gepland`, `geen` of `onbekend`. Attributen: `verkoopuren`, `vermogen`, `overschot_kwh`, `reserve_soc`, `drempelprijs`, `terugkoopprijs` en `tekst`. |
 | `sensor.*_laadplan` | Status: `laden`, `gepland`, `klaar`, `vol`, `geen` of `onbekend`. Attributen: `laaduren`, `venster`, `eind`, `uren_nodig`, `vermogen`, `klaar_tot` en `tekst` (leesbare samenvatting). |
@@ -118,6 +129,7 @@ Via *Configureren* op de integratie:
 | Minimaal laadvermogen | 400 W | Ondergrens bij het uitsmeren. |
 | Rendement | 0,77 | Alleen gebruikt als de energietellers niet zijn ingevuld. |
 | Accucapaciteit | 5,12 kWh | Alleen gebruikt als er geen capaciteitssensor is ingevuld. |
+| Negatieve prijs: grens | € 0,00 | Onder deze uurprijs wordt op vol vermogen geladen. |
 | Verkoop: minimale winst per kWh | € 0,10 | Wat verkopen na terugladen minstens moet opleveren. |
 | Verkoop: gemiddeld eigen verbruik | 400 W | Bepaalt de reserve tot het terugladen. |
 | Verkoop: minimale reserve | 20 % | Onder deze SoC wordt nooit verkocht. |

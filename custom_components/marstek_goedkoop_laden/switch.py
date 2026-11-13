@@ -19,7 +19,10 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Maak de schakelaar aan."""
-    async_add_entities([PriceControlSwitch(entry.runtime_data), SellSwitch(entry.runtime_data)])
+    coordinator: ChargePlanCoordinator = entry.runtime_data
+    async_add_entities(
+        [PriceControlSwitch(coordinator), SellSwitch(coordinator), NegativePriceSwitch(coordinator)]
+    )
 
 
 class PriceControlSwitch(ChargePlanEntity, SwitchEntity):
@@ -62,4 +65,25 @@ class SellSwitch(ChargePlanEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         await self.coordinator.async_set_sell_enabled(False)
+
+
+class NegativePriceSwitch(ChargePlanEntity, SwitchEntity):
+    """Aan (standaard): bij een negatieve prijs altijd laden op vol vermogen."""
+
+    def __init__(self, coordinator: ChargePlanCoordinator) -> None:
+        super().__init__(coordinator, "negatieve_prijs")
+
+    @property
+    def is_on(self) -> bool:
+        return self.coordinator.negative_enabled
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return {"nu_actief": self.coordinator.negative_active}
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self.coordinator.async_set_negative_enabled(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        await self.coordinator.async_set_negative_enabled(False)
 

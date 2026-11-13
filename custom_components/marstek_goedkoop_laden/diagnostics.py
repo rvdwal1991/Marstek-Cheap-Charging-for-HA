@@ -22,6 +22,8 @@ async def async_get_config_entry_diagnostics(
         "instellingen": coordinator.conf,
         "prijssturing_aan": coordinator.enabled,
         "verkoop_aan": coordinator.sell_enabled,
+        "negatieve_prijs_aan": coordinator.negative_enabled,
+        "negatieve_prijs_actief": coordinator.negative_active,
         "verkoopplan": {
             "status": coordinator.sell_plan.status,
             "verkoopuren": [h.isoformat() for h in coordinator.sell_plan.sell_hours],
