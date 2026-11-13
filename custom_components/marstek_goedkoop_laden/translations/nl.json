@@ -53,7 +53,7 @@
           "discharged_energy_entity": "Totaal ontladen energie",
           "price_attribute": "Attribuut met de prijzen",
           "capacity_kwh": "Accucapaciteit",
-          "default_efficiency": "Rendement laden en ontladen",
+          "default_efficiency": "Rendement als de tellers ontbreken",
           "margin": "Minimale winst per kWh",
           "top_hours": "Aantal duurste uren om mee te vergelijken",
           "lookahead_hours": "Aantal uren vooruit kijken",
@@ -78,7 +78,7 @@
           "max_power_entity": "Bepaalt het aantal laaduren en de bovengrens van het vermogen. Leeg = 2500 W.",
           "capacity_entity": "Leeg = de vaste capaciteit uit de instellingen.",
           "charged_energy_entity": "Samen met de ontladen energie bepaalt dit het rendement. Leeg = vast rendement.",
-          "default_efficiency": "Wordt gebruikt als de energietellers niet zijn ingevuld.",
+          "default_efficiency": "Het rendement wordt berekend uit de energietellers van de Marstek (totaal ontladen gedeeld door totaal geladen). Deze vaste waarde geldt alleen als die tellers niet zijn ingevuld of geen waarde geven.",
           "margin": "Bijladen moet na aftrek van het laadverlies minstens dit bedrag opleveren.",
           "top_hours": "Een uur is goedkoop genoeg als de prijs lager is dan het rendement maal het gemiddelde van deze duurste uren erna, min de marge.",
           "min_lookahead_hours": "Uren waarvan minder prijzen erna bekend zijn, tellen niet mee.",
@@ -140,6 +140,9 @@
       },
       "opbrengst_deze_week": {
         "name": "Opbrengst deze week"
+      },
+      "rendement": {
+        "name": "Rendement"
       }
     },
     "switch": {

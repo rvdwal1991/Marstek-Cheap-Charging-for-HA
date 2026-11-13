@@ -292,6 +292,9 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             "force_discharge_power_w": self._number(CONF_FORCE_DISCHARGE_POWER_ENTITY),
             "min_soc": self._number(CONF_MIN_SOC_ENTITY)
             or float(self.conf.get(CONF_MIN_SOC, DEFAULT_MIN_SOC)),
+            "efficiency_measured": bool(
+                self._number(CONF_CHARGED_ENERGY_ENTITY) and self._number(CONF_DISCHARGED_ENERGY_ENTITY)
+            ),
             "efficiency": clamp_efficiency(
                 self._number(CONF_CHARGED_ENERGY_ENTITY),
                 self._number(CONF_DISCHARGED_ENERGY_ENTITY),

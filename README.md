@@ -118,6 +118,7 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | `sensor.*_start_bijladen` / `*_einde_bijladen` | Begin en einde van de geplande laadbeurt. |
 | `sensor.*_opbrengst_vandaag` / `*_opbrengst_deze_week` | Gerealiseerde opbrengst in euro sinds 00:00 en sinds maandag 00:00 (zie *Opbrengst*). Attributen: de voorraad en, bij vandaag, wat er is bijgeladen en gebruikt. |
 | `sensor.*_verwachte_opbrengst` | Geschatte opbrengst van de huidige plannen in euro (bijladen plus verkoop); attribuut `regels` met de uitsplitsing. |
+| `sensor.*_rendement` | Het rendement waarmee wordt gerekend, in procent. Attribuut `bron`: gemeten uit de energietellers of de vaste waarde. |
 | `sensor.*_gemiddelde_laadprijs` | Gemiddelde prijs van de laaduren in €/kWh. |
 
 De namen hierboven horen bij een Nederlandstalige installatie. Staat de systeemtaal van Home
@@ -152,7 +153,7 @@ Via *Configureren* op de integratie:
 | Uren vooruit kijken | 18 | Hoe ver na een uur naar dure uren wordt gezocht. |
 | Minimaal bekende uren vooruit | 8 | Uren met minder bekende prijzen erna tellen niet mee. |
 | Minimaal laadvermogen | 400 W | Ondergrens bij het uitsmeren. |
-| Rendement | 0,77 | Alleen gebruikt als de energietellers niet zijn ingevuld. |
+| Rendement als de tellers ontbreken | 0,77 | Het rendement wordt berekend uit de energietellers van de Marstek (totaal ontladen ÷ totaal geladen, begrensd op 70–95 %). Deze vaste waarde geldt alleen als die tellers ontbreken. Het rendement van alleen laden of alleen ontladen is de wortel daarvan. |
 | Accucapaciteit | 5,12 kWh | Alleen gebruikt als er geen capaciteitssensor is ingevuld. |
 | Negatieve prijs: grens | € 0,00 | Onder deze uurprijs wordt op vol vermogen geladen. |
 | Verkoop: minimale winst per kWh | € 0,10 | Wat verkopen na terugladen minstens moet opleveren. |

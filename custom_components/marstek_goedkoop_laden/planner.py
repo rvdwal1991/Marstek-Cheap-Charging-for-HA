@@ -32,8 +32,14 @@ STATUSES = [
 
 # Vanaf deze SoC geldt de accu als vol.
 FULL_SOC = 99.0
-# Deel van de netstroom dat in de accu belandt (alleen de laadkant).
-CHARGE_EFFICIENCY = 0.88
+def one_way_efficiency(efficiency: float) -> float:
+    """Rendement van alleen laden of alleen ontladen.
+
+    Het gemeten rendement is laden en weer ontladen samen. Het verlies wordt
+    gelijk over beide kanten verdeeld: de wortel van het totaal (77 % -> 88 %).
+    """
+    return math.sqrt(efficiency)
+
 # Het aantal laaduren rekent met 90 % van het maximale vermogen, omdat de
 # Marstek bij hoge SoC terugregelt.
 POWER_DERATE = 0.9
@@ -213,7 +219,11 @@ def compute_plan(
     window = tuple(prices[i].start for i in run)
     window_end = prices[run[-1]].end if run else None
 
-    energy = 0.0 if soc >= FULL_SOC else (100.0 - soc) / 100.0 * capacity_kwh / CHARGE_EFFICIENCY
+    energy = (
+        0.0
+        if soc >= FULL_SOC
+        else (100.0 - soc) / 100.0 * capacity_kwh / one_way_efficiency(efficiency)
+    )
     needed = 0 if energy == 0 else max(1, math.ceil(energy / (max_power_w / 1000.0 * POWER_DERATE)))
 
     previous = set(memory.charge_hours)
@@ -298,7 +308,8 @@ def compute_plan(
             text=text,
             cost_eur=round(cost, 2),
             value_eur=round(value, 2),
-            gain_eur=round(value - cost, 2),
+            # Afgerond zo dat de getoonde bedragen op elkaar aansluiten.
+            gain_eur=round(round(value, 2) - round(cost, 2), 2),
             steps=(
                 window_step,
                 need_step,
@@ -338,8 +349,6 @@ SELL_NONE = "geen"
 SELL_UNKNOWN = "onbekend"
 SELL_STATUSES = [SELL_SELLING, SELL_PLANNED, SELL_NONE, SELL_UNKNOWN]
 
-# Deel van de accu-energie dat bij ontladen op het net belandt.
-DISCHARGE_EFFICIENCY = 0.88
 # Extra SoC boven de ontlaadgrens van de Marstek die altijd blijft staan.
 MIN_SOC_BUFFER = 3.0
 # Aantal goedkoopste uren van het laadvenster waarmee de terugkoopprijs wordt bepaald.
@@ -441,7 +450,8 @@ def compute_sell_plan(
     threshold = refill_price / efficiency + params.margin
 
     hours_until = max((refill_at - now).total_seconds() / 3600.0, 0.0)
-    own_use_kwh = params.house_power_w / 1000.0 * hours_until / DISCHARGE_EFFICIENCY
+    discharge_efficiency = one_way_efficiency(efficiency)
+    own_use_kwh = params.house_power_w / 1000.0 * hours_until / discharge_efficiency
     reserve_soc = min(
         100.0,
         max(
@@ -450,7 +460,7 @@ def compute_sell_plan(
             min_soc + own_use_kwh / capacity_kwh * 100.0,
         ),
     )
-    surplus = (soc - reserve_soc) / 100.0 * capacity_kwh * DISCHARGE_EFFICIENCY
+    surplus = (soc - reserve_soc) / 100.0 * capacity_kwh * discharge_efficiency
     common = dict(
         reserve_soc=round(reserve_soc, 1), threshold=round(threshold, 4), refill_price=round(refill_price, 4)
     )

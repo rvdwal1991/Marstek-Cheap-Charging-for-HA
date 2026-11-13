@@ -22,7 +22,7 @@ from homeassistant.util import dt as dt_util
 
 from .coordinator import ChargePlanCoordinator
 from .entity import ChargePlanEntity
-from .planner import SELL_STATUSES, STATUSES, Plan, SellPlan
+from .planner import SELL_STATUSES, STATUSES, Plan, SellPlan, one_way_efficiency
 
 
 def _iso(moment: datetime | None) -> str | None:
@@ -115,6 +115,7 @@ async def async_setup_entry(
     ]
     entities.append(SellPlanSensor(coordinator))
     entities.append(ExpectedGainSensor(coordinator))
+    entities.append(EfficiencySensor(coordinator))
     entities.append(RealizedGainSensor(coordinator, "opbrengst_vandaag"))
     entities.append(RealizedGainSensor(coordinator, "opbrengst_deze_week"))
     async_add_entities(entities)
@@ -226,4 +227,32 @@ class RealizedGainSensor(ChargePlanEntity, SensorEntity):
                 }
             )
         return attributes
+
+
+class EfficiencySensor(ChargePlanEntity, SensorEntity):
+    """Het rendement (laden en weer ontladen) waarmee de integratie rekent."""
+
+    _attr_native_unit_of_measurement = "%"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_suggested_display_precision = 1
+    _attr_icon = "mdi:battery-sync"
+
+    def __init__(self, coordinator: ChargePlanCoordinator) -> None:
+        super().__init__(coordinator, "rendement")
+
+    @property
+    def native_value(self) -> float | None:
+        efficiency = self.coordinator.inputs.get("efficiency")
+        return round(efficiency * 100, 1) if efficiency else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        inputs = self.coordinator.inputs
+        efficiency = inputs.get("efficiency")
+        return {
+            "bron": "gemeten uit de energietellers" if inputs.get("efficiency_measured") else "vaste waarde uit de instellingen",
+            "totaal_geladen_kwh": inputs.get("charged_total"),
+            "totaal_ontladen_kwh": inputs.get("discharged_total"),
+            "laden_of_ontladen_apart": round(one_way_efficiency(efficiency) * 100, 1) if efficiency else None,
+        }
 
