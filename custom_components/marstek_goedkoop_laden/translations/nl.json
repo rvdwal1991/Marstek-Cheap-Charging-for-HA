@@ -157,6 +157,9 @@
       },
       "vasthouden": {
         "name": "Vasthouden onder kostprijs"
+      },
+      "geen_verlies": {
+        "name": "Geen verlies"
       }
     }
   }

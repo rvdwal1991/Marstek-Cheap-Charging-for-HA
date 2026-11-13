@@ -25,6 +25,7 @@ async def async_get_config_entry_diagnostics(
         "negatieve_prijs_aan": coordinator.negative_enabled,
         "boekhouding": coordinator.ledger.to_dict(),
         "vasthouden_aan": coordinator.hold_enabled,
+        "geen_verlies_aan": coordinator.no_loss_enabled,
         "vasthouden_actief": coordinator.hold_active,
         "negatieve_prijs_actief": coordinator.negative_active,
         "verkoopplan": {

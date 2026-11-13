@@ -63,6 +63,28 @@ herstelt de onthouden waarde na afloop.
 Let op: de Marstek kan geen onderscheid maken tussen bijgeladen stroom en zonnestroom. Tijdens
 het vasthouden wordt dus de hele accu niet ontladen.
 
+## Geen verlies
+
+Een aparte schakelaar (standaard uit) die de integratie strikt maakt: bijgeladen stroom wordt
+nooit onder de kostprijs gebruikt of verkocht.
+
+- **Vasthouden wordt afgedwongen**, ook als de schakelaar *Vasthouden* uit staat.
+- **Verkopen onder de kostprijs wordt tegengehouden.** Zit er bijgeladen voorraad in de accu
+  en is de verkoopprijs lager dan de kostprijs daarvan, dan wordt er niet verkocht.
+
+Elke geboekte kWh levert dan minstens de kostprijs op, dus de opbrengst van een dag kan niet
+onder nul komen. Wat het niet kan uitsluiten:
+
+- **Stilstand.** Komt de prijs lang niet boven de kostprijs, dan blijft de accu zolang
+  geblokkeerd voor ontladen, ook voor opgeslagen zonnestroom.
+- **Afwijkend rendement.** De kostprijs rekent met het gemiddelde rendement. Levert de accu in
+  een cyclus minder dan dat, dan is de accu leeg voordat de voorraad in de boeken op is; die
+  rest vervalt dan zonder dat er verlies wordt geboekt.
+- **Slijtage** van de accu telt niet mee; gebruik daarvoor de minimale winst per kWh.
+
+De integratie rekent direct opnieuw zodra een nieuw prijsvak begint, zodat het vasthouden niet
+tot een minuut te laat ingaat.
+
 ## Verkopen (optioneel)
 
 Verkopen heeft een eigen schakelaar en staat los van het bijladen. Er wordt alleen verkocht
@@ -110,6 +132,7 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | `switch.*_prijssturing` | Aan: het laadplan wordt uitgevoerd. Uit: de Marstek regelt alles zelf. Uitzetten zet de Marstek direct terug op anti-feed. |
 | `switch.*_laden_bij_negatieve_prijs` | Aan (standaard): bij een negatieve uurprijs altijd laden op vol vermogen. Attribuut `nu_actief`. |
 | `switch.*_vasthouden` | Aan (standaard): niet ontladen zolang de uurprijs onder de kostprijs van de bijgeladen voorraad ligt. Attributen `nu_actief`, `tot`, `voorraad_kwh`, `kostprijs`. |
+| `switch.*_geen_verlies` | Aan: vasthouden afgedwongen en nooit verkopen onder de kostprijs. Attributen `vasthouden_actief`, `verkoop_tegengehouden`, `voorraad_kwh`, `kostprijs`. |
 | `switch.*_verkoop` | Aan: overschot wordt in de duurste uren verkocht. Staat los van de prijssturing. |
 | `sensor.*_verkoopplan` | Status: `verkopen`, `gepland`, `geen` of `onbekend`. Attributen: `verkoopuren`, `vermogen`, `overschot_kwh`, `reserve_soc`, `drempelprijs`, `terugkoopprijs` en `tekst`. |
 | `sensor.*_laadplan` | Status: `laden`, `gepland`, `klaar`, `vol`, `geen` of `onbekend`. Attributen: `laaduren`, `venster`, `eind`, `uren_nodig`, `vermogen`, `klaar_tot`, `tekst` (leesbare samenvatting) en `stroomschema` (tijdlijn en controles voor de kaart). |
@@ -176,7 +199,7 @@ browser na het installeren of bijwerken.
 | `custom:marstek-goedkoop-laden-card` | Stroomschema: de tijdlijn van vandaag en per onderdeel (bijladen, verkoop, negatieve prijs, vasthouden) welke controles slagen en op welke het stopt. |
 | `custom:marstek-goedkoop-laden-compact-card` | Hetzelfde in een paar regels: de tijdlijn, per onderdeel de uitkomst met de reden, en één regel met de opbrengst. |
 | `custom:marstek-goedkoop-laden-opbrengst-card` | Alleen de opbrengst: vandaag, deze week en de verwachting van het huidige plan. |
-| `custom:marstek-goedkoop-laden-schakelaars-card` | Compact: knoppen om bijladen, verkoop, laden bij negatieve prijs en vasthouden aan of uit te zetten. |
+| `custom:marstek-goedkoop-laden-schakelaars-card` | Compact: knoppen om bijladen, verkoop, laden bij negatieve prijs, vasthouden en geen verlies aan of uit te zetten. |
 
 ```yaml
 type: custom:marstek-goedkoop-laden-card

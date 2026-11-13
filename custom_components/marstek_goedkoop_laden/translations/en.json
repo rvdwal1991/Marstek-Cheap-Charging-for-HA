@@ -157,6 +157,9 @@
       },
       "vasthouden": {
         "name": "Hold below cost price"
+      },
+      "geen_verlies": {
+        "name": "No loss"
       }
     }
   }

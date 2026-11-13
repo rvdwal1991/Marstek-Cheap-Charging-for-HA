@@ -26,6 +26,7 @@ async def async_setup_entry(
             SellSwitch(coordinator),
             NegativePriceSwitch(coordinator),
             HoldSwitch(coordinator),
+            NoLossSwitch(coordinator),
         ]
     )
 
@@ -119,4 +120,31 @@ class HoldSwitch(ChargePlanEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         await self.coordinator.async_set_hold_enabled(False)
+
+
+class NoLossSwitch(ChargePlanEntity, SwitchEntity):
+    """Aan: bijgeladen stroom wordt nooit onder de kostprijs gebruikt of verkocht."""
+
+    def __init__(self, coordinator: ChargePlanCoordinator) -> None:
+        super().__init__(coordinator, "geen_verlies")
+
+    @property
+    def is_on(self) -> bool:
+        return self.coordinator.no_loss_enabled
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        ledger = self.coordinator.ledger
+        return {
+            "vasthouden_actief": self.coordinator.hold_active,
+            "verkoop_tegengehouden": self.coordinator.sell_blocked,
+            "voorraad_kwh": round(ledger.stock_kwh, 2),
+            "kostprijs": round(ledger.stock_price, 3) if ledger.stock_price is not None else None,
+        }
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self.coordinator.async_set_no_loss_enabled(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        await self.coordinator.async_set_no_loss_enabled(False)
 

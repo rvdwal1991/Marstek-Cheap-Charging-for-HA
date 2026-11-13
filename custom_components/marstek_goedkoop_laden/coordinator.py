@@ -11,7 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import async_track_state_change_event, async_track_time_change
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
@@ -183,6 +183,10 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         # bijgeladen voorraad ligt. Staat standaard aan.
         self.hold_enabled = True
         self.hold_active = False
+        # Geen verlies: dwingt het vasthouden af (ook als die schakelaar uit staat)
+        # en verkoopt bijgeladen voorraad nooit onder de kostprijs.
+        self.no_loss_enabled = False
+        self.sell_blocked = False
         self.hold_until: datetime | None = None
         # Waar als de integratie zelf het maximale ontlaadvermogen op 0 heeft gezet,
         # met de waarde die er daarvoor stond (of die een ander er intussen in zette).
@@ -208,6 +212,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self._discharge_power_before = data.get("discharge_power_before")
         self.ledger = Ledger.from_dict(data.get("ledger"))
         self.hold_enabled = bool(data.get("hold_enabled", True))
+        self.no_loss_enabled = bool(data.get("no_loss_enabled", False))
         self._holding = bool(data.get("holding", False))
         self._discharge_limit_before = data.get("discharge_limit_before")
 
@@ -237,6 +242,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 "discharge_power_before": self._discharge_power_before,
                 "ledger": self.ledger.to_dict(),
                 "hold_enabled": self.hold_enabled,
+                "no_loss_enabled": self.no_loss_enabled,
                 "holding": self._holding,
                 "discharge_limit_before": self._discharge_limit_before,
                 "sell_hours": [h.isoformat() for h in self._sell_hours],
@@ -327,6 +333,11 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             price_offset=float(conf.get(CONF_SELL_PRICE_OFFSET, DEFAULT_SELL_PRICE_OFFSET)),
             min_power_w=int(conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
         )
+
+    @property
+    def hold_on(self) -> bool:
+        """Vasthouden geldt als zijn eigen schakelaar aan staat of 'geen verlies' aan staat."""
+        return self.hold_enabled or self.no_loss_enabled
 
     @property
     def can_hold(self) -> bool:
@@ -431,9 +442,21 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         ):
             self._save()
         cost = self.ledger.stock_price
-        selling_now = self._selling or (self.sell_enabled and sell.status == SELL_SELLING)
+        has_stock = self.ledger.stock_kwh >= HOLD_MIN_STOCK_KWH and cost is not None
+        export_now = (
+            price_now * sell_params.price_factor - sell_params.price_offset
+            if price_now is not None
+            else None
+        )
+        # Geen verlies: bijgeladen voorraad niet verkopen onder de kostprijs.
+        self.sell_blocked = bool(
+            self.no_loss_enabled and has_stock and export_now is not None and export_now < cost
+        )
+        selling_now = self._selling or (
+            self.sell_enabled and sell.status == SELL_SELLING and not self.sell_blocked
+        )
         self.hold_active = bool(
-            self.hold_enabled
+            self.hold_on
             and self.can_hold
             and self.ledger.stock_kwh >= HOLD_MIN_STOCK_KWH
             and cost is not None
@@ -625,8 +648,28 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                     step("Ontladen vrij", "De voorraad wordt met winst gebruikt", "eind"),
                 ]
 
+        if self.no_loss_enabled:
+            if self.ledger.stock_kwh >= HOLD_MIN_STOCK_KWH and cost is not None:
+                guard = step(
+                    "Voorraad bewaakt",
+                    f"{euro(self.ledger.stock_kwh, 1)} kWh, alleen boven € {euro(cost)}",
+                    "actie",
+                )
+            else:
+                guard = step("Geen voorraad", "Nu niets te bewaken", "eind")
+            no_loss_steps = [
+                step("Ontladen boven kostprijs", "Vasthouden geldt altijd", "ok"),
+                step("Verkopen boven kostprijs", "Nooit onder de kostprijs", "ok"),
+                guard,
+            ]
+        else:
+            no_loss_steps = []
+
         if self.can_sell:
             sell_steps = list(sell.steps)
+            if self.sell_blocked and sell_steps and sell_steps[-1]["soort"] == "actie":
+                sell_steps[-1] = step("Onder de kostprijs", f"Voorraad kost € {euro(cost or 0)}", "stop")
+                sell_steps.append(step("Geen verkoop", "Tegengehouden door geen verlies", "eind"))
         else:
             sell_steps = [
                 step("Verkopen ingesteld", "Kies de entiteit voor het ontlaadvermogen", "stop"),
@@ -685,7 +728,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 {"titel": "Bijladen", "icoon": "mdi:battery-charging", "aan": self.enabled, "stappen": list(plan.steps), "schakelaar": self._switch_entity("prijssturing")},
                 {"titel": "Verkoop", "icoon": "mdi:transmission-tower-export", "aan": self.sell_enabled, "stappen": sell_steps, "schakelaar": self._switch_entity("verkoop")},
                 {"titel": "Negatieve prijs", "icoon": "mdi:cash-minus", "aan": self.negative_enabled, "stappen": negative_steps, "schakelaar": self._switch_entity("negatieve_prijs")},
-                {"titel": "Vasthouden", "icoon": "mdi:lock-clock", "aan": self.hold_enabled, "stappen": hold_steps, "schakelaar": self._switch_entity("vasthouden")},
+                {"titel": "Vasthouden", "icoon": "mdi:lock-clock", "aan": self.hold_on, "stappen": hold_steps, "schakelaar": self._switch_entity("vasthouden")},
+                {"titel": "Geen verlies", "icoon": "mdi:shield-check", "aan": self.no_loss_enabled, "stappen": no_loss_steps, "schakelaar": self._switch_entity("geen_verlies")},
             ],
         }
 
@@ -707,6 +751,16 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
 
         self.config_entry.async_on_unload(
             async_track_state_change_event(self.hass, entities, _changed)
+        )
+
+        # Direct opnieuw rekenen als een nieuw prijsvak begint, zodat vasthouden
+        # en vrijgeven niet tot een minuut te laat komen.
+        @callback
+        def _slot_started(now: datetime) -> None:
+            self.hass.async_create_task(self.async_request_refresh())
+
+        self.config_entry.async_on_unload(
+            async_track_time_change(self.hass, _slot_started, minute=(0, 15, 30, 45), second=2)
         )
 
     # ----------------------------------------------------------------- sturing
@@ -777,6 +831,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             and self.can_sell
             and sell.status == SELL_SELLING
             and bool(sell.power_w)
+            and not self.sell_blocked
         )
 
         try:
@@ -941,5 +996,12 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         """Zet vasthouden onder de kostprijs aan of uit."""
         self.hold_enabled = enabled
         self._save()
+        await self.async_refresh()
+
+    async def async_set_no_loss_enabled(self, enabled: bool) -> None:
+        """Zet 'geen verlies' aan of uit."""
+        self.no_loss_enabled = enabled
+        self._save()
+        self._settle_until = None
         await self.async_refresh()
 

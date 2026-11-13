@@ -78,7 +78,11 @@ _registry = types.SimpleNamespace(
 )
 _er = _module("homeassistant.helpers.entity_registry", async_get=lambda hass: _registry)
 _module("homeassistant.helpers", entity_registry=_er)
-_module("homeassistant.helpers.event", async_track_state_change_event=lambda *a: (lambda: None))
+_module(
+    "homeassistant.helpers.event",
+    async_track_state_change_event=lambda *a: (lambda: None),
+    async_track_time_change=lambda *a, **k: (lambda: None),
+)
 _module("homeassistant.helpers.storage", Store=_Store)
 _module("homeassistant.helpers.update_coordinator", DataUpdateCoordinator=_Coordinator)
 _dt = _module(
@@ -524,6 +528,43 @@ class SturingTest(unittest.TestCase):
         self.assertEqual(coordinator.ledger.stock_kwh, 0.0)
         self.assertFalse(coordinator.hold_active)
         self.assertEqual(hass.calls, [])
+
+    def test_geen_verlies_dwingt_vasthouden_af(self):
+        at("2026-11-11T13:10:00")
+        hass, coordinator = self._met_voorraad(kostprijs_totaal=2.17 * 0.60)
+        run(coordinator.async_set_hold_enabled(False))
+        self.assertFalse(coordinator.hold_active)
+        self.assertEqual(hass.get("number.max_ontladen"), "2500")
+        run(coordinator.async_set_no_loss_enabled(True))
+        self.assertTrue(coordinator.hold_active)
+        self.assertEqual(hass.get("number.max_ontladen"), "0")
+        lanes = {l["titel"]: l for l in coordinator.flow["banen"]}
+        self.assertTrue(lanes["Vasthouden"]["aan"])
+        self.assertTrue(lanes["Geen verlies"]["aan"])
+        self.assertEqual(lanes["Geen verlies"]["stappen"][-1]["soort"], "actie")
+        self.assertEqual(lanes["Geen verlies"]["schakelaar"], "switch.geen_verlies")
+        run(coordinator.async_set_no_loss_enabled(False))
+        self.assertEqual(hass.get("number.max_ontladen"), "2500")
+
+    def test_geen_verlies_verkoopt_niet_onder_de_kostprijs(self):
+        # 10 nov 16:00: verkoopprijs ca. 0,69. Voorraad met kostprijs 0,80.
+        at("2026-11-10T16:05:00")
+        hass, coordinator = make(95)
+        coordinator.ledger.stock_kwh = 2.0
+        coordinator.ledger.stock_cost = 1.60
+        coordinator.ledger.last_charged = 1837.74
+        coordinator.ledger.last_discharged = 1418.82
+        run(coordinator.async_set_hold_enabled(False))
+        run(coordinator.async_set_no_loss_enabled(True))
+        run(coordinator.async_set_sell_enabled(True))
+        self.assertEqual(coordinator.sell_plan.status, "verkopen")
+        self.assertTrue(coordinator.sell_blocked)
+        self.assertNotEqual(hass.get("select.forceer"), "discharge")
+        verkoop = {l["titel"]: l for l in coordinator.flow["banen"]}["Verkoop"]
+        self.assertEqual(verkoop["stappen"][-1]["detail"], "Tegengehouden door geen verlies")
+        # Zonder 'geen verlies' wordt er wel verkocht.
+        run(coordinator.async_set_no_loss_enabled(False))
+        self.assertEqual(hass.get("select.forceer"), "discharge")
 
 
 if __name__ == "__main__":
