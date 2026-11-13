@@ -112,6 +112,7 @@ async def async_setup_entry(
         ChargePlanSensor(coordinator, description) for description in SENSORS
     ]
     entities.append(SellPlanSensor(coordinator))
+    entities.append(ExpectedGainSensor(coordinator))
     async_add_entities(entities)
 
 
@@ -159,4 +160,23 @@ class SellPlanSensor(ChargePlanEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         return _sell_attributes(self.coordinator.sell_plan)
+
+
+class ExpectedGainSensor(ChargePlanEntity, SensorEntity):
+    """Geschatte opbrengst van de huidige plannen (bijladen plus verkoop)."""
+
+    _attr_native_unit_of_measurement = "€"
+    _attr_suggested_display_precision = 2
+    _attr_icon = "mdi:cash-plus"
+
+    def __init__(self, coordinator: ChargePlanCoordinator) -> None:
+        super().__init__(coordinator, "verwachte_opbrengst")
+
+    @property
+    def native_value(self) -> float:
+        return self.coordinator.expected_gain
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return {"regels": self.coordinator.flow.get("resultaat", {}).get("regels", [])}
 

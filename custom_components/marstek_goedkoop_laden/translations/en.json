@@ -131,6 +131,9 @@
           "geen": "No selling",
           "onbekend": "Unknown"
         }
+      },
+      "verwachte_opbrengst": {
+        "name": "Expected gain"
       }
     },
     "switch": {

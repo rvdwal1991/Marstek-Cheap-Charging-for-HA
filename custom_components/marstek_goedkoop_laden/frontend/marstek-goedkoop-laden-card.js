@@ -53,7 +53,42 @@ const STYLE = `
   .lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; }
   .lane.uit .step { opacity: 0.55; }
   .empty { font-size: 14px; color: var(--secondary-text-color); }
+  .result { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; align-items: center; }
+  .total { font-size: 24px; font-weight: 500; line-height: 1.2; white-space: nowrap; color: var(--primary-text-color); }
+  .total.plus, .amount.plus { color: var(--success-color, #43a047); }
+  .total.min, .amount.min { color: var(--error-color, #db4437); }
+  .total small { display: block; font-size: 12px; font-weight: 400; color: var(--secondary-text-color); }
+  .rows { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; font-size: 12px;
+         line-height: 16px; color: var(--secondary-text-color); }
+  .row b { font-weight: 500; font-size: 13px; color: var(--primary-text-color); }
+  .amount { font-size: 13px; font-weight: 500; white-space: nowrap; color: var(--primary-text-color); }
 `;
+
+function formatEuro(value) {
+  const sign = value > 0.004 ? "+ " : value < -0.004 ? "− " : "";
+  return `${sign}€ ${Math.abs(value).toFixed(2).replace(".", ",")}`;
+}
+
+function tone(value) {
+  return value > 0.004 ? "plus" : value < -0.004 ? "min" : "";
+}
+
+function renderResult(result) {
+  if (!result || !Array.isArray(result.regels)) return "";
+  const rows = result.regels.map((line) => `
+    <div class="row">
+      <div><b>${escapeHtml(line.titel)}</b><br>${escapeHtml(line.detail)}</div>
+      <div class="amount ${line.bedrag == null ? "" : tone(line.bedrag)}">${line.bedrag == null ? "–" : formatEuro(line.bedrag)}</div>
+    </div>`).join("");
+  return `
+    <div class="divider"></div>
+    <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>Verwachte opbrengst van dit plan (schatting)</span></div>
+    <div class="result">
+      <div class="total ${tone(result.totaal)}">${formatEuro(result.totaal)}<small>totaal</small></div>
+      <div class="rows">${rows}</div>
+    </div>`;
+}
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (c) => (
@@ -141,6 +176,7 @@ class MarstekGoedkoopLadenCard extends HTMLElement {
       body = `
         <div class="head"><ha-icon icon="mdi:clock-outline"></ha-icon><span>Vandaag</span></div>
         ${renderSteps(timeline)}
+        ${renderResult(flow.resultaat)}
         <div class="divider"></div>
         <div class="lanes">${lanes}</div>`;
     }

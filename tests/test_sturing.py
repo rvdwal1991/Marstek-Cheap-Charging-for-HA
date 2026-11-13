@@ -408,6 +408,12 @@ class SturingTest(unittest.TestCase):
         self.assertFalse(lanes["Verkoop"]["aan"])
         self.assertEqual(lanes["Verkoop"]["stappen"][-1]["soort"], "eind")
         self.assertEqual([s["soort"] for s in lanes["Negatieve prijs"]["stappen"]], ["stop", "eind"])
+        result = flow["resultaat"]
+        self.assertEqual([line["titel"] for line in result["regels"]], ["Bijladen", "Verkoop"])
+        self.assertGreater(result["regels"][0]["bedrag"], 0.3)
+        self.assertIsNone(result["regels"][1]["bedrag"])
+        self.assertEqual(result["totaal"], result["regels"][0]["bedrag"])
+        self.assertEqual(coordinator.expected_gain, result["totaal"])
 
     def test_stroomschema_bijladen_uit(self):
         at("2026-11-10T19:40:00")

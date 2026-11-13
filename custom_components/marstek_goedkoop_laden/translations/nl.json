@@ -131,6 +131,9 @@
           "geen": "Geen verkoop",
           "onbekend": "Onbekend"
         }
+      },
+      "verwachte_opbrengst": {
+        "name": "Verwachte opbrengst"
       }
     },
     "switch": {

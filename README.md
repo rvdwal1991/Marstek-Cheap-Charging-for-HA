@@ -93,6 +93,7 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | `sensor.*_gepland_laadvermogen` | Het uitgesmeerde laadvermogen in W. |
 | `sensor.*_bij_te_laden` | Energie uit het net die nodig is om vol te komen, in kWh. |
 | `sensor.*_start_bijladen` / `*_einde_bijladen` | Begin en einde van de geplande laadbeurt. |
+| `sensor.*_verwachte_opbrengst` | Geschatte opbrengst van de huidige plannen in euro (bijladen plus verkoop); attribuut `regels` met de uitsplitsing. |
 | `sensor.*_gemiddelde_laadprijs` | Gemiddelde prijs van de laaduren in €/kWh. |
 
 De namen hierboven horen bij een Nederlandstalige installatie. Staat de systeemtaal van Home
@@ -155,6 +156,19 @@ regelt. Daaronder staat per onderdeel (bijladen, verkoop, negatieve prijs) welke
 slagen en op welke het stopt. Groen is geslaagd, rood is de controle waarop het stopt, gestreept
 is een uitkomst waarbij niets gebeurt. De kaart leest het attribuut `stroomschema` van de
 laadplan-sensor. Ververs de browser na het installeren of bijwerken van de integratie.
+
+#### Verwachte opbrengst
+
+De kaart toont ook een schatting van wat het huidige plan oplevert:
+
+- **Bijladen**: wat de in te kopen stroom kost, tegenover wat die later waard is. Die waarde
+  is het rendement maal de gemiddelde prijs van de dure uren waarmee het laaduur is vergeleken.
+  Er wordt dus aangenomen dat de bijgeladen stroom in die dure uren wordt gebruikt.
+- **Verkoop**: de opbrengst van het overschot, min wat terugladen kost (laadprijs gedeeld door
+  het rendement).
+
+Het is een schatting vooraf, geen afrekening: het werkelijke resultaat hangt af van wanneer de
+stroom echt wordt gebruikt. Tijdens een laadbeurt telt alleen wat nog geladen moet worden.
 
 ### Losse kaarten
 

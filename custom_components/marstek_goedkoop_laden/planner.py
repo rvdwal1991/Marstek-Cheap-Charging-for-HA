@@ -98,6 +98,11 @@ class Plan:
     prices: tuple[PriceSlot, ...] = field(default=(), repr=False)
     # De controles die tot dit plan leidden, voor het stroomschema op het dashboard.
     steps: tuple[dict, ...] = ()
+    # Schatting in euro: wat het bijladen kost, wat die stroom later waard is
+    # (rendement x de dure uren waarmee is vergeleken) en het verschil.
+    cost_eur: float | None = None
+    value_eur: float | None = None
+    gain_eur: float | None = None
 
     @property
     def charge_start(self) -> datetime | None:
@@ -116,20 +121,31 @@ def clamp_efficiency(charged_kwh: float | None, discharged_kwh: float | None, de
     return min(max(eta, 0.70), 0.95)
 
 
-def _worth_charging(prices: list[PriceSlot], efficiency: float, params: PlanParams) -> list[bool]:
-    """Per vak: is de prijs laag genoeg tegenover de dure vakken erna?"""
-    result = []
-    for index, slot in enumerate(prices):
+def _use_prices(prices: list[PriceSlot], params: PlanParams) -> list[float | None]:
+    """Per vak: de gemiddelde prijs van de duurste vakken erna (None = te weinig bekend).
+
+    Dat is de prijs waartegen bijgeladen stroom naar verwachting wordt gebruikt.
+    """
+    result: list[float | None] = []
+    for index in range(len(prices)):
         ahead = sorted(
             (s.price for s in prices[index + 1 : index + 1 + params.lookahead_hours]),
             reverse=True,
         )
         if len(ahead) < params.min_lookahead_hours:
-            result.append(False)
+            result.append(None)
             continue
         top = ahead[: params.top_hours]
-        result.append(slot.price <= efficiency * (sum(top) / len(top)) - params.margin)
+        result.append(sum(top) / len(top))
     return result
+
+
+def _worth_charging(prices: list[PriceSlot], efficiency: float, params: PlanParams) -> list[bool]:
+    """Per vak: is de prijs laag genoeg tegenover de dure vakken erna?"""
+    return [
+        use is not None and slot.price <= efficiency * use - params.margin
+        for slot, use in zip(prices, _use_prices(prices, params))
+    ]
 
 
 def _first_run(flags: list[bool]) -> list[int]:
@@ -261,6 +277,10 @@ def compute_plan(
         hours = tuple(prices[i].start for i in chosen)
         average = sum(prices[i].price for i in chosen) / len(chosen)
         charge_end = prices[chosen[-1]].end
+        use = _use_prices(prices, params)
+        share = energy / len(chosen)
+        cost = energy * average
+        value = sum(share * efficiency * (use[i] if use[i] is not None else prices[i].price / efficiency) for i in chosen)
         day = "morgen " if local(hours[0]).date() != local(now).date() else ""
         times = ", ".join(local(h).strftime("%H:%M") for h in hours)
         text = (
@@ -276,6 +296,9 @@ def compute_plan(
             average_price=round(average, 4),
             charge_end=charge_end,
             text=text,
+            cost_eur=round(cost, 2),
+            value_eur=round(value, 2),
+            gain_eur=round(value - cost, 2),
             steps=(
                 window_step,
                 need_step,
@@ -350,6 +373,10 @@ class SellPlan:
     refill_price: float | None = None
     text: str = "Geen prijzen of SoC beschikbaar"
     steps: tuple[dict, ...] = ()
+    # Schatting in euro: opbrengst van de verkoop, wat terugladen kost en het verschil.
+    revenue_eur: float | None = None
+    refill_cost_eur: float | None = None
+    gain_eur: float | None = None
 
 
 def compute_sell_plan(
@@ -494,6 +521,9 @@ def compute_sell_plan(
         energy_kwh=round(surplus, 2),
         average_price=round(average, 4),
         text=text,
+        revenue_eur=round(surplus * average, 2),
+        refill_cost_eur=round(surplus * refill_price / efficiency, 2),
+        gain_eur=round(surplus * (average - refill_price / efficiency), 2),
         steps=(
             refill_step,
             price_step,

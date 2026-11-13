@@ -170,6 +170,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self.inputs: dict[str, Any] = {}
         # Tijdlijn en controles voor de dashboardkaart.
         self.flow: dict[str, Any] = {"tijdlijn": [], "banen": []}
+        # Verwachte opbrengst van de huidige plannen, in euro (schatting).
+        self.expected_gain: float = 0.0
         self.last_command: str | None = None
         self._memory = PlanMemory()
         self._store: Store[dict[str, Any]] = Store(
@@ -481,8 +483,42 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 step("Geen verkoop", "Niet ingesteld", "eind"),
             ]
 
+        def money(value: float) -> str:
+            return f"€ {euro(abs(value))}"
+
+        lines: list[dict[str, Any]] = []
+        total = 0.0
+        if not self.enabled:
+            lines.append({"titel": "Bijladen", "bedrag": None, "detail": "Staat uit"})
+        elif plan.gain_eur is not None and plan.charge_hours:
+            total += plan.gain_eur
+            lines.append(
+                {
+                    "titel": "Bijladen",
+                    "bedrag": plan.gain_eur,
+                    "detail": f"{euro(plan.energy_kwh, 1)} kWh inkopen voor {money(plan.cost_eur or 0)}, later {money(plan.value_eur or 0)} waard",
+                }
+            )
+        else:
+            lines.append({"titel": "Bijladen", "bedrag": 0.0, "detail": "Geen bijladen gepland"})
+        if not self.sell_enabled:
+            lines.append({"titel": "Verkoop", "bedrag": None, "detail": "Staat uit"})
+        elif sell.gain_eur is not None and sell.sell_hours:
+            total += sell.gain_eur
+            lines.append(
+                {
+                    "titel": "Verkoop",
+                    "bedrag": sell.gain_eur,
+                    "detail": f"{euro(sell.energy_kwh, 1)} kWh verkopen voor {money(sell.revenue_eur or 0)}, terugladen kost {money(sell.refill_cost_eur or 0)}",
+                }
+            )
+        else:
+            lines.append({"titel": "Verkoop", "bedrag": 0.0, "detail": "Geen verkoop gepland"})
+        self.expected_gain = round(total, 2)
+
         return {
             "tijdlijn": timeline,
+            "resultaat": {"totaal": round(total, 2), "regels": lines},
             "banen": [
                 {"titel": "Bijladen", "icoon": "mdi:battery-charging", "aan": self.enabled, "stappen": list(plan.steps)},
                 {"titel": "Verkoop", "icoon": "mdi:transmission-tower-export", "aan": self.sell_enabled, "stappen": sell_steps},

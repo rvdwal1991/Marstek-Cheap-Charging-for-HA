@@ -207,5 +207,25 @@ class SellPlannerTest(unittest.TestCase):
         self.assertEqual(later.sell_hours, first.sell_hours)
 
 
+class GainTest(unittest.TestCase):
+    def test_bijladen_levert_meer_op_dan_het_kost(self):
+        result = plan("2026-11-10T19:40:00", 12)
+        self.assertAlmostEqual(result.cost_eur, round(result.energy_kwh * result.average_price, 2), places=2)
+        self.assertGreater(result.value_eur, result.cost_eur)
+        self.assertAlmostEqual(result.gain_eur, result.value_eur - result.cost_eur, places=2)
+        # 5,1 kWh voor ca. € 0,37, later gebruikt tegen ca. € 0,61 x 77 % rendement.
+        self.assertGreater(result.gain_eur, 0.3)
+        self.assertLess(result.gain_eur, 1.0)
+
+    def test_geen_plan_geen_bedrag(self):
+        self.assertIsNone(plan("2026-11-10T19:40:00", 100).gain_eur)
+
+    def test_verkoop_opbrengst(self):
+        result = sell("2026-11-10T16:05:00", 95)
+        self.assertGreater(result.gain_eur, 0)
+        self.assertAlmostEqual(result.gain_eur, result.revenue_eur - result.refill_cost_eur, places=1)
+        self.assertIsNone(sell("2026-11-10T16:05:00", 95, house=400.0).gain_eur)
+
+
 if __name__ == "__main__":
     unittest.main()
