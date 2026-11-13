@@ -96,6 +96,8 @@ class Plan:
     done_until: datetime | None = None
     text: str = "Geen prijzen of SoC beschikbaar"
     prices: tuple[PriceSlot, ...] = field(default=(), repr=False)
+    # De controles die tot dit plan leidden, voor het stroomschema op het dashboard.
+    steps: tuple[dict, ...] = ()
 
     @property
     def charge_start(self) -> datetime | None:
@@ -145,6 +147,11 @@ def _euro(value: float, digits: int = 2) -> str:
     return f"{value:.{digits}f}".replace(".", ",")
 
 
+def step(title: str, detail: str, kind: str) -> dict:
+    """Eén stap in het stroomschema. kind: ok, stop, actie of eind."""
+    return {"titel": title, "detail": detail, "soort": kind}
+
+
 def compute_plan(
     *,
     prices: list[PriceSlot],
@@ -170,10 +177,20 @@ def compute_plan(
     prices = [slot for slot in sorted(prices, key=lambda s: s.start) if slot.end > now]
 
     if soc is None or not prices:
-        return Plan(done_until=memory.done_until, prices=tuple(prices))
+        return Plan(
+            done_until=memory.done_until,
+            prices=tuple(prices),
+            steps=(
+                step("Prijzen en SoC bekend", "Geen prijzen of SoC beschikbaar", "stop"),
+                step("Geen bijladen", "Wacht op gegevens", "eind"),
+            ),
+        )
 
     def local(moment: datetime) -> datetime:
         return moment.astimezone(tz) if tz else moment
+
+    def clock(moment: datetime) -> str:
+        return local(moment).strftime("%H:%M")
 
     worth = _worth_charging(prices, efficiency, params)
     run = _first_run(worth)
@@ -217,11 +234,26 @@ def compute_plan(
 
     common = dict(window=window, window_end=window_end, hours_needed=needed, prices=tuple(prices))
 
+    if run:
+        window_step = step(
+            "Goedkoop venster", f"{clock(prices[run[0]].start)} – {clock(window_end)}", "ok"
+        )
+    else:
+        window_step = step("Geen goedkoop venster", "Niet in de gepubliceerde prijzen", "stop")
+    if needed > 0:
+        need_step = step("Accu niet vol", f"Nog {_euro(energy, 1)} kWh nodig", "ok")
+    else:
+        need_step = step("Accu is vol", "Bijladen is niet nodig", "stop")
+
     if done_until is not None:
         return Plan(
             status=STATUS_DONE,
             done_until=done_until,
             text="Bijladen is klaar · de Marstek regelt weer zelf (anti-feed)",
+            steps=(
+                step("Laadbeurt gedaan", "In dit goedkope venster", "ok"),
+                step("Klaar", f"Geen nieuwe start tot {clock(done_until)}", "eind"),
+            ),
             **common,
         )
 
@@ -244,11 +276,25 @@ def compute_plan(
             average_price=round(average, 4),
             charge_end=charge_end,
             text=text,
+            steps=(
+                window_step,
+                need_step,
+                step(
+                    f"Laden, {len(chosen)} uur",
+                    f"Ca. {power} W, gemiddeld € {_euro(average)}",
+                    "actie",
+                ),
+            ),
             **common,
         )
 
     if run:
-        return Plan(status=STATUS_FULL, text="Accu is vol · bijladen is niet nodig", **common)
+        return Plan(
+            status=STATUS_FULL,
+            text="Accu is vol · bijladen is niet nodig",
+            steps=(window_step, need_step, step("Geen bijladen", "Stopt bij deze stap", "eind")),
+            **common,
+        )
 
     return Plan(
         status=STATUS_NONE,
@@ -256,6 +302,7 @@ def compute_plan(
             "Geen laadmoment in de gepubliceerde prijzen "
             "(prijsverschil te klein, of morgen is nog niet bekend)"
         ),
+        steps=(window_step, step("Geen bijladen", "Prijsverschil te klein of morgen onbekend", "eind")),
         **common,
     )
 
@@ -302,6 +349,7 @@ class SellPlan:
     threshold: float | None = None
     refill_price: float | None = None
     text: str = "Geen prijzen of SoC beschikbaar"
+    steps: tuple[dict, ...] = ()
 
 
 def compute_sell_plan(
@@ -332,8 +380,11 @@ def compute_sell_plan(
     """
     params = params or SellParams()
     prices = list(charge_plan.prices)
+    none_step = step("Geen verkoop", "Stopt bij deze stap", "eind")
     if soc is None or not prices:
-        return SellPlan()
+        return SellPlan(
+            steps=(step("Prijzen en SoC bekend", "Geen prijzen of SoC beschikbaar", "stop"), none_step)
+        )
 
     def local(moment: datetime) -> datetime:
         return moment.astimezone(tz) if tz else moment
@@ -344,9 +395,17 @@ def compute_sell_plan(
     window = set(charge_plan.window)
     window_slots = [slot for slot in prices if slot.start in window]
     if not window_slots:
-        return SellPlan(status=SELL_NONE, text="Geen verkoop: er is nog geen goedkoop laadvenster bekend")
+        return SellPlan(
+            status=SELL_NONE,
+            text="Geen verkoop: er is nog geen goedkoop laadvenster bekend",
+            steps=(step("Geen laadbeurt bekend", "Nog geen goedkoop laadvenster", "stop"), none_step),
+        )
     if min(slot.start for slot in window_slots) <= now:
-        return SellPlan(status=SELL_NONE, text="Geen verkoop: het goedkope laadvenster loopt")
+        return SellPlan(
+            status=SELL_NONE,
+            text="Geen verkoop: het goedkope laadvenster loopt",
+            steps=(step("Laadvenster loopt nu", "Stroom is nu goedkoop", "stop"), none_step),
+        )
 
     cheapest = sorted(window_slots, key=lambda s: (s.price, s.start))
     refill = cheapest[: min(REFILL_HOURS, len(cheapest))]
@@ -374,15 +433,35 @@ def compute_sell_plan(
         for slot in prices
         if slot.start < refill_at and slot.start not in window and export(slot.price) >= threshold
     ]
+    refill_step = step(
+        "Laadbeurt komt eraan",
+        f"Terugladen vanaf {local(refill_at).strftime('%H:%M')} voor ca. € {_euro(refill_price)}",
+        "ok",
+    )
+    best = max((export(s.price) for s in prices if s.start < refill_at), default=None)
     if not candidates:
-        best = max((export(s.price) for s in prices if s.start < refill_at), default=None)
         detail = f" (hoogste € {_euro(best)}, nodig € {_euro(threshold)})" if best is not None else ""
-        return SellPlan(status=SELL_NONE, text=f"Geen verkoop: de opbrengst is te laag{detail}", **common)
+        short = f"€ {_euro(best)}, nodig € {_euro(threshold)}" if best is not None else "Geen uren"
+        return SellPlan(
+            status=SELL_NONE,
+            text=f"Geen verkoop: de opbrengst is te laag{detail}",
+            steps=(refill_step, step("Opbrengst te laag", short, "stop"), none_step),
+            **common,
+        )
+    price_step = step(
+        "Opbrengst hoog genoeg", f"€ {_euro(best)}, nodig € {_euro(threshold)}", "ok"
+    )
 
     if surplus <= (0.0 if selling else params.min_surplus_kwh):
         return SellPlan(
             status=SELL_NONE,
             text=f"Geen verkoop: geen overschot boven de reserve van {round(reserve_soc)} %",
+            steps=(
+                refill_step,
+                price_step,
+                step("Geen overschot", f"Reserve is {round(reserve_soc)} %", "stop"),
+                none_step,
+            ),
             **common,
         )
 
@@ -415,6 +494,20 @@ def compute_sell_plan(
         energy_kwh=round(surplus, 2),
         average_price=round(average, 4),
         text=text,
+        steps=(
+            refill_step,
+            price_step,
+            step(
+                "Overschot boven reserve",
+                f"{_euro(surplus, 1)} kWh boven {round(reserve_soc)} %",
+                "ok",
+            ),
+            step(
+                f"Verkopen, {len(chosen)} uur",
+                f"Ca. {power} W, gemiddeld € {_euro(average)}",
+                "actie",
+            ),
+        ),
         **common,
     )
 

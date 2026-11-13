@@ -119,6 +119,8 @@ class ChargePlanSensor(ChargePlanEntity, SensorEntity):
     """Sensor die een waarde uit het laadplan toont."""
 
     entity_description: ChargePlanSensorDescription
+    # Het stroomschema verandert vaak en hoeft niet in de database.
+    _unrecorded_attributes = frozenset({"stroomschema"})
 
     def __init__(
         self, coordinator: ChargePlanCoordinator, description: ChargePlanSensorDescription
@@ -134,7 +136,11 @@ class ChargePlanSensor(ChargePlanEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any] | None:
         if self.entity_description.attributes_fn is None:
             return None
-        return self.entity_description.attributes_fn(self.coordinator.data)
+        attributes = self.entity_description.attributes_fn(self.coordinator.data)
+        if self.entity_description.key == "laadplan":
+            # Tijdlijn en controles voor de dashboardkaart.
+            attributes["stroomschema"] = self.coordinator.flow
+        return attributes
 
 
 class SellPlanSensor(ChargePlanEntity, SensorEntity):

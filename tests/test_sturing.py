@@ -81,6 +81,7 @@ _dt = _module(
     "homeassistant.util.dt",
     utcnow=lambda: CLOCK["now"].astimezone(timezone.utc),
     now=lambda: CLOCK["now"],
+    as_local=lambda moment: moment.astimezone(TZ),
     parse_datetime=_parse,
     DEFAULT_TIME_ZONE=TZ,
 )
@@ -390,6 +391,30 @@ class SturingTest(unittest.TestCase):
         hass.set("select.forceer", "stop")
         run(coordinator.async_refresh())
         self.assertEqual(hass.calls, [])
+
+    def test_stroomschema_voor_de_kaart(self):
+        at("2026-11-10T19:40:00")
+        hass, coordinator = make(12)
+        run(coordinator.async_set_enabled(True))
+        flow = coordinator.flow
+        self.assertEqual(flow["tijdlijn"][0], {"titel": "Nu", "detail": "Zelf regelen (anti-feed)", "soort": "nu"})
+        self.assertEqual(flow["tijdlijn"][1]["titel"], "02:00 – 05:00 · bijladen")
+        self.assertEqual(flow["tijdlijn"][1]["soort"], "actie")
+        self.assertEqual(flow["tijdlijn"][-1]["titel"], "05:00 · klaar")
+        lanes = {lane["titel"]: lane for lane in flow["banen"]}
+        self.assertEqual([s["soort"] for s in lanes["Bijladen"]["stappen"]], ["ok", "ok", "actie"])
+        self.assertEqual(lanes["Bijladen"]["stappen"][0]["detail"], "23:00 – 07:00")
+        self.assertTrue(lanes["Bijladen"]["aan"])
+        self.assertFalse(lanes["Verkoop"]["aan"])
+        self.assertEqual(lanes["Verkoop"]["stappen"][-1]["soort"], "eind")
+        self.assertEqual([s["soort"] for s in lanes["Negatieve prijs"]["stappen"]], ["stop", "eind"])
+
+    def test_stroomschema_bijladen_uit(self):
+        at("2026-11-10T19:40:00")
+        hass, coordinator = make(12)
+        run(coordinator.async_refresh())
+        self.assertEqual(coordinator.flow["tijdlijn"][1]["soort"], "eind")
+        self.assertIn("staat uit", coordinator.flow["tijdlijn"][1]["detail"])
 
 
 if __name__ == "__main__":

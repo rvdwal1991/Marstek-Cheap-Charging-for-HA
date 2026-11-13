@@ -82,6 +82,7 @@ from .planner import (
     compute_plan,
     compute_sell_plan,
     negative_price_slot,
+    step,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -167,6 +168,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self._discharge_power_before: float | None = None
         self._sell_hours: tuple[datetime, ...] = ()
         self.inputs: dict[str, Any] = {}
+        # Tijdlijn en controles voor de dashboardkaart.
+        self.flow: dict[str, Any] = {"tijdlijn": [], "banen": []}
         self.last_command: str | None = None
         self._memory = PlanMemory()
         self._store: Store[dict[str, Any]] = Store(
@@ -356,6 +359,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         ):
             await self._async_apply(plan, sell, inputs)
 
+        self.flow = self._build_flow(plan, sell, inputs, now, limit, slot)
+
         if self.negative_active and slot is not None:
             # Alleen de weergave: het bewaarde plan blijft het echte laadplan.
             power = int(inputs["max_power_w"])
@@ -369,6 +374,121 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 text=f"Negatieve prijs (€ {price}): laden op vol vermogen ({power} W)",
             )
         return plan
+
+    # ---------------------------------------------------------- stroomschema
+
+    def _build_flow(
+        self,
+        plan: Plan,
+        sell: SellPlan,
+        inputs: dict[str, Any],
+        now: datetime,
+        limit: float,
+        negative_slot: PriceSlot | None,
+    ) -> dict[str, Any]:
+        """Tijdlijn en controles per onderdeel, voor de kaart op het dashboard."""
+
+        def clock(moment: datetime) -> str:
+            return dt_util.as_local(moment).strftime("%H:%M")
+
+        def euro(value: float, digits: int = 2) -> str:
+            return f"{value:.{digits}f}".replace(".", ",")
+
+        def ranges(hours: tuple[datetime, ...]) -> list[tuple[datetime, datetime]]:
+            result: list[tuple[datetime, datetime]] = []
+            for start in sorted(hours):
+                end = start + timedelta(hours=1)
+                if result and result[-1][1] == start:
+                    result[-1] = (result[-1][0], end)
+                else:
+                    result.append((start, end))
+            return result
+
+        control, force = inputs["control_mode"], inputs["force_mode"]
+        if self.negative_active:
+            doing = "Laden op vol vermogen (negatieve prijs)"
+        elif control == MODE_ENABLE and force == FORCE_CHARGE:
+            doing = "Bijladen uit het net"
+        elif control == MODE_ENABLE and force == FORCE_DISCHARGE:
+            doing = "Verkopen aan het net" if self._selling else "Ontladen (handmatig)"
+        elif control == MODE_ENABLE and force == FORCE_STOP:
+            doing = "Stilgezet (handmatig)"
+        elif control is None:
+            doing = "Marstek niet bereikbaar"
+        else:
+            doing = "Zelf regelen (anti-feed)"
+
+        events: list[tuple[datetime, datetime, dict]] = []
+        for start, end in ranges(plan.charge_hours):
+            if end <= now:
+                continue
+            if self.enabled:
+                detail = f"Ca. {plan.power_w} W, {euro(plan.energy_kwh, 1)} kWh, gemiddeld € {euro(plan.average_price or 0)}"
+                kind = "actie"
+            else:
+                detail = "Wordt niet uitgevoerd: bijladen staat uit"
+                kind = "eind"
+            events.append((start, end, step(f"{clock(start)} – {clock(end)} · bijladen", detail, kind)))
+        for start, end in ranges(sell.sell_hours):
+            if end <= now:
+                continue
+            if self.sell_enabled:
+                detail = f"Ca. {sell.power_w} W, {euro(sell.energy_kwh, 1)} kWh, gemiddeld € {euro(sell.average_price or 0)}"
+                kind = "actie"
+            else:
+                detail = "Wordt niet uitgevoerd: verkopen staat uit"
+                kind = "eind"
+            events.append((start, end, step(f"{clock(start)} – {clock(end)} · verkopen", detail, kind)))
+        events.sort(key=lambda item: item[0])
+
+        timeline = [step("Nu", doing, "nu")]
+        timeline.extend(item[2] for item in events)
+        if events:
+            timeline.append(
+                step(f"{clock(max(item[1] for item in events))} · klaar", "Weer zelf regelen (anti-feed)", "eind")
+            )
+        else:
+            timeline.append(step("Geen acties gepland", "De Marstek blijft zelf regelen", "eind"))
+
+        if negative_slot is not None:
+            price_step = step("Prijs onder de grens", f"Nu € {euro(negative_slot.price)}", "ok")
+            soc = inputs["soc"]
+            if soc is not None and soc < FULL_SOC:
+                negative_steps = [
+                    price_step,
+                    step("Accu niet vol", f"SoC {round(soc)} %", "ok"),
+                    step("Laden op vol vermogen", f"{int(inputs['max_power_w'])} W", "actie"),
+                ]
+            else:
+                negative_steps = [
+                    price_step,
+                    step("Accu is vol", "Niets te laden", "stop"),
+                    step("Niet actief", "Stopt bij deze stap", "eind"),
+                ]
+        else:
+            current = next((s for s in plan.prices if s.start <= now < s.end), None)
+            detail = f"Nu € {euro(current.price)}" if current else "Prijs onbekend"
+            negative_steps = [
+                step(f"Prijs niet onder € {euro(limit)}", detail, "stop"),
+                step("Niet actief", "Wacht op een negatief uur", "eind"),
+            ]
+
+        if self.can_sell:
+            sell_steps = list(sell.steps)
+        else:
+            sell_steps = [
+                step("Verkopen ingesteld", "Kies de entiteit voor het ontlaadvermogen", "stop"),
+                step("Geen verkoop", "Niet ingesteld", "eind"),
+            ]
+
+        return {
+            "tijdlijn": timeline,
+            "banen": [
+                {"titel": "Bijladen", "icoon": "mdi:battery-charging", "aan": self.enabled, "stappen": list(plan.steps)},
+                {"titel": "Verkoop", "icoon": "mdi:transmission-tower-export", "aan": self.sell_enabled, "stappen": sell_steps},
+                {"titel": "Negatieve prijs", "icoon": "mdi:cash-minus", "aan": self.negative_enabled, "stappen": negative_steps},
+            ],
+        }
 
     @callback
     def async_start_listening(self) -> None:

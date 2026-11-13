@@ -89,7 +89,7 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | `switch.*_laden_bij_negatieve_prijs` | Aan (standaard): bij een negatieve uurprijs altijd laden op vol vermogen. Attribuut `nu_actief`. |
 | `switch.*_verkoop` | Aan: overschot wordt in de duurste uren verkocht. Staat los van de prijssturing. |
 | `sensor.*_verkoopplan` | Status: `verkopen`, `gepland`, `geen` of `onbekend`. Attributen: `verkoopuren`, `vermogen`, `overschot_kwh`, `reserve_soc`, `drempelprijs`, `terugkoopprijs` en `tekst`. |
-| `sensor.*_laadplan` | Status: `laden`, `gepland`, `klaar`, `vol`, `geen` of `onbekend`. Attributen: `laaduren`, `venster`, `eind`, `uren_nodig`, `vermogen`, `klaar_tot` en `tekst` (leesbare samenvatting). |
+| `sensor.*_laadplan` | Status: `laden`, `gepland`, `klaar`, `vol`, `geen` of `onbekend`. Attributen: `laaduren`, `venster`, `eind`, `uren_nodig`, `vermogen`, `klaar_tot`, `tekst` (leesbare samenvatting) en `stroomschema` (tijdlijn en controles voor de kaart). |
 | `sensor.*_gepland_laadvermogen` | Het uitgesmeerde laadvermogen in W. |
 | `sensor.*_bij_te_laden` | Energie uit het net die nodig is om vol te komen, in kWh. |
 | `sensor.*_start_bijladen` / `*_einde_bijladen` | Begin en einde van de geplande laadbeurt. |
@@ -139,6 +139,24 @@ Het maximale laadvermogen (de *Max. Charge power* van de Marstek) bepaalt het aa
 Zet je dat lager, dan plant hij meer uren en laadt hij rustiger.
 
 ## Dashboard
+
+### Stroomschemakaart
+
+De integratie levert een eigen kaart mee; er hoeft geen resource te worden toegevoegd.
+
+```yaml
+type: custom:marstek-goedkoop-laden-card
+entity: sensor.marstek_goedkoop_laden_laadplan   # optioneel
+title: Prijssturing                              # optioneel
+```
+
+Bovenaan staat de tijdlijn: wat de Marstek nu doet, wat er gepland is en wanneer hij weer zelf
+regelt. Daaronder staat per onderdeel (bijladen, verkoop, negatieve prijs) welke controles
+slagen en op welke het stopt. Groen is geslaagd, rood is de controle waarop het stopt, gestreept
+is een uitkomst waarbij niets gebeurt. De kaart leest het attribuut `stroomschema` van de
+laadplan-sensor. Ververs de browser na het installeren of bijwerken van de integratie.
+
+### Losse kaarten
 
 Planregel (Markdown-kaart):
 
