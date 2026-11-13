@@ -6,6 +6,7 @@
  *   type: custom:marstek-goedkoop-laden-card            stroomschema (tijdlijn + controles)
  *   type: custom:marstek-goedkoop-laden-compact-card    hetzelfde, compact
  *   type: custom:marstek-goedkoop-laden-opbrengst-card  alleen de opbrengsten
+ *   type: custom:marstek-goedkoop-laden-schakelaars-card  de schakelaars van de modi
  *
  * Opties voor alle kaarten:
  *   entity: sensor.marstek_goedkoop_laden_laadplan   (optioneel)
@@ -95,6 +96,20 @@ const STYLE = `
   .tile b { display: block; font-size: 20px; font-weight: 500; line-height: 1.3; white-space: nowrap;
             color: var(--primary-text-color); }
   .note { font-size: 12px; line-height: 16px; color: var(--secondary-text-color); margin-top: 12px; }
+  .chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
+  .chip { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 10px; cursor: pointer;
+          font: inherit; text-align: left; border-radius: 10px; border: 1px solid var(--divider-color);
+          background: transparent; color: var(--secondary-text-color); }
+  .chip ha-icon { --mdc-icon-size: 20px; display: flex; flex: none; }
+  .chip .label { min-width: 0; }
+  .chip b { display: block; font-size: 13px; font-weight: 500; line-height: 16px;
+            overflow-wrap: anywhere; color: var(--primary-text-color); }
+  .chip small { display: block; font-size: 11px; line-height: 14px; }
+  .chip.on { border-color: var(--primary-color); color: var(--primary-color);
+             background: color-mix(in srgb, var(--primary-color) 14%, transparent); }
+  .chip.on small { color: var(--primary-color); }
+  .chip:disabled { opacity: 0.5; cursor: default; }
+  .chip:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
 `;
 
 function escapeHtml(value) {
@@ -326,6 +341,42 @@ class MarstekGoedkoopLadenOpbrengstCard extends MarstekBaseCard {
   }
 }
 
+class MarstekGoedkoopLadenSchakelaarsCard extends MarstekBaseCard {
+  getCardSize() {
+    return 1;
+  }
+
+  _cardClass() {
+    return "compact";
+  }
+
+  _body(flow) {
+    const chips = (flow.banen || []).map((lane, index) => `
+      <button class="chip ${lane.aan ? "on" : ""}" data-index="${index}" ${lane.schakelaar ? "" : "disabled"}
+              aria-pressed="${lane.aan ? "true" : "false"}"
+              aria-label="${escapeHtml(lane.titel)}: ${lane.aan ? "aan" : "uit"}">
+        <ha-icon icon="${escapeHtml(lane.icoon || "mdi:toggle-switch-outline")}"></ha-icon>
+        <span class="label"><b>${escapeHtml(lane.titel)}</b><small>${lane.aan ? "Aan" : "Uit"}</small></span>
+      </button>`).join("");
+    return `<div class="chips">${chips}</div>`;
+  }
+
+  _render() {
+    const before = this._signature;
+    super._render();
+    if (this._signature === before) return;
+    const state = this._hass && this._hass.states[this._config.entity];
+    const lanes = (state && state.attributes.stroomschema && state.attributes.stroomschema.banen) || [];
+    this.shadowRoot.querySelectorAll(".chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const lane = lanes[Number(chip.dataset.index)];
+        if (!lane || !lane.schakelaar || !this._hass) return;
+        this._hass.callService("switch", lane.aan ? "turn_off" : "turn_on", { entity_id: lane.schakelaar });
+      });
+    });
+  }
+}
+
 const CARDS = [
   ["marstek-goedkoop-laden-card", MarstekGoedkoopLadenCard, "Marstek Goedkoop Laden",
     "Tijdlijn en controles van het laadplan als stroomschema."],
@@ -333,6 +384,8 @@ const CARDS = [
     "Het stroomschema in een paar regels."],
   ["marstek-goedkoop-laden-opbrengst-card", MarstekGoedkoopLadenOpbrengstCard, "Marstek Goedkoop Laden (opbrengst)",
     "Opbrengst van vandaag, deze week en het huidige plan."],
+  ["marstek-goedkoop-laden-schakelaars-card", MarstekGoedkoopLadenSchakelaarsCard, "Marstek Goedkoop Laden (schakelaars)",
+    "De schakelaars voor bijladen, verkoop en negatieve prijs."],
 ];
 
 window.customCards = window.customCards || [];

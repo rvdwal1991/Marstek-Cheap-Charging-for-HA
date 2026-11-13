@@ -73,7 +73,11 @@ _module(
     Platform=types.SimpleNamespace(SENSOR="sensor", SWITCH="switch"),
 )
 _module("homeassistant.core", Event=object, HomeAssistant=object, callback=lambda f: f)
-_module("homeassistant.helpers")
+_registry = types.SimpleNamespace(
+    async_get_entity_id=lambda domain, platform, unique_id: f"{domain}.{unique_id.split('_', 1)[1]}"
+)
+_er = _module("homeassistant.helpers.entity_registry", async_get=lambda hass: _registry)
+_module("homeassistant.helpers", entity_registry=_er)
 _module("homeassistant.helpers.event", async_track_state_change_event=lambda *a: (lambda: None))
 _module("homeassistant.helpers.storage", Store=_Store)
 _module("homeassistant.helpers.update_coordinator", DataUpdateCoordinator=_Coordinator)
@@ -405,6 +409,8 @@ class SturingTest(unittest.TestCase):
         self.assertEqual([s["soort"] for s in lanes["Bijladen"]["stappen"]], ["ok", "ok", "actie"])
         self.assertEqual(lanes["Bijladen"]["stappen"][0]["detail"], "23:00 – 07:00")
         self.assertTrue(lanes["Bijladen"]["aan"])
+        self.assertEqual(lanes["Bijladen"]["schakelaar"], "switch.prijssturing")
+        self.assertEqual(lanes["Negatieve prijs"]["schakelaar"], "switch.negatieve_prijs")
         self.assertFalse(lanes["Verkoop"]["aan"])
         self.assertEqual(lanes["Verkoop"]["stappen"][-1]["soort"], "eind")
         self.assertEqual([s["soort"] for s in lanes["Negatieve prijs"]["stappen"]], ["stop", "eind"])

@@ -144,7 +144,7 @@ Zet je dat lager, dan plant hij meer uren en laadt hij rustiger.
 
 ### Kaarten van de integratie
 
-De integratie levert drie kaarten mee; er hoeft geen resource te worden toegevoegd. Ververs de
+De integratie levert vier kaarten mee; er hoeft geen resource te worden toegevoegd. Ververs de
 browser na het installeren of bijwerken.
 
 | Kaart | Inhoud |
@@ -152,6 +152,7 @@ browser na het installeren of bijwerken.
 | `custom:marstek-goedkoop-laden-card` | Stroomschema: de tijdlijn van vandaag en per onderdeel (bijladen, verkoop, negatieve prijs) welke controles slagen en op welke het stopt. |
 | `custom:marstek-goedkoop-laden-compact-card` | Hetzelfde in een paar regels: de tijdlijn, per onderdeel de uitkomst met de reden, en één regel met de opbrengst. |
 | `custom:marstek-goedkoop-laden-opbrengst-card` | Alleen de opbrengst: vandaag, deze week en de verwachting van het huidige plan. |
+| `custom:marstek-goedkoop-laden-schakelaars-card` | Compact: drie knoppen om bijladen, verkoop en laden bij negatieve prijs aan of uit te zetten. |
 
 ```yaml
 type: custom:marstek-goedkoop-laden-card

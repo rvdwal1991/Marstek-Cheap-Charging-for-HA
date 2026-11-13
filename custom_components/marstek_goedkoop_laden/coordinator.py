@@ -10,6 +10,7 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import Event, HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
@@ -416,6 +417,12 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
 
     # ---------------------------------------------------------- stroomschema
 
+    def _switch_entity(self, key: str) -> str | None:
+        """De entity_id van een van de eigen schakelaars (voor de schakelaarkaart)."""
+        return er.async_get(self.hass).async_get_entity_id(
+            "switch", DOMAIN, f"{self.config_entry.entry_id}_{key}"
+        )
+
     def _build_flow(
         self,
         plan: Plan,
@@ -569,9 +576,9 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 ),
             },
             "banen": [
-                {"titel": "Bijladen", "icoon": "mdi:battery-charging", "aan": self.enabled, "stappen": list(plan.steps)},
-                {"titel": "Verkoop", "icoon": "mdi:transmission-tower-export", "aan": self.sell_enabled, "stappen": sell_steps},
-                {"titel": "Negatieve prijs", "icoon": "mdi:cash-minus", "aan": self.negative_enabled, "stappen": negative_steps},
+                {"titel": "Bijladen", "icoon": "mdi:battery-charging", "aan": self.enabled, "stappen": list(plan.steps), "schakelaar": self._switch_entity("prijssturing")},
+                {"titel": "Verkoop", "icoon": "mdi:transmission-tower-export", "aan": self.sell_enabled, "stappen": sell_steps, "schakelaar": self._switch_entity("verkoop")},
+                {"titel": "Negatieve prijs", "icoon": "mdi:cash-minus", "aan": self.negative_enabled, "stappen": negative_steps, "schakelaar": self._switch_entity("negatieve_prijs")},
             ],
         }
 
