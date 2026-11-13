@@ -460,6 +460,71 @@ class SturingTest(unittest.TestCase):
         self.assertEqual(result["week"], round(ledger.week_gain, 2))
         self.assertGreater(result["voorraad_kwh"], 1.5)
 
+    def _met_voorraad(self, kostprijs_totaal=0.92, kwh=2.17):
+        hass, coordinator = make(70)
+        coordinator.ledger.stock_kwh = kwh
+        coordinator.ledger.stock_cost = kostprijs_totaal
+        coordinator.ledger.last_charged = 1837.74
+        coordinator.ledger.last_discharged = 1418.82
+        return hass, coordinator
+
+    def test_vasthouden_onder_de_kostprijs(self):
+        # 11 nov 13:00: prijs ca. 0,58; voorraad met kostprijs 0,60 (16:00 kost 0,62).
+        at("2026-11-11T13:10:00")
+        hass, coordinator = self._met_voorraad(kostprijs_totaal=2.17 * 0.60)
+        run(coordinator.async_refresh())
+        self.assertTrue(coordinator.hold_active)
+        self.assertEqual(hass.calls, [("number.max_ontladen", 0)])
+        self.assertEqual(hass.get("select.rs485"), "disable")  # anti-feed blijft aan
+        self.assertEqual(coordinator.hold_until.astimezone(TZ).strftime("%H:%M"), "16:00")
+        lane = {l["titel"]: l for l in coordinator.flow["banen"]}["Vasthouden"]
+        self.assertEqual([s["soort"] for s in lane["stappen"]], ["ok", "ok", "actie"])
+        self.assertEqual(coordinator.flow["tijdlijn"][0]["detail"], "Vasthouden: ontladen geblokkeerd")
+
+        # Een andere automatisering (laadpaal) zet het ontlaadvermogen op 150 W:
+        # terug naar 0, en 150 W onthouden voor na afloop.
+        hass.calls.clear()
+        hass.set("number.max_ontladen", 150)
+        at("2026-11-11T13:20:00")
+        run(coordinator.async_refresh())
+        self.assertEqual(hass.calls, [("number.max_ontladen", 0)])
+
+        # 16:00: de prijs komt boven de kostprijs, ontladen wordt vrijgegeven.
+        hass.calls.clear()
+        at("2026-11-11T16:00:30")
+        run(coordinator.async_refresh())
+        self.assertFalse(coordinator.hold_active)
+        self.assertEqual(hass.calls, [("number.max_ontladen", 150)])
+
+    def test_niet_vasthouden_boven_de_kostprijs_of_zonder_voorraad(self):
+        at("2026-11-11T17:10:00")
+        hass, coordinator = self._met_voorraad()
+        run(coordinator.async_refresh())
+        self.assertFalse(coordinator.hold_active)
+        self.assertEqual(hass.calls, [])
+        at("2026-11-11T13:10:00")
+        hass, coordinator = make(70)
+        run(coordinator.async_refresh())
+        self.assertFalse(coordinator.hold_active)
+        self.assertEqual(hass.calls, [])
+
+    def test_vasthouden_uitzetten_geeft_vrij(self):
+        at("2026-11-11T13:10:00")
+        hass, coordinator = self._met_voorraad(kostprijs_totaal=2.17 * 0.60)
+        run(coordinator.async_refresh())
+        self.assertEqual(hass.get("number.max_ontladen"), "0")
+        run(coordinator.async_set_hold_enabled(False))
+        self.assertEqual(hass.get("number.max_ontladen"), "2500")
+
+    def test_lege_accu_laat_de_voorraad_vervallen(self):
+        at("2026-11-11T13:10:00")
+        hass, coordinator = self._met_voorraad(kostprijs_totaal=2.17 * 0.60)
+        hass.set("sensor.soc", 12)
+        run(coordinator.async_refresh())
+        self.assertEqual(coordinator.ledger.stock_kwh, 0.0)
+        self.assertFalse(coordinator.hold_active)
+        self.assertEqual(hass.calls, [])
+
 
 if __name__ == "__main__":
     unittest.main()

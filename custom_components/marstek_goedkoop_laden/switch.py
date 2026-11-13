@@ -21,7 +21,12 @@ async def async_setup_entry(
     """Maak de schakelaar aan."""
     coordinator: ChargePlanCoordinator = entry.runtime_data
     async_add_entities(
-        [PriceControlSwitch(coordinator), SellSwitch(coordinator), NegativePriceSwitch(coordinator)]
+        [
+            PriceControlSwitch(coordinator),
+            SellSwitch(coordinator),
+            NegativePriceSwitch(coordinator),
+            HoldSwitch(coordinator),
+        ]
     )
 
 
@@ -86,4 +91,32 @@ class NegativePriceSwitch(ChargePlanEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         await self.coordinator.async_set_negative_enabled(False)
+
+
+class HoldSwitch(ChargePlanEntity, SwitchEntity):
+    """Aan (standaard): niet ontladen zolang de prijs onder de kostprijs ligt."""
+
+    def __init__(self, coordinator: ChargePlanCoordinator) -> None:
+        super().__init__(coordinator, "vasthouden")
+
+    @property
+    def is_on(self) -> bool:
+        return self.coordinator.hold_enabled
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        ledger = self.coordinator.ledger
+        until = self.coordinator.hold_until
+        return {
+            "nu_actief": self.coordinator.hold_active,
+            "tot": until.isoformat() if until else None,
+            "voorraad_kwh": round(ledger.stock_kwh, 2),
+            "kostprijs": round(ledger.stock_price, 3) if ledger.stock_price is not None else None,
+        }
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self.coordinator.async_set_hold_enabled(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        await self.coordinator.async_set_hold_enabled(False)
 

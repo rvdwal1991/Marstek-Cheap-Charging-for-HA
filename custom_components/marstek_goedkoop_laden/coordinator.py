@@ -89,6 +89,9 @@ from .planner import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# Onder deze voorraad (kWh) wordt er niet vastgehouden.
+HOLD_MIN_STOCK_KWH = 0.1
+
 STORAGE_VERSION = 1
 
 
@@ -176,6 +179,15 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self.expected_gain: float = 0.0
         # Boekhouding van de gerealiseerde opbrengst (vandaag en deze week).
         self.ledger = Ledger()
+        # Vasthouden: niet ontladen zolang de prijs onder de kostprijs van de
+        # bijgeladen voorraad ligt. Staat standaard aan.
+        self.hold_enabled = True
+        self.hold_active = False
+        self.hold_until: datetime | None = None
+        # Waar als de integratie zelf het maximale ontlaadvermogen op 0 heeft gezet,
+        # met de waarde die er daarvoor stond (of die een ander er intussen in zette).
+        self._holding = False
+        self._discharge_limit_before: float | None = None
         self.last_command: str | None = None
         self._memory = PlanMemory()
         self._store: Store[dict[str, Any]] = Store(
@@ -195,6 +207,9 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self._selling = bool(data.get("selling", False))
         self._discharge_power_before = data.get("discharge_power_before")
         self.ledger = Ledger.from_dict(data.get("ledger"))
+        self.hold_enabled = bool(data.get("hold_enabled", True))
+        self._holding = bool(data.get("holding", False))
+        self._discharge_limit_before = data.get("discharge_limit_before")
 
         def moment(value: Any) -> datetime | None:
             return dt_util.parse_datetime(value) if isinstance(value, str) else None
@@ -221,6 +236,9 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 "selling": self._selling,
                 "discharge_power_before": self._discharge_power_before,
                 "ledger": self.ledger.to_dict(),
+                "hold_enabled": self.hold_enabled,
+                "holding": self._holding,
+                "discharge_limit_before": self._discharge_limit_before,
                 "sell_hours": [h.isoformat() for h in self._sell_hours],
                 "status": memory.status,
                 "charge_hours": [h.isoformat() for h in memory.charge_hours],
@@ -265,7 +283,11 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             "force_power_w": self._number(CONF_FORCE_POWER_ENTITY),
             "charged_total": self._number(CONF_CHARGED_ENERGY_ENTITY),
             "discharged_total": self._number(CONF_DISCHARGED_ENERGY_ENTITY),
-            "max_discharge_power_w": self._number(CONF_MAX_DISCHARGE_POWER_ENTITY)
+            "max_discharge_raw": self._number(CONF_MAX_DISCHARGE_POWER_ENTITY),
+            # Tijdens vasthouden staat het ontlaadvermogen op 0; reken dan met
+            # de waarde van daarvoor.
+            "max_discharge_power_w": (self._discharge_limit_before if self._holding else None)
+            or self._number(CONF_MAX_DISCHARGE_POWER_ENTITY)
             or DEFAULT_MAX_POWER,
             "force_discharge_power_w": self._number(CONF_FORCE_DISCHARGE_POWER_ENTITY),
             "min_soc": self._number(CONF_MIN_SOC_ENTITY)
@@ -302,6 +324,11 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             price_offset=float(conf.get(CONF_SELL_PRICE_OFFSET, DEFAULT_SELL_PRICE_OFFSET)),
             min_power_w=int(conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
         )
+
+    @property
+    def can_hold(self) -> bool:
+        """Vasthouden kan alleen als het maximale ontlaadvermogen is ingesteld."""
+        return bool(self.conf.get(CONF_MAX_DISCHARGE_POWER_ENTITY))
 
     @property
     def can_sell(self) -> bool:
@@ -390,6 +417,34 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         ):
             self._save()
 
+        # Vasthouden: is de accu leeg (en wordt er niet geladen), dan vervalt de
+        # voorraad in de boeken.
+        soc = inputs["soc"]
+        if (
+            soc is not None
+            and soc <= inputs["min_soc"] + 1
+            and not inputs["charging"]
+            and self.ledger.clear_stock()
+        ):
+            self._save()
+        cost = self.ledger.stock_price
+        selling_now = self._selling or (self.sell_enabled and sell.status == SELL_SELLING)
+        self.hold_active = bool(
+            self.hold_enabled
+            and self.can_hold
+            and self.ledger.stock_kwh >= HOLD_MIN_STOCK_KWH
+            and cost is not None
+            and price_now is not None
+            and price_now < cost
+            and not selling_now
+        )
+        self.hold_until = None
+        if self.hold_active:
+            self.hold_until = next(
+                (s.start for s in plan.prices if s.start > now and s.price >= cost), None
+            )
+        await self._async_apply_hold(inputs)
+
         if (
             self.enabled
             or self.sell_enabled
@@ -450,6 +505,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                     result.append((start, end))
             return result
 
+        cost = self.ledger.stock_price
         control, force = inputs["control_mode"], inputs["force_mode"]
         if self.negative_active:
             doing = "Laden op vol vermogen (negatieve prijs)"
@@ -461,6 +517,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             doing = "Stilgezet (handmatig)"
         elif control is None:
             doing = "Marstek niet bereikbaar"
+        elif self.hold_active:
+            doing = "Vasthouden: ontladen geblokkeerd"
         else:
             doing = "Zelf regelen (anti-feed)"
 
@@ -485,16 +543,29 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 detail = "Wordt niet uitgevoerd: verkopen staat uit"
                 kind = "eind"
             events.append((start, end, step(f"{clock(start)} – {clock(end)} · verkopen", detail, kind)))
+        if self.hold_active and self.hold_until is not None and cost is not None:
+            events.append(
+                (
+                    self.hold_until,
+                    self.hold_until,
+                    step(
+                        f"{clock(self.hold_until)} · ontladen vrij",
+                        f"Prijs komt boven de kostprijs van € {euro(cost)}",
+                        "eind",
+                    ),
+                )
+            )
         events.sort(key=lambda item: item[0])
 
         timeline = [step("Nu", doing, "nu")]
         timeline.extend(item[2] for item in events)
-        if events:
-            timeline.append(
-                step(f"{clock(max(item[1] for item in events))} · klaar", "Weer zelf regelen (anti-feed)", "eind")
-            )
-        else:
+        # Na de laatste laad- of verkoopactie regelt de Marstek weer zelf. Het
+        # vrijgeven van het ontladen is zelf al zo'n eindpunt.
+        last = max(events, key=lambda item: item[1]) if events else None
+        if last is None:
             timeline.append(step("Geen acties gepland", "De Marstek blijft zelf regelen", "eind"))
+        elif last[0] != last[1]:
+            timeline.append(step(f"{clock(last[1])} · klaar", "Weer zelf regelen (anti-feed)", "eind"))
 
         if negative_slot is not None:
             price_step = step("Prijs onder de grens", f"Nu € {euro(negative_slot.price)}", "ok")
@@ -518,6 +589,38 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 step(f"Prijs niet onder € {euro(limit)}", detail, "stop"),
                 step("Niet actief", "Wacht op een negatief uur", "eind"),
             ]
+
+        current_slot = next((s for s in plan.prices if s.start <= now < s.end), None)
+        if not self.can_hold:
+            hold_steps = [
+                step("Niet ingesteld", "Kies de entiteit voor het maximale ontlaadvermogen", "stop"),
+                step("Niet actief", "Stopt bij deze stap", "eind"),
+            ]
+        elif self.ledger.stock_kwh < HOLD_MIN_STOCK_KWH or cost is None:
+            hold_steps = [
+                step("Geen bijgeladen voorraad", "Niets om vast te houden", "stop"),
+                step("Niet actief", "De Marstek regelt zelf", "eind"),
+            ]
+        else:
+            stock_step = step(
+                "Bijgeladen voorraad",
+                f"{euro(self.ledger.stock_kwh, 1)} kWh, kostprijs € {euro(cost)}",
+                "ok",
+            )
+            price_text = f"Nu € {euro(current_slot.price)}" if current_slot else "Prijs onbekend"
+            if self.hold_active:
+                until = f"Tot {clock(self.hold_until)}" if self.hold_until else f"Tot de prijs boven € {euro(cost)} komt"
+                hold_steps = [
+                    stock_step,
+                    step("Prijs onder kostprijs", price_text, "ok"),
+                    step("Ontladen geblokkeerd", until, "actie"),
+                ]
+            else:
+                hold_steps = [
+                    stock_step,
+                    step("Prijs niet onder kostprijs", price_text, "stop"),
+                    step("Ontladen vrij", "De voorraad wordt met winst gebruikt", "eind"),
+                ]
 
         if self.can_sell:
             sell_steps = list(sell.steps)
@@ -579,6 +682,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 {"titel": "Bijladen", "icoon": "mdi:battery-charging", "aan": self.enabled, "stappen": list(plan.steps), "schakelaar": self._switch_entity("prijssturing")},
                 {"titel": "Verkoop", "icoon": "mdi:transmission-tower-export", "aan": self.sell_enabled, "stappen": sell_steps, "schakelaar": self._switch_entity("verkoop")},
                 {"titel": "Negatieve prijs", "icoon": "mdi:cash-minus", "aan": self.negative_enabled, "stappen": negative_steps, "schakelaar": self._switch_entity("negatieve_prijs")},
+                {"titel": "Vasthouden", "icoon": "mdi:lock-clock", "aan": self.hold_enabled, "stappen": hold_steps, "schakelaar": self._switch_entity("vasthouden")},
             ],
         }
 
@@ -728,6 +832,46 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         except Exception:  # noqa: BLE001 - een mislukte opdracht mag de berekening niet stoppen
             _LOGGER.exception("Aansturen van de Marstek mislukt")
 
+    async def _async_apply_hold(self, inputs: dict[str, Any]) -> None:
+        """Blokkeer of geef het ontladen vrij via het maximale ontlaadvermogen.
+
+        Anti-feed blijft aan staan, dus laden uit zonne-overschot gaat gewoon door.
+        Zet iets anders het ontlaadvermogen tijdens het vasthouden terug (zoals een
+        begrenzer voor de laadpaal), dan onthouden we die waarde voor na afloop en
+        zetten we het weer op 0.
+        """
+        if not self.can_hold:
+            return
+        raw = inputs["max_discharge_raw"]
+        if raw is None:
+            return  # Marstek niet bereikbaar.
+        try:
+            if self.hold_active:
+                if raw > 0:
+                    self._discharge_limit_before = raw
+                    await self._async_set_number(CONF_MAX_DISCHARGE_POWER_ENTITY, 0)
+                    if not self._holding:
+                        self.last_command = (
+                            f"{dt_util.now().isoformat(timespec='seconds')} "
+                            "vasthouden: ontladen geblokkeerd"
+                        )
+                        _LOGGER.info("Marstek: vasthouden, ontladen geblokkeerd")
+                    self._holding = True
+                    self._save()
+            elif self._holding:
+                restore = self._discharge_limit_before or DEFAULT_MAX_POWER
+                await self._async_set_number(CONF_MAX_DISCHARGE_POWER_ENTITY, restore)
+                self._holding = False
+                self._discharge_limit_before = None
+                self.last_command = (
+                    f"{dt_util.now().isoformat(timespec='seconds')} "
+                    f"vasthouden voorbij: ontladen vrij ({int(restore)} W)"
+                )
+                _LOGGER.info("Marstek: vasthouden voorbij, ontladen vrij")
+                self._save()
+        except Exception:  # noqa: BLE001
+            _LOGGER.exception("Aanpassen van het maximale ontlaadvermogen mislukt")
+
     async def _async_release(self, inputs: dict[str, Any]) -> None:
         """Zet de Marstek terug in zijn rusttoestand: RS485 uit, anti-feed."""
         await self._async_select(CONF_CONTROL_MODE_ENTITY, MODE_DISABLE)
@@ -788,5 +932,11 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 self._settle("laden bij negatieve prijs uit, terug naar anti-feed")
             except Exception:  # noqa: BLE001
                 _LOGGER.exception("Terugzetten van de Marstek mislukt")
+        await self.async_refresh()
+
+    async def async_set_hold_enabled(self, enabled: bool) -> None:
+        """Zet vasthouden onder de kostprijs aan of uit."""
+        self.hold_enabled = enabled
+        self._save()
         await self.async_refresh()
 

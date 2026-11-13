@@ -151,6 +151,9 @@
       },
       "negatieve_prijs": {
         "name": "Laden bij negatieve prijs"
+      },
+      "vasthouden": {
+        "name": "Vasthouden onder kostprijs"
       }
     }
   }

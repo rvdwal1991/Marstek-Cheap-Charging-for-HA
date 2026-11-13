@@ -151,6 +151,9 @@
       },
       "negatieve_prijs": {
         "name": "Charge at negative price"
+      },
+      "vasthouden": {
+        "name": "Hold below cost price"
       }
     }
   }

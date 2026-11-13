@@ -102,6 +102,13 @@ class Ledger:
             self.stock_kwh = self.stock_cost = 0.0
         return used, cost
 
+    def clear_stock(self) -> bool:
+        """De accu is leeg: wat er nog aan voorraad in de boeken stond vervalt."""
+        if self.stock_kwh == 0 and self.stock_cost == 0:
+            return False
+        self.stock_kwh = self.stock_cost = 0.0
+        return True
+
     def _book(self, gain: float) -> None:
         self.day_gain += gain
         self.week_gain += gain
