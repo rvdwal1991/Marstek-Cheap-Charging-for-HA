@@ -148,6 +148,7 @@ class _Hass:
             "sensor.geladen": _State(1837.74),
             "sensor.ontladen": _State(1418.82),
         }
+        self.config = types.SimpleNamespace(language="nl")
         self.states = types.SimpleNamespace(get=self.values.get)
         self.services = types.SimpleNamespace(async_call=self._call)
 

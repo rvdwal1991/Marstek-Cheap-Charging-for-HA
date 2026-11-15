@@ -14,8 +14,11 @@ expensive hours.
 
 > The integration was built around the Dutch market and Zonneplan prices (hourly prices,
 > published for the next day between 13:00 and 15:00). Any price sensor with an hourly price
-> list as an attribute will do, see [Price sensor](#price-sensor). The entity IDs and
-> attribute names are Dutch (`laadplan`, `vasthouden`, …) when Home Assistant runs in Dutch.
+> list as an attribute will do, see [Price sensor](#price-sensor).
+>
+> **Language:** everything follows the language of Home Assistant: entity names, the plan text,
+> the flow chart and the cards are Dutch when Home Assistant is set to Dutch, and English for
+> any other language. State values and attribute names (`laden`, `tekst`, …) are fixed.
 
 ## What it does
 
@@ -157,8 +160,8 @@ yourself is reset as long as price control is on; switch it off first if you wan
 | `sensor.*_average_charge_price` | Average price of the charge hours in €/kWh. |
 
 The names above are for an English installation. With Home Assistant set to Dutch they are
-named `*_laadplan`, `*_prijssturing` and so on; rename them as you like. The state values and
-attribute names are Dutch in both languages.
+named `*_laadplan`, `*_prijssturing` and so on. The state values and attribute names are the
+same in both languages.
 
 ## Installation
 

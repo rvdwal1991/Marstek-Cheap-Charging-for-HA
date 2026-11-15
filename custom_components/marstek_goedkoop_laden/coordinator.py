@@ -69,6 +69,7 @@ from .const import (
     MODE_ENABLE,
     UPDATE_INTERVAL_SECONDS,
 )
+from .i18n import tr
 from .ledger import Ledger
 from .planner import (
     FULL_SOC,
@@ -480,7 +481,9 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         ):
             await self._async_apply(plan, sell, inputs)
 
-        self.flow = self._build_flow(plan, sell, inputs, now, limit, slot)
+        self.flow = tr(
+            self.hass.config.language, self._build_flow(plan, sell, inputs, now, limit, slot)
+        )
 
         if self.negative_active and slot is not None:
             # Alleen de weergave: het bewaarde plan blijft het echte laadplan.
@@ -888,7 +891,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 await self._async_select(CONF_FORCE_MODE_ENTITY, FORCE_CHARGE)
                 self._settle("forceren terug op charge (rusttoestand)")
         except Exception:  # noqa: BLE001 - een mislukte opdracht mag de berekening niet stoppen
-            _LOGGER.exception("Aansturen van de Marstek mislukt")
+            _LOGGER.exception("Controlling the Marstek failed")
 
     async def _async_apply_hold(self, inputs: dict[str, Any]) -> None:
         """Blokkeer of geef het ontladen vrij via het maximale ontlaadvermogen.
@@ -913,7 +916,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                             f"{dt_util.now().isoformat(timespec='seconds')} "
                             "vasthouden: ontladen geblokkeerd"
                         )
-                        _LOGGER.info("Marstek: vasthouden, ontladen geblokkeerd")
+                        _LOGGER.info("Marstek: hold, discharging blocked")
                     self._holding = True
                     self._save()
             elif self._holding:
@@ -925,10 +928,10 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                     f"{dt_util.now().isoformat(timespec='seconds')} "
                     f"vasthouden voorbij: ontladen vrij ({int(restore)} W)"
                 )
-                _LOGGER.info("Marstek: vasthouden voorbij, ontladen vrij")
+                _LOGGER.info("Marstek: hold over, discharging released")
                 self._save()
         except Exception:  # noqa: BLE001
-            _LOGGER.exception("Aanpassen van het maximale ontlaadvermogen mislukt")
+            _LOGGER.exception("Adjusting the maximum discharge power failed")
 
     async def _async_release(self, inputs: dict[str, Any]) -> None:
         """Zet de Marstek terug in zijn rusttoestand: RS485 uit, anti-feed."""
@@ -963,7 +966,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                     await self._async_release(inputs)
                     self._settle("prijssturing uit, terug naar anti-feed")
                 except Exception:  # noqa: BLE001
-                    _LOGGER.exception("Terugzetten van de Marstek mislukt")
+                    _LOGGER.exception("Restoring the Marstek failed")
         await self.async_refresh()
 
     async def async_set_sell_enabled(self, enabled: bool) -> None:
@@ -976,7 +979,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 await self._async_release(self._read_inputs())
                 self._settle("verkoop uit, terug naar anti-feed")
             except Exception:  # noqa: BLE001
-                _LOGGER.exception("Terugzetten van de Marstek mislukt")
+                _LOGGER.exception("Restoring the Marstek failed")
         await self.async_refresh()
 
     async def async_set_negative_enabled(self, enabled: bool) -> None:
@@ -989,7 +992,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 await self._async_release(self._read_inputs())
                 self._settle("laden bij negatieve prijs uit, terug naar anti-feed")
             except Exception:  # noqa: BLE001
-                _LOGGER.exception("Terugzetten van de Marstek mislukt")
+                _LOGGER.exception("Restoring the Marstek failed")
         await self.async_refresh()
 
     async def async_set_hold_enabled(self, enabled: bool) -> None:

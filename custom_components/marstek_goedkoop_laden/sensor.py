@@ -18,6 +18,8 @@ from homeassistant.const import UnitOfEnergy, UnitOfPower
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .i18n import tr
+
 from homeassistant.util import dt as dt_util
 
 from .coordinator import ChargePlanCoordinator
@@ -143,6 +145,8 @@ class ChargePlanSensor(ChargePlanEntity, SensorEntity):
         if self.entity_description.attributes_fn is None:
             return None
         attributes = self.entity_description.attributes_fn(self.coordinator.data)
+        if "tekst" in attributes:
+            attributes["tekst"] = tr(self.hass.config.language, attributes["tekst"])
         if self.entity_description.key == "laadplan":
             # Tijdlijn en controles voor de dashboardkaart.
             attributes["stroomschema"] = self.coordinator.flow
@@ -164,7 +168,9 @@ class SellPlanSensor(ChargePlanEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        return _sell_attributes(self.coordinator.sell_plan)
+        attributes = _sell_attributes(self.coordinator.sell_plan)
+        attributes["tekst"] = tr(self.hass.config.language, attributes["tekst"])
+        return attributes
 
 
 class ExpectedGainSensor(ChargePlanEntity, SensorEntity):

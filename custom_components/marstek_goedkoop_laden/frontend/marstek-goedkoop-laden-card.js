@@ -118,8 +118,45 @@ function escapeHtml(value) {
   ));
 }
 
+// Taal van Home Assistant: Nederlands blijft Nederlands, al het andere wordt Engels.
+let LANG = (typeof navigator !== "undefined" && navigator.language) || "nl";
+const EN = {
+  "Marstek Goedkoop Laden (opbrengst)": "Marstek Cheap Charging (gain)",
+  "Marstek Goedkoop Laden (schakelaars)": "Marstek Cheap Charging (switches)",
+  "Marstek Goedkoop Laden": "Marstek Cheap Charging",
+  "Marstek Goedkoop Laden (compact)": "Marstek Cheap Charging (compact)",
+  "Staat uit": "Off",
+  "Zet de schakelaar aan om dit te gebruiken": "Turn the switch on to use this",
+  "Verwachte opbrengst van dit plan (schatting)": "Expected gain of this plan (estimate)",
+  "totaal": "total",
+  "Vandaag": "Today",
+  "week": "week",
+  "verwacht": "expected",
+  "Deze week": "This week",
+  "Verwacht (plan)": "Expected (plan)",
+  "niet gevonden.": "not found.",
+  "Entiteit": "Entity",
+  "Nog geen gegevens beschikbaar.": "No data available yet.",
+  "Nog geen opbrengst beschikbaar.": "No gain available yet.",
+  "Nu": "Now",
+  "aan": "on",
+  "uit": "off",
+  "Aan": "On",
+  "Uit": "Off",
+  "Dat telt pas mee als het wordt gebruikt.": "That only counts once it is used.",
+  "Er zit geen bijgeladen stroom meer in de accu.": "There is no charged energy left in the battery.",
+  "Tijdlijn en controles van het laadplan als stroomschema.": "Timeline and checks of the charge plan as a flow chart.",
+  "Het stroomschema in een paar regels.": "The flow chart in a few lines.",
+  "Opbrengst van vandaag, deze week en het huidige plan.": "Gain of today, this week and the current plan.",
+  "De schakelaars voor bijladen, verkoop en negatieve prijs.": "The switches for charging, selling and negative price.",
+};
+function t(nl) {
+  return LANG.toLowerCase().startsWith("nl") ? nl : (EN[nl] ?? nl);
+}
+
 function number(value, digits) {
-  return Number(value || 0).toFixed(digits).replace(".", ",");
+  const text = Number(value || 0).toFixed(digits);
+  return LANG.toLowerCase().startsWith("nl") ? text.replace(".", ",") : text;
 }
 
 function formatEuro(value) {
@@ -149,7 +186,7 @@ function renderSteps(steps) {
 function laneSteps(lane) {
   return lane.aan
     ? lane.stappen || []
-    : [{ titel: "Staat uit", detail: "Zet de schakelaar aan om dit te gebruiken", soort: "eind" }];
+    : [{ titel: t("Staat uit"), detail: t("Zet de schakelaar aan om dit te gebruiken"), soort: "eind" }];
 }
 
 function renderExpectedRows(result) {
@@ -163,9 +200,9 @@ function renderExpectedRows(result) {
 function renderExpected(result) {
   if (!result || !Array.isArray(result.regels)) return "";
   return `
-    <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>Verwachte opbrengst van dit plan (schatting)</span></div>
+    <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>${t("Verwachte opbrengst van dit plan (schatting)")}</span></div>
     <div class="result">
-      <div class="total ${tone(result.totaal)}">${formatEuro(result.totaal)}<small>totaal</small></div>
+      <div class="total ${tone(result.totaal)}">${formatEuro(result.totaal)}<small>${t("totaal")}</small></div>
       <div class="rows">${renderExpectedRows(result)}</div>
     </div>`;
 }
@@ -176,7 +213,7 @@ function renderGainLine(result) {
   return `
     <div class="crow">
       <ha-icon icon="mdi:cash-multiple"></ha-icon>
-      <div class="main">${part("Vandaag", result.vandaag)} · ${part("week", result.week)} · ${part("verwacht", result.totaal)}</div>
+      <div class="main">${part(t("Vandaag"), result.vandaag)} · ${part(t("week"), result.week)} · ${part(t("verwacht"), result.totaal)}</div>
       <div></div>
     </div>`;
 }
@@ -201,6 +238,7 @@ class MarstekBaseCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    LANG = (hass && (hass.language || (hass.locale && hass.locale.language))) || "nl";
     this._render();
   }
 
@@ -217,15 +255,15 @@ class MarstekBaseCard extends HTMLElement {
     const state = this._hass && this._hass.states[this._config.entity];
     const flow = state && state.attributes && state.attributes.stroomschema;
     const clock = this._clock();
-    const signature = JSON.stringify([this._config, flow || (state ? "geen" : "weg"), clock]);
+    const signature = JSON.stringify([this._config, flow || (state ? "geen" : "weg"), clock, LANG]);
     if (signature === this._signature) return;
     this._signature = signature;
 
     let body;
     if (!state) {
-      body = `<div class="empty">Entiteit ${escapeHtml(this._config.entity)} niet gevonden.</div>`;
+      body = `<div class="empty">${t("Entiteit")} ${escapeHtml(this._config.entity)} ${t("niet gevonden.")}</div>`;
     } else if (!flow || !Array.isArray(flow.tijdlijn)) {
-      body = '<div class="empty">Nog geen gegevens beschikbaar.</div>';
+      body = `<div class="empty">${t("Nog geen gegevens beschikbaar.")}</div>`;
     } else {
       body = this._body(flow, clock);
     }
@@ -239,7 +277,7 @@ class MarstekBaseCard extends HTMLElement {
 
   _timeline(flow, clock) {
     return flow.tijdlijn.map((item) => (
-      item.soort === "nu" ? { ...item, titel: `Nu · ${clock}` } : item
+      item.soort === "nu" ? { ...item, titel: `${t("Nu")} · ${clock}` } : item
     ));
   }
 }
@@ -262,7 +300,7 @@ class MarstekGoedkoopLadenCard extends MarstekBaseCard {
       <div class="lane ${lane.aan ? "aan" : "uit"}">
         <div class="head">
           <ha-icon icon="${escapeHtml(lane.icoon || "mdi:help-circle-outline")}"></ha-icon>
-          <span>${escapeHtml(lane.titel)} · ${lane.aan ? "aan" : '<span class="off">uit</span>'}</span>
+          <span>${escapeHtml(lane.titel)} · ${lane.aan ? t("aan") : `<span class="off">${t("uit")}</span>`}</span>
         </div>
         ${renderSteps(laneSteps(lane))}
       </div>`).join("");
@@ -270,7 +308,7 @@ class MarstekGoedkoopLadenCard extends MarstekBaseCard {
       ? `<div class="divider"></div>${renderExpected(flow.resultaat)}`
       : "";
     return `
-      <div class="head"><ha-icon icon="mdi:clock-outline"></ha-icon><span>Vandaag</span></div>
+      <div class="head"><ha-icon icon="mdi:clock-outline"></ha-icon><span>${t("Vandaag")}</span></div>
       ${renderSteps(this._timeline(flow, clock))}
       ${result}
       <div class="divider"></div>
@@ -296,7 +334,7 @@ class MarstekGoedkoopLadenCard extends MarstekBaseCard {
         <div class="crow ${lane.aan ? "" : "uit"}">
           <ha-icon icon="${escapeHtml(lane.icoon || "mdi:help-circle-outline")}"></ha-icon>
           <div class="main"><b>${escapeHtml(lane.titel)}</b>${reason ? ` · ${escapeHtml(reason)}` : ""}</div>
-          <div class="out ${last.soort === "actie" ? "actie" : ""}">${escapeHtml(lane.aan ? last.titel : "Uit")}</div>
+          <div class="out ${last.soort === "actie" ? "actie" : ""}">${escapeHtml(lane.aan ? last.titel : t("Uit"))}</div>
         </div>`;
     }).join("");
     const gain = this._config.opbrengst === false ? "" : renderGainLine(flow.resultaat);
@@ -317,25 +355,31 @@ class MarstekGoedkoopLadenOpbrengstCard extends MarstekBaseCard {
 
   _body(flow) {
     const result = flow.resultaat;
-    if (!result) return '<div class="empty">Nog geen opbrengst beschikbaar.</div>';
+    if (!result) return `<div class="empty">${t("Nog geen opbrengst beschikbaar.")}</div>`;
     const tile = (label, value) => `
       <div class="tile"><small>${label}</small><b class="${tone(value)}">${formatEuro(value || 0)}</b></div>`;
     const stock = result.voorraad_kwh > 0.005
-      ? `Nog in de accu: ${number(result.voorraad_kwh, 1)} kWh bijgeladen stroom`
-        + (result.voorraad_prijs != null ? ` (kostprijs € ${number(result.voorraad_prijs, 2)} per kWh)` : "")
-        + ". Dat telt pas mee als het wordt gebruikt."
-      : "Er zit geen bijgeladen stroom meer in de accu.";
+      ? (LANG.toLowerCase().startsWith("nl")
+          ? `Nog in de accu: ${number(result.voorraad_kwh, 1)} kWh bijgeladen stroom`
+            + (result.voorraad_prijs != null ? ` (kostprijs € ${number(result.voorraad_prijs, 2)} per kWh)` : "")
+          : `Still in the battery: ${number(result.voorraad_kwh, 1)} kWh of charged energy`
+            + (result.voorraad_prijs != null ? ` (cost price € ${number(result.voorraad_prijs, 2)} per kWh)` : ""))
+        + `. ${t("Dat telt pas mee als het wordt gebruikt.")}`
+      : t("Er zit geen bijgeladen stroom meer in de accu.");
     const today = result.geladen_kwh > 0.005
-      ? `Vandaag bijgeladen: ${number(result.geladen_kwh, 1)} kWh voor € ${number(result.laadkosten, 2)}`
-        + `, waarvan ${number(result.gebruikt_kwh, 1)} kWh gebruikt. `
+      ? (LANG.toLowerCase().startsWith("nl")
+          ? `Vandaag bijgeladen: ${number(result.geladen_kwh, 1)} kWh voor € ${number(result.laadkosten, 2)}`
+            + `, waarvan ${number(result.gebruikt_kwh, 1)} kWh gebruikt. `
+          : `Charged today: ${number(result.geladen_kwh, 1)} kWh for € ${number(result.laadkosten, 2)}`
+            + `, of which ${number(result.gebruikt_kwh, 1)} kWh used. `)
       : "";
     return `
       <div class="tiles">
-        ${tile("Vandaag", result.vandaag)}
-        ${tile("Deze week", result.week)}
-        ${tile("Verwacht (plan)", result.totaal)}
+        ${tile(t("Vandaag"), result.vandaag)}
+        ${tile(t("Deze week"), result.week)}
+        ${tile(t("Verwacht (plan)"), result.totaal)}
       </div>
-      <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>Verwachte opbrengst van dit plan (schatting)</span></div>
+      <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>${t("Verwachte opbrengst van dit plan (schatting)")}</span></div>
       <div class="rows">${renderExpectedRows(result)}</div>
       <div class="note">${escapeHtml(today + stock)}</div>`;
   }
@@ -354,9 +398,9 @@ class MarstekGoedkoopLadenSchakelaarsCard extends MarstekBaseCard {
     const chips = (flow.banen || []).map((lane, index) => `
       <button class="chip ${lane.aan ? "on" : ""}" data-index="${index}" ${lane.schakelaar ? "" : "disabled"}
               aria-pressed="${lane.aan ? "true" : "false"}"
-              aria-label="${escapeHtml(lane.titel)}: ${lane.aan ? "aan" : "uit"}">
+              aria-label="${escapeHtml(lane.titel)}: ${lane.aan ? t("aan") : t("uit")}">
         <ha-icon icon="${escapeHtml(lane.icoon || "mdi:toggle-switch-outline")}"></ha-icon>
-        <span class="label"><b>${escapeHtml(lane.titel)}</b><small>${lane.aan ? "Aan" : "Uit"}</small></span>
+        <span class="label"><b>${escapeHtml(lane.titel)}</b><small>${lane.aan ? t("Aan") : t("Uit")}</small></span>
       </button>`).join("");
     return `<div class="chips">${chips}</div>`;
   }
@@ -378,14 +422,14 @@ class MarstekGoedkoopLadenSchakelaarsCard extends MarstekBaseCard {
 }
 
 const CARDS = [
-  ["marstek-goedkoop-laden-card", MarstekGoedkoopLadenCard, "Marstek Goedkoop Laden",
-    "Tijdlijn en controles van het laadplan als stroomschema."],
-  ["marstek-goedkoop-laden-compact-card", MarstekGoedkoopLadenCompactCard, "Marstek Goedkoop Laden (compact)",
-    "Het stroomschema in een paar regels."],
-  ["marstek-goedkoop-laden-opbrengst-card", MarstekGoedkoopLadenOpbrengstCard, "Marstek Goedkoop Laden (opbrengst)",
-    "Opbrengst van vandaag, deze week en het huidige plan."],
-  ["marstek-goedkoop-laden-schakelaars-card", MarstekGoedkoopLadenSchakelaarsCard, "Marstek Goedkoop Laden (schakelaars)",
-    "De schakelaars voor bijladen, verkoop en negatieve prijs."],
+  ["marstek-goedkoop-laden-card", MarstekGoedkoopLadenCard, t("Marstek Goedkoop Laden"),
+    t("Tijdlijn en controles van het laadplan als stroomschema.")],
+  ["marstek-goedkoop-laden-compact-card", MarstekGoedkoopLadenCompactCard, t("Marstek Goedkoop Laden (compact)"),
+    t("Het stroomschema in een paar regels.")],
+  ["marstek-goedkoop-laden-opbrengst-card", MarstekGoedkoopLadenOpbrengstCard, t("Marstek Goedkoop Laden (opbrengst)"),
+    t("Opbrengst van vandaag, deze week en het huidige plan.")],
+  ["marstek-goedkoop-laden-schakelaars-card", MarstekGoedkoopLadenSchakelaarsCard, t("Marstek Goedkoop Laden (schakelaars)"),
+    t("De schakelaars voor bijladen, verkoop en negatieve prijs.")],
 ];
 
 window.customCards = window.customCards || [];

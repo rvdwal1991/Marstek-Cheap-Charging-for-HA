@@ -7,6 +7,10 @@
 Laadt een Marstek Venus-thuisbatterij bij in de goedkoopste uren van een dynamisch
 stroomcontract, zodat hij vol is voordat de stroom duur wordt.
 
+Alles volgt de taal van Home Assistant: entiteitsnamen, planregel, stroomschema en kaarten zijn
+Nederlands bij Nederlands en Engels bij elke andere taal. Statuswaarden en attribuutnamen
+(`laden`, `tekst`, …) staan vast.
+
 Het uitgangspunt is **zelfvoorzienend zijn**. De batterij blijft gewoon zelf regelen
 (anti-feed, nul op de meter). Deze integratie doet maar één ding erbij: op de goedkoopste
 uren uit het net bijladen. Daarnaast is er een aparte, standaard uitgeschakelde optie om
@@ -150,8 +154,8 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | `sensor.*_gemiddelde_laadprijs` | Gemiddelde prijs van de laaduren in €/kWh. |
 
 De namen hierboven horen bij een Nederlandstalige installatie. Staat de systeemtaal van Home
-Assistant op Engels, dan heten ze `*_charge_plan`, `*_price_control` enzovoort; hernoem ze dan
-naar wens.
+Assistant op Engels, dan heten ze `*_charge_plan`, `*_price_control` enzovoort, en zijn ook de
+planregel, het stroomschema en de kaarten Engels.
 
 ## Installatie
 
