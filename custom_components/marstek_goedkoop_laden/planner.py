@@ -154,14 +154,28 @@ def _worth_charging(prices: list[PriceSlot], efficiency: float, params: PlanPara
     ]
 
 
-def _first_run(flags: list[bool]) -> list[int]:
-    """Het eerste aaneengesloten blok waarvoor de vlag waar is."""
+# Een of twee uren die net niet goedkoop genoeg zijn, onderbreken het laadvenster niet.
+MAX_GAP_HOURS = 2
+
+
+def _worth_run(flags: list[bool], max_gap: int = MAX_GAP_HOURS) -> list[int]:
+    """De laadwaardige vakken van het eerste goedkope venster.
+
+    Het venster begint bij het eerste laadwaardige vak en loopt door zolang het
+    volgende laadwaardige vak binnen `max_gap` vakken ligt. Zo knipt één vak dat
+    op de grens zit (bijvoorbeeld € 0,29 tussen vakken van € 0,28 en € 0,27) het
+    venster niet in tweeën.
+    """
     run: list[int] = []
+    gap = 0
     for index, flag in enumerate(flags):
         if flag:
             run.append(index)
+            gap = 0
         elif run:
-            break
+            gap += 1
+            if gap > max_gap:
+                break
     return run
 
 
@@ -215,8 +229,10 @@ def compute_plan(
         return local(moment).strftime("%H:%M")
 
     worth = _worth_charging(prices, efficiency, params)
-    run = _first_run(worth)
-    window = tuple(prices[i].start for i in run)
+    run = _worth_run(worth)
+    # Het venster loopt aaneen van het eerste tot het laatste laadwaardige vak; geladen
+    # wordt alleen in de laadwaardige vakken zelf (`run`).
+    window = tuple(prices[i].start for i in range(run[0], run[-1] + 1)) if run else ()
     window_end = prices[run[-1]].end if run else None
 
     energy = (
@@ -238,9 +254,16 @@ def compute_plan(
     remaining = sum(
         (prices[i].end - max(now, prices[i].start)).total_seconds() / 3600.0 for i in chosen
     )
+    # Er past niet meer in dan de gekozen uren aankunnen: is er te weinig goedkoop
+    # venster, dan wordt er minder geladen dan er nodig is.
+    if chosen:
+        energy_plan = min(energy, remaining * max_power_w / 1000.0 * POWER_DERATE)
+    else:
+        energy_plan = 0.0
+    partial = bool(chosen) and energy_plan < energy - 0.05
     power: int | None = None
     if chosen:
-        raw = energy / max(remaining * TIME_DERATE, MIN_REMAINING_HOURS) * 1000.0
+        raw = energy_plan / max(remaining * TIME_DERATE, MIN_REMAINING_HOURS) * 1000.0
         power = int(math.ceil(raw / POWER_STEP_W) * POWER_STEP_W)
         power = int(min(max(power, params.min_power_w), max_power_w))
 
@@ -288,21 +311,28 @@ def compute_plan(
         average = sum(prices[i].price for i in chosen) / len(chosen)
         charge_end = prices[chosen[-1]].end
         use = _use_prices(prices, params)
-        share = energy / len(chosen)
-        cost = energy * average
+        share = energy_plan / len(chosen)
+        cost = energy_plan * average
         value = sum(share * efficiency * (use[i] if use[i] is not None else prices[i].price / efficiency) for i in chosen)
         day = "morgen " if local(hours[0]).date() != local(now).date() else ""
         times = ", ".join(local(h).strftime("%H:%M") for h in hours)
+        amount = (
+            f"{_euro(energy_plan, 1)} van {_euro(energy, 1)} kWh"
+            if partial
+            else f"{_euro(energy_plan, 1)} kWh"
+        )
         text = (
             f"Laden {day}om {times} op ca. {power} W "
-            f"({_euro(energy, 1)} kWh, gem. € {_euro(average)}) · "
+            f"({amount}, gem. € {_euro(average)}) · "
             f"klaar om {local(charge_end).strftime('%H:%M')}"
         )
+        if partial:
+            text += " · het goedkope venster is te kort om vol te komen"
         return Plan(
             status=STATUS_CHARGING if 0 in chosen else STATUS_PLANNED,
             charge_hours=hours,
             power_w=power,
-            energy_kwh=round(energy, 2),
+            energy_kwh=round(energy_plan, 2),
             average_price=round(average, 4),
             charge_end=charge_end,
             text=text,
@@ -315,7 +345,8 @@ def compute_plan(
                 need_step,
                 step(
                     f"Laden, {len(chosen)} uur",
-                    f"Ca. {power} W, gemiddeld € {_euro(average)}",
+                    f"Ca. {power} W, gemiddeld € {_euro(average)}"
+                    + (f" · {_euro(energy_plan, 1)} van {_euro(energy, 1)} kWh" if partial else ""),
                     "actie",
                 ),
             ),
@@ -512,7 +543,9 @@ def compute_sell_plan(
         chosen = sorted(ranked, key=lambda s: s.start)
 
     remaining = sum((s.end - max(now, s.start)).total_seconds() / 3600.0 for s in chosen)
-    raw = surplus / max(remaining * TIME_DERATE, MIN_REMAINING_HOURS) * 1000.0
+    # Niet meer verkopen dan de gekozen uren aankunnen.
+    sold = min(surplus, remaining * max_power_w / 1000.0 * POWER_DERATE)
+    raw = sold / max(remaining * TIME_DERATE, MIN_REMAINING_HOURS) * 1000.0
     power = int(math.ceil(raw / POWER_STEP_W) * POWER_STEP_W)
     power = int(min(max(power, params.min_power_w), max_power_w))
 
@@ -521,25 +554,25 @@ def compute_sell_plan(
     times = ", ".join(local(s.start).strftime("%H:%M") for s in chosen)
     text = (
         f"Verkopen {day}om {times} op ca. {power} W "
-        f"({_euro(surplus, 1)} kWh boven reserve {round(reserve_soc)} %, gem. € {_euro(average)}) · "
+        f"({_euro(sold, 1)} kWh boven reserve {round(reserve_soc)} %, gem. € {_euro(average)}) · "
         f"terugladen vanaf {local(refill_at).strftime('%H:%M')} voor ca. € {_euro(refill_price)}"
     )
     return SellPlan(
         status=SELL_SELLING if chosen[0].start <= now else SELL_PLANNED,
         sell_hours=tuple(s.start for s in chosen),
         power_w=power,
-        energy_kwh=round(surplus, 2),
+        energy_kwh=round(sold, 2),
         average_price=round(average, 4),
         text=text,
-        revenue_eur=round(surplus * average, 2),
-        refill_cost_eur=round(surplus * refill_price / efficiency, 2),
-        gain_eur=round(surplus * (average - refill_price / efficiency), 2),
+        revenue_eur=round(sold * average, 2),
+        refill_cost_eur=round(sold * refill_price / efficiency, 2),
+        gain_eur=round(sold * (average - refill_price / efficiency), 2),
         steps=(
             refill_step,
             price_step,
             step(
                 "Overschot boven reserve",
-                f"{_euro(surplus, 1)} kWh boven {round(reserve_soc)} %",
+                f"{_euro(sold, 1)} kWh boven {round(reserve_soc)} %",
                 "ok",
             ),
             step(

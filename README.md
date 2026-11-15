@@ -16,9 +16,12 @@ uren uit het net bijladen. Daarnaast is er een aparte, standaard uitgeschakelde 
    `rendement × (gemiddelde van de 6 duurste uren in de 18 uur erna) − marge`.
    Het rendement (laden en weer ontladen, bij mij ongeveer 77 %) komt uit de energietellers
    van de Marstek.
-2. **Venster.** Het eerste aaneengesloten blok goedkope uren is het laadvenster.
+2. **Venster.** Het eerste blok goedkope uren is het laadvenster. Een of twee uren die net niet
+   goedkoop genoeg zijn, onderbreken het blok niet; geladen wordt alleen in de goedkope uren zelf.
 3. **Laaduren.** Binnen dat venster kiest hij de goedkoopste uren, precies zoveel als nodig
    is om van de huidige SoC naar 100 % te komen.
+   Is het venster te kort om vol te komen, dan plant hij alleen wat erin past en zegt de
+   planregel dat.
 4. **Vermogen uitsmeren.** Het laadvermogen is de nog bij te laden energie gedeeld door de
    resterende tijd in de laaduren. Zo worden het net en de groep in huis niet zwaarder belast
    dan nodig. Onderweg wordt het vermogen steeds bijgesteld.

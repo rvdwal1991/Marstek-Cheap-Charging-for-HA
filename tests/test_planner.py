@@ -227,5 +227,59 @@ class GainTest(unittest.TestCase):
         self.assertIsNone(sell("2026-11-10T16:05:00", 95, house=400.0).gain_eur)
 
 
+PRICES_15 = [
+    planner.PriceSlot(datetime.fromisoformat(row["start"]), row["price"])
+    for row in json.loads((ROOT / "prijzen_2026_11_15.json").read_text())
+]
+
+
+def plan15(now, soc, max_power=2500, charging=False, memory=None):
+    return planner.compute_plan(
+        prices=PRICES_15, now=at(now), soc=soc, capacity_kwh=5.12, max_power_w=max_power,
+        efficiency=0.773, charging=charging, active=True, memory=memory,
+        params=planner.PlanParams(margin=0.03), tz=TZ,
+    )
+
+
+class WindowGapTest(unittest.TestCase):
+    """15 november 2026: 00:00 (0,29) zat net boven de grens en knipte het venster door."""
+
+    def test_een_uur_op_de_grens_knipt_het_venster_niet(self):
+        result = plan15("2026-11-15T15:45:00", 11)
+        starts = [h.astimezone(TZ).strftime("%H:%M") for h in result.window]
+        self.assertEqual(starts[0], "23:00")
+        self.assertEqual(starts[-1], "05:00")
+        self.assertIn("00:00", starts)  # in het venster, maar niet laadwaardig
+
+    def test_kiest_de_goedkoopste_uren_en_plant_niet_te_veel_in_een_uur(self):
+        result = plan15("2026-11-15T15:45:00", 11)
+        self.assertEqual(hours(result), ["16 02:00", "16 03:00", "16 04:00"])
+        self.assertEqual(result.hours_needed, 3)
+        self.assertAlmostEqual(result.energy_kwh, 5.2, delta=0.1)
+        self.assertLessEqual(result.power_w, 2500)
+        self.assertNotIn("te kort", result.text)
+
+    def test_te_kort_venster_plant_niet_meer_in_dan_er_past(self):
+        # Maar twee laadwaardige uren in het venster: niet 5,2 kWh beloven.
+        short = [s for s in PRICES_15 if s.start.astimezone(TZ).strftime("%d %H") in
+                 ("15 10", "15 11", "15 12", "15 13", "15 14", "15 15", "15 16", "15 17", "15 18",
+                  "15 19", "15 20", "15 21", "15 22", "15 23", "16 00", "16 01", "16 02", "16 03")]
+        result = planner.compute_plan(
+            prices=short, now=at("2026-11-15T15:45:00"), soc=11, capacity_kwh=5.12, max_power_w=1000,
+            efficiency=0.773, charging=False, active=True, params=planner.PlanParams(margin=0.03,
+            min_lookahead_hours=4), tz=TZ,
+        )
+        if result.charge_hours:
+            self.assertLessEqual(result.energy_kwh, len(result.charge_hours) * 1.0 * 0.9 + 0.01)
+            self.assertLessEqual(result.power_w, 1000)
+
+    def test_zeer_laag_maximum_geeft_gedeeltelijk_plan(self):
+        result = plan15("2026-11-15T15:45:00", 11, max_power=600)
+        self.assertGreaterEqual(len(result.charge_hours), 1)
+        self.assertLessEqual(result.energy_kwh, len(result.charge_hours) * 0.6 * 0.9 + 0.01)
+        if result.energy_kwh < 5.0:
+            self.assertIn("van", result.text)
+
+
 if __name__ == "__main__":
     unittest.main()
