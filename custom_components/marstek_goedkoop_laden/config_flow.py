@@ -29,6 +29,7 @@ from .const import (
     CONF_MIN_POWER,
     CONF_MIN_SOC,
     CONF_MIN_SOC_ENTITY,
+    CONF_LANGUAGE,
     CONF_NEGATIVE_PRICE_LIMIT,
     CONF_PRICE_ATTRIBUTE,
     CONF_PRICE_ENTITY,
@@ -46,6 +47,7 @@ from .const import (
     DEFAULT_MIN_LOOKAHEAD_HOURS,
     DEFAULT_MIN_POWER,
     DEFAULT_MIN_SOC,
+    DEFAULT_LANGUAGE,
     DEFAULT_NEGATIVE_PRICE_LIMIT,
     DEFAULT_PRICE_ATTRIBUTE,
     DEFAULT_RESERVE_MIN_SOC,
@@ -112,6 +114,16 @@ def _param_schema(current: dict[str, Any]) -> dict[Any, Any]:
         return fallback if value is None else value
 
     return {
+        vol.Required(CONF_LANGUAGE, default=default(CONF_LANGUAGE, DEFAULT_LANGUAGE)): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=[
+                    {"value": "auto", "label": "Automatic / Automatisch"},
+                    {"value": "nl", "label": "Nederlands"},
+                    {"value": "en", "label": "English"},
+                ],
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            )
+        ),
         vol.Required(CONF_PRICE_ATTRIBUTE, default=default(CONF_PRICE_ATTRIBUTE, DEFAULT_PRICE_ATTRIBUTE)): selector.TextSelector(),
         vol.Required(CONF_CAPACITY_KWH, default=default(CONF_CAPACITY_KWH, DEFAULT_CAPACITY_KWH)): _number(0.5, 100, 0.01, "kWh"),
         vol.Required(CONF_DEFAULT_EFFICIENCY, default=default(CONF_DEFAULT_EFFICIENCY, DEFAULT_EFFICIENCY)): _number(0.5, 1, 0.01),

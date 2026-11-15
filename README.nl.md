@@ -7,8 +7,9 @@
 Laadt een Marstek Venus-thuisbatterij bij in de goedkoopste uren van een dynamisch
 stroomcontract, zodat hij vol is voordat de stroom duur wordt.
 
-Alles volgt de taal van Home Assistant: entiteitsnamen, planregel, stroomschema en kaarten zijn
-Nederlands bij Nederlands en Engels bij elke andere taal. Statuswaarden en attribuutnamen
+Planregel, stroomschema en kaarten volgen de optie *Taal* (Automatisch, Nederlands of English;
+automatisch volgt Home Assistant: Nederlands bij Nederlands, anders Engels). Entiteitsnamen volgen
+de taal van Home Assistant. Statuswaarden en attribuutnamen
 (`laden`, `tekst`, …) staan vast.
 
 Het uitgangspunt is **zelfvoorzienend zijn**. De batterij blijft gewoon zelf regelen
@@ -180,6 +181,7 @@ Via *Configureren* op de integratie:
 
 | Instelling | Standaard | Betekenis |
 |---|---|---|
+| Taal | Automatisch | Taal van planregel, stroomschema en kaarten: Automatisch, Nederlands of English. |
 | Minimale winst per kWh | € 0,02 | Wat bijladen na aftrek van het laadverlies minstens moet opleveren. |
 | Aantal duurste uren | 6 | Met hoeveel dure uren erna een uur wordt vergeleken. |
 | Uren vooruit kijken | 18 | Hoe ver na een uur naar dure uren wordt gezocht. |
@@ -301,7 +303,6 @@ De aansturing wordt getest tegen een nagebootst Home Assistant (`tests/test_stur
 python3 -m unittest discover -s tests -v
 ```
 
-Het icoon wordt getekend door `tools/maak_icoon.py` (alleen de standaardbibliotheek).
 
 ## Licentie
 

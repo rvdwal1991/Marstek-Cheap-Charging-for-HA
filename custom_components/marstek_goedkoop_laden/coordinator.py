@@ -36,6 +36,7 @@ from .const import (
     CONF_MIN_POWER,
     CONF_MIN_SOC,
     CONF_MIN_SOC_ENTITY,
+    CONF_LANGUAGE,
     CONF_NEGATIVE_PRICE_LIMIT,
     CONF_PRICE_ATTRIBUTE,
     CONF_PRICE_ENTITY,
@@ -54,6 +55,7 @@ from .const import (
     DEFAULT_MIN_LOOKAHEAD_HOURS,
     DEFAULT_MIN_POWER,
     DEFAULT_MIN_SOC,
+    DEFAULT_LANGUAGE,
     DEFAULT_NEGATIVE_PRICE_LIMIT,
     DEFAULT_PRICE_ATTRIBUTE,
     DEFAULT_RESERVE_MIN_SOC,
@@ -481,9 +483,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         ):
             await self._async_apply(plan, sell, inputs)
 
-        self.flow = tr(
-            self.hass.config.language, self._build_flow(plan, sell, inputs, now, limit, slot)
-        )
+        self.flow = tr(self.language, self._build_flow(plan, sell, inputs, now, limit, slot))
+        self.flow["taal"] = self.language
 
         if self.negative_active and slot is not None:
             # Alleen de weergave: het bewaarde plan blijft het echte laadplan.
@@ -500,6 +501,12 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         return plan
 
     # ---------------------------------------------------------- stroomschema
+
+    @property
+    def language(self) -> str:
+        """De taal van de teksten: de keuze in de opties, of anders die van Home Assistant."""
+        chosen = self.conf.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
+        return self.hass.config.language if chosen in (None, "auto") else chosen
 
     def _switch_entity(self, key: str) -> str | None:
         """De entity_id van een van de eigen schakelaars (voor de schakelaarkaart)."""

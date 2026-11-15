@@ -239,6 +239,9 @@ class MarstekBaseCard extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
     LANG = (hass && (hass.language || (hass.locale && hass.locale.language))) || "nl";
+    const shown = hass && hass.states && this._config && hass.states[this._config.entity];
+    const chosen = shown && shown.attributes && shown.attributes.stroomschema && shown.attributes.stroomschema.taal;
+    if (chosen) LANG = chosen;
     this._render();
   }
 

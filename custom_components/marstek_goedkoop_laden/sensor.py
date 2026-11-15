@@ -146,7 +146,7 @@ class ChargePlanSensor(ChargePlanEntity, SensorEntity):
             return None
         attributes = self.entity_description.attributes_fn(self.coordinator.data)
         if "tekst" in attributes:
-            attributes["tekst"] = tr(self.hass.config.language, attributes["tekst"])
+            attributes["tekst"] = tr(self.coordinator.language, attributes["tekst"])
         if self.entity_description.key == "laadplan":
             # Tijdlijn en controles voor de dashboardkaart.
             attributes["stroomschema"] = self.coordinator.flow
@@ -169,7 +169,7 @@ class SellPlanSensor(ChargePlanEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         attributes = _sell_attributes(self.coordinator.sell_plan)
-        attributes["tekst"] = tr(self.hass.config.language, attributes["tekst"])
+        attributes["tekst"] = tr(self.coordinator.language, attributes["tekst"])
         return attributes
 
 

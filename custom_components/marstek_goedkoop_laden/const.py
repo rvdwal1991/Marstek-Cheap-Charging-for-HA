@@ -36,6 +36,7 @@ CONF_MIN_SOC = "min_soc"
 CONF_SELL_PRICE_FACTOR = "sell_price_factor"
 CONF_SELL_PRICE_OFFSET = "sell_price_offset"
 CONF_NEGATIVE_PRICE_LIMIT = "negative_price_limit"
+CONF_LANGUAGE = "language"
 
 DEFAULT_PRICE_ATTRIBUTE = "forecast"
 DEFAULT_CAPACITY_KWH = 5.12
@@ -53,6 +54,7 @@ DEFAULT_MIN_SOC = 12
 DEFAULT_SELL_PRICE_FACTOR = 1.0
 DEFAULT_SELL_PRICE_OFFSET = 0.0
 DEFAULT_NEGATIVE_PRICE_LIMIT = 0.0
+DEFAULT_LANGUAGE = "auto"
 
 # Opties van de Marstek-selects (LilyGO RS485 / ESPHome)
 MODE_ENABLE = "enable"

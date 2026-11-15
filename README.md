@@ -16,9 +16,9 @@ expensive hours.
 > published for the next day between 13:00 and 15:00). Any price sensor with an hourly price
 > list as an attribute will do, see [Price sensor](#price-sensor).
 >
-> **Language:** everything follows the language of Home Assistant: entity names, the plan text,
-> the flow chart and the cards are Dutch when Home Assistant is set to Dutch, and English for
-> any other language. State values and attribute names (`laden`, `tekst`, …) are fixed.
+> **Language:** the plan text, the flow chart and the cards follow the *Language* option
+> (Automatic, Nederlands or English; Automatic follows Home Assistant: Dutch for Dutch, English
+> for any other language). Entity names follow the language of Home Assistant. State values and attribute names (`laden`, `tekst`, …) are fixed.
 
 ## What it does
 
@@ -186,6 +186,7 @@ Under *Configure* on the integration:
 
 | Setting | Default | Meaning |
 |---|---|---|
+| Language | Automatic | Language of the plan text, flow chart and cards: Automatic, Nederlands or English. |
 | Minimum gain per kWh | €0.02 | What charging must earn at least, after charge losses. |
 | Number of most expensive hours | 6 | How many expensive hours later on an hour is compared with. |
 | Hours to look ahead | 18 | How far past an hour to look for expensive hours. |
@@ -308,7 +309,6 @@ real prices. The control logic is tested against a faked Home Assistant
 python3 -m unittest discover -s tests -v
 ```
 
-The icon is drawn by `tools/maak_icoon.py` (standard library only).
 
 ## License
 
