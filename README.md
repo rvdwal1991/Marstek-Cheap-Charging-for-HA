@@ -1,265 +1,274 @@
 <img src="custom_components/marstek_goedkoop_laden/brand/icon.png" width="96" align="right" alt="">
 
-# Marstek Goedkoop Laden voor Home Assistant
+# Marstek Cheap Charging for Home Assistant
 
-Laadt een Marstek Venus-thuisbatterij bij in de goedkoopste uren van een dynamisch
-stroomcontract, zodat hij vol is voordat de stroom duur wordt.
+[🇳🇱 Nederlands](README.nl.md) · 🇬🇧 English
 
-Het uitgangspunt is **zelfvoorzienend zijn**. De batterij blijft gewoon zelf regelen
-(anti-feed, nul op de meter). Deze integratie doet maar één ding erbij: op de goedkoopste
-uren uit het net bijladen. Daarnaast is er een aparte, standaard uitgeschakelde optie om
-**overschot te verkopen** in de duurste uren.
+Tops up a Marstek Venus home battery from the grid during the cheapest hours of a dynamic
+electricity contract, so it is full before prices go up.
 
-## Wat hij doet
+The starting point is **self-sufficiency**. The battery keeps regulating itself (anti-feed,
+zero on the meter). This integration adds one thing: charging from the grid in the cheapest
+hours. There is also a separate option, off by default, to **sell surplus** in the most
+expensive hours.
 
-1. **Loont bijladen?** Een uur is goedkoop genoeg als de prijs lager is dan
-   `rendement × (gemiddelde van de 6 duurste uren in de 18 uur erna) − marge`.
-   Het rendement (laden en weer ontladen, bij mij ongeveer 77 %) komt uit de energietellers
-   van de Marstek.
-2. **Venster.** Het eerste blok goedkope uren is het laadvenster. Een of twee uren die net niet
-   goedkoop genoeg zijn, onderbreken het blok niet; geladen wordt alleen in de goedkope uren zelf.
-3. **Laaduren.** Binnen dat venster kiest hij de goedkoopste uren, precies zoveel als nodig
-   is om van de huidige SoC naar 100 % te komen.
-   Is het venster te kort om vol te komen, dan plant hij alleen wat erin past en zegt de
-   planregel dat.
-4. **Vermogen uitsmeren.** Het laadvermogen is de nog bij te laden energie gedeeld door de
-   resterende tijd in de laaduren. Zo worden het net en de groep in huis niet zwaarder belast
-   dan nodig. Onderweg wordt het vermogen steeds bijgesteld.
-5. **Klaar is klaar.** Zijn de laaduren voorbij of is de accu vol, dan gaat de Marstek terug
-   naar anti-feed. In hetzelfde venster start hij niet opnieuw en hij houdt de lading niet vast.
+> The integration was built around the Dutch market and Zonneplan prices (hourly prices,
+> published for the next day between 13:00 and 15:00). Any price sensor with an hourly price
+> list as an attribute will do, see [Price sensor](#price-sensor). The entity IDs and
+> attribute names are Dutch (`laadplan`, `vasthouden`, …) when Home Assistant runs in Dutch.
 
-Er wordt alleen gerekend met **gepubliceerde** prijzen. Het plan voor de nacht ontstaat dus
-zodra de prijzen van morgen bekend zijn (bij Zonneplan tussen 13:00 en 15:00).
+## What it does
 
-Voorbeeld (10 november 2026, accu op 12 %): goedkoop venster 23:00–07:00, bijladen om 02:00,
-03:00 en 04:00 op ongeveer 1900 W voor gemiddeld € 0,37, daarna overdag € 0,55–0,67.
+1. **Is charging worth it?** An hour is cheap enough if its price is lower than
+   `efficiency × (mean of the 6 most expensive hours in the next 18 hours) − margin`.
+   The efficiency (charge and discharge round trip, about 77 % on my unit) is measured from
+   the Marstek's energy counters.
+2. **Window.** The first block of cheap hours is the charge window. One or two hours that are
+   just not cheap enough do not break the block; charging only happens in the cheap hours
+   themselves.
+3. **Charge hours.** Within that window it picks the cheapest hours, exactly as many as needed
+   to get from the current SoC to 100 %. If the window is too short to fill the battery, it
+   plans only what fits and says so in the plan text.
+4. **Spread the power.** Charge power is the energy still to be added divided by the time left
+   in the charge hours. This keeps load on the grid connection and the house circuit as low as
+   possible. The power is adjusted along the way.
+5. **Done is done.** When the charge hours are over or the battery is full, the Marstek goes
+   back to anti-feed. It does not start again in the same window and does not hold the charge.
 
-## Laden bij een negatieve prijs
+Only **published** prices are used. The plan for the night therefore appears as soon as
+tomorrow's prices are known (with Zonneplan between 13:00 and 15:00).
 
-Is de uurprijs negatief, dan laadt de accu altijd op vol vermogen tot hij vol is, los van het
-laadplan en ook als de prijssturing uit staat. Dit heeft een eigen schakelaar die **standaard
-aan** staat. Zodra de prijs weer positief is of de accu vol is, gaat de Marstek terug naar
-anti-feed.
+Example (10 November 2026, battery at 12 %): cheap window 23:00–07:00, charging at 02:00,
+03:00 and 04:00 at about 1900 W for an average of €0.37, versus €0.55–0.67 during the day.
 
-De grens is instelbaar (*Negatieve prijs: grens*, standaard € 0,00). Er wordt gekeken naar de
-prijs uit de prijssensor, bij Zonneplan dus de prijs inclusief belastingen.
+## Charging at a negative price
 
-## Vasthouden onder de kostprijs
+If the hourly price is negative, the battery always charges at full power until it is full,
+regardless of the charge plan and even when price control is off. This has its own switch,
+**on by default**. As soon as the price turns positive again or the battery is full, the
+Marstek goes back to anti-feed.
 
-Bijgeladen stroom heeft een kostprijs: de laadprijs gedeeld door het rendement. Zou de accu die
-stroom direct na het laden weer afgeven in uren die goedkoper zijn dan die kostprijs, dan kost
-het bijladen geld. Daarom wordt het ontladen tegengehouden zolang:
+The limit is adjustable (*Negative price: limit*, default €0.00). The price is taken from the
+price sensor, so with Zonneplan that is the price including taxes.
 
-- er bijgeladen voorraad in de accu zit (zie *Opbrengst*), en
-- de uurprijs lager is dan de kostprijs van die voorraad.
+## Hold below cost price
 
-Het huis gebruikt dan stroom uit het net, die op dat moment goedkoper is dan wat er in de accu
-zit. Zodra de prijs op of boven de kostprijs komt, of de voorraad op is, regelt de Marstek weer
-zelf. Dit heeft een eigen schakelaar die **standaard aan** staat.
+Energy charged from the grid has a cost price: the charge price divided by the efficiency. If
+the battery gave that energy back right after charging, in hours that are cheaper than that
+cost price, charging would cost money. Discharging is therefore blocked as long as:
 
-Technisch zet de integratie het maximale ontlaadvermogen (*Max. Discharge power*) op 0. De
-Marstek blijft in anti-feed, dus laden uit zonne-overschot gaat gewoon door. Zet een andere
-automatisering dat vermogen tijdens het vasthouden op een andere waarde (bijvoorbeeld een
-begrenzer voor de laadpaal), dan onthoudt de integratie die waarde, zet het weer op 0 en
-herstelt de onthouden waarde na afloop.
+- there is charged stock in the battery (see *Gain*), and
+- the hourly price is lower than the cost price of that stock.
 
-Let op: de Marstek kan geen onderscheid maken tussen bijgeladen stroom en zonnestroom. Tijdens
-het vasthouden wordt dus de hele accu niet ontladen.
+The house then uses grid power, which is cheaper at that moment than what is in the battery.
+As soon as the price reaches the cost price, or the stock is used up, the Marstek takes over
+again. This has its own switch, **on by default**.
 
-## Geen verlies
+Technically the integration sets the maximum discharge power (*Max. Discharge power*) to 0.
+The Marstek stays in anti-feed, so charging from solar surplus carries on. If another
+automation sets that power to a different value during the hold (for example a limiter for an
+EV charger), the integration remembers that value, sets it to 0 again and restores the
+remembered value afterwards.
 
-Een aparte schakelaar (standaard uit) die de integratie strikt maakt: bijgeladen stroom wordt
-nooit onder de kostprijs gebruikt of verkocht.
+Note: the Marstek cannot tell grid-charged energy from solar energy. During a hold the whole
+battery is therefore not discharged.
 
-- **Vasthouden wordt afgedwongen**, ook als de schakelaar *Vasthouden* uit staat.
-- **Verkopen onder de kostprijs wordt tegengehouden.** Zit er bijgeladen voorraad in de accu
-  en is de verkoopprijs lager dan de kostprijs daarvan, dan wordt er niet verkocht.
+## No loss
 
-Elke geboekte kWh levert dan minstens de kostprijs op, dus de opbrengst van een dag kan niet
-onder nul komen. Wat het niet kan uitsluiten:
+A separate switch (off by default) that makes the integration strict: energy charged from the
+grid is never used or sold below its cost price.
 
-- **Stilstand.** Komt de prijs lang niet boven de kostprijs, dan blijft de accu zolang
-  geblokkeerd voor ontladen, ook voor opgeslagen zonnestroom.
-- **Afwijkend rendement.** De kostprijs rekent met het gemiddelde rendement. Levert de accu in
-  een cyclus minder dan dat, dan is de accu leeg voordat de voorraad in de boeken op is; die
-  rest vervalt dan zonder dat er verlies wordt geboekt.
-- **Slijtage** van de accu telt niet mee; gebruik daarvoor de minimale winst per kWh.
+- **Hold is enforced**, even if the *Hold* switch is off.
+- **Selling below cost price is blocked.** If there is charged stock in the battery and the
+  sell price is lower than its cost price, nothing is sold.
 
-De integratie rekent direct opnieuw zodra een nieuw prijsvak begint, zodat het vasthouden niet
-tot een minuut te laat ingaat.
+Every booked kWh then earns at least its cost price, so a day's gain cannot go below zero.
+What it cannot rule out:
 
-## Verkopen (optioneel)
+- **Standstill.** If the price stays below the cost price for a long time, the battery stays
+  blocked from discharging, including stored solar energy.
+- **Deviating efficiency.** The cost price uses the average efficiency. If the battery returns
+  less than that in a cycle, it is empty before the stock in the books is used up; the rest
+  expires without booking a loss.
+- **Wear** of the battery is not counted; use the minimum gain per kWh for that.
 
-Verkopen heeft een eigen schakelaar en staat los van het bijladen. Er wordt alleen verkocht
-wat echt over is. In een uur wordt verkocht als dit allemaal geldt:
+The integration recalculates immediately when a new price period starts, so a hold never
+starts up to a minute late.
 
-1. **Er komt een goedkope laadbeurt aan**: er ligt een laadvenster met gepubliceerde prijzen
-   in het verschiet, dus bekend is wat terugladen kost.
-2. **De opbrengst is duidelijk hoger dan terugladen**: verkoopprijs ≥ laadprijs gedeeld door
-   het rendement, plus de verkoopmarge (standaard € 0,10 per kWh).
-3. **Er is overschot boven de reserve**. De reserve is de ontlaadgrens van de Marstek plus het
-   verwachte eigen verbruik tot het terugladen (gemiddeld huisverbruik × uren), met een
-   instelbaar minimum (standaard 20 %).
-4. **Het is een van de duurste uren** tot het laadvenster.
+## Selling (optional)
 
-Het verkoopvermogen wordt net als bij laden uitgesmeerd over de gekozen uren. Op de reserve
-stopt de verkoop en gaat de Marstek terug naar anti-feed.
+Selling has its own switch and is independent of charging. Only what is really left over is
+sold. An hour is used for selling when all of this holds:
 
-In de winter is er zelden overschot: met een accu van 5 kWh vraagt het eigen verbruik tot de
-volgende laadbeurt meestal de hele lading. De optie doet vooral iets als de zon de accu vult
-en er 's avonds een prijspiek is.
+1. **A cheap charge is coming**: a charge window with published prices lies ahead, so the cost
+   of recharging is known.
+2. **Revenue is clearly higher than recharging**: sell price ≥ charge price divided by the
+   efficiency, plus the sell margin (default €0.10 per kWh).
+3. **There is surplus above the reserve.** The reserve is the Marstek's discharge cut-off plus
+   the expected own consumption until recharging (average house power × hours), with an
+   adjustable minimum (default 20 %).
+4. **It is one of the most expensive hours** before the charge window.
 
-**Na het einde van de salderingsregeling** (1 januari 2027) levert terugleveren minder op dan
-de uurprijs. Stel dan *Verkoopprijs: factor* en *aftrek* in: verkoopprijs = uurprijs × factor −
-aftrek. Voor de kale marktprijs bij Zonneplan is dat ongeveer 0,826 en € 0,108.
+As with charging, the sell power is spread over the chosen hours. At the reserve, selling
+stops and the Marstek goes back to anti-feed.
 
-## Aansturing van de Marstek
+In winter there is rarely a surplus: with a 5 kWh battery, own consumption until the next
+charge usually takes the whole charge. The option mostly does something when the sun fills
+the battery and there is an evening price peak.
 
-De integratie stuurt via de RS485-besturing (LilyGO T-CAN485 met ESPHome):
+**After the end of net metering** (the Dutch *salderingsregeling*, 1 January 2027) feeding in
+earns less than the hourly price. Then set *Sell price: factor* and *deduction*: sell price =
+hourly price × factor − deduction. For the bare market price at Zonneplan that is roughly
+0.826 and €0.108.
 
-| Moment | Opdrachten |
+## Controlling the Marstek
+
+The integration controls the battery through the RS485 interface (LilyGO T-CAN485 with
+ESPHome):
+
+| Moment | Commands |
 |---|---|
-| Start bijladen | laadvermogen instellen → *Forcible charge/discharge* op `charge` → *RS485 Control Mode* op `enable` |
-| Tijdens bijladen | laadvermogen bijstellen (stappen van 100 W) |
-| Klaar, of prijssturing uit | *RS485 Control Mode* op `disable`, forceren terug op `charge`, laadvermogen terug naar het maximum |
-| Start verkopen | ontlaadvermogen instellen → forceren op `discharge` → *RS485 Control Mode* op `enable` |
-| Verkoop klaar, of verkoop uit | zelfde als bij klaar: terug naar de rusttoestand |
+| Start charging | set charge power → *Forcible charge/discharge* to `charge` → *RS485 Control Mode* to `enable` |
+| While charging | adjust charge power (steps of 100 W) |
+| Done, or price control off | *RS485 Control Mode* to `disable`, forcible back to `charge`, charge power back to the maximum |
+| Start selling | set discharge power → forcible to `discharge` → *RS485 Control Mode* to `enable` |
+| Selling done, or selling off | same as done: back to the idle state |
 
-Forceer-**ont**laden dat je zelf start blijft ongemoeid. Forceer-laden dat je zelf start wordt
-teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
+Forced **dis**charging that you start yourself is left alone. Forced charging that you start
+yourself is reset as long as price control is on; switch it off first if you want that.
 
-## Entiteiten
+## Entities
 
-| Entiteit | Inhoud |
+| Entity | Contents |
 |---|---|
-| `switch.*_prijssturing` | Aan: het laadplan wordt uitgevoerd. Uit: de Marstek regelt alles zelf. Uitzetten zet de Marstek direct terug op anti-feed. |
-| `switch.*_laden_bij_negatieve_prijs` | Aan (standaard): bij een negatieve uurprijs altijd laden op vol vermogen. Attribuut `nu_actief`. |
-| `switch.*_vasthouden` | Aan (standaard): niet ontladen zolang de uurprijs onder de kostprijs van de bijgeladen voorraad ligt. Attributen `nu_actief`, `tot`, `voorraad_kwh`, `kostprijs`. |
-| `switch.*_geen_verlies` | Aan: vasthouden afgedwongen en nooit verkopen onder de kostprijs. Attributen `vasthouden_actief`, `verkoop_tegengehouden`, `voorraad_kwh`, `kostprijs`. |
-| `switch.*_verkoop` | Aan: overschot wordt in de duurste uren verkocht. Staat los van de prijssturing. |
-| `sensor.*_verkoopplan` | Status: `verkopen`, `gepland`, `geen` of `onbekend`. Attributen: `verkoopuren`, `vermogen`, `overschot_kwh`, `reserve_soc`, `drempelprijs`, `terugkoopprijs` en `tekst`. |
-| `sensor.*_laadplan` | Status: `laden`, `gepland`, `klaar`, `vol`, `geen` of `onbekend`. Attributen: `laaduren`, `venster`, `eind`, `uren_nodig`, `vermogen`, `klaar_tot`, `tekst` (leesbare samenvatting) en `stroomschema` (tijdlijn en controles voor de kaart). |
-| `sensor.*_gepland_laadvermogen` | Het uitgesmeerde laadvermogen in W. |
-| `sensor.*_bij_te_laden` | Energie uit het net die nodig is om vol te komen, in kWh. |
-| `sensor.*_start_bijladen` / `*_einde_bijladen` | Begin en einde van de geplande laadbeurt. |
-| `sensor.*_opbrengst_vandaag` / `*_opbrengst_deze_week` | Gerealiseerde opbrengst in euro sinds 00:00 en sinds maandag 00:00 (zie *Opbrengst*). Attributen: de voorraad en, bij vandaag, wat er is bijgeladen en gebruikt. |
-| `sensor.*_verwachte_opbrengst` | Geschatte opbrengst van de huidige plannen in euro (bijladen plus verkoop); attribuut `regels` met de uitsplitsing. |
-| `sensor.*_rendement` | Het rendement waarmee wordt gerekend, in procent. Attribuut `bron`: gemeten uit de energietellers of de vaste waarde. |
-| `sensor.*_gemiddelde_laadprijs` | Gemiddelde prijs van de laaduren in €/kWh. |
+| `switch.*_price_control` | On: the charge plan is carried out. Off: the Marstek regulates everything itself. Turning it off puts the Marstek back in anti-feed immediately. |
+| `switch.*_charge_at_negative_price` | On (default): always charge at full power when the hourly price is negative. Attribute `nu_actief`. |
+| `switch.*_hold_below_cost_price` | On (default): do not discharge while the hourly price is below the cost price of the charged stock. Attributes `nu_actief`, `tot`, `voorraad_kwh`, `kostprijs`. |
+| `switch.*_no_loss` | On: hold enforced and never sell below cost price. Attributes `vasthouden_actief`, `verkoop_tegengehouden`, `voorraad_kwh`, `kostprijs`. |
+| `switch.*_selling` | On: surplus is sold in the most expensive hours. Independent of price control. |
+| `sensor.*_sell_plan` | State: `verkopen`, `gepland`, `geen` or `onbekend`. Attributes: `verkoopuren`, `vermogen`, `overschot_kwh`, `reserve_soc`, `drempelprijs`, `terugkoopprijs` and `tekst`. |
+| `sensor.*_charge_plan` | State: `laden`, `gepland`, `klaar`, `vol`, `geen` or `onbekend`. Attributes: `laaduren`, `venster`, `eind`, `uren_nodig`, `vermogen`, `klaar_tot`, `tekst` (readable summary) and `stroomschema` (timeline and checks for the card). |
+| `sensor.*_planned_charge_power` | The spread charge power in W. |
+| `sensor.*_energy_to_charge` | Energy from the grid needed to fill up, in kWh. |
+| `sensor.*_charge_start` / `*_charge_end` | Start and end of the planned charge. |
+| `sensor.*_gain_today` / `*_gain_this_week` | Realized gain in euros since 00:00 and since Monday 00:00 (see *Gain*). Attributes: the stock and, for today, what was charged and used. |
+| `sensor.*_expected_gain` | Estimated gain of the current plans in euros (charging plus selling); attribute `regels` holds the breakdown. |
+| `sensor.*_efficiency` | The efficiency used, in percent. Attribute `bron`: measured from the energy counters or the fixed value. |
+| `sensor.*_average_charge_price` | Average price of the charge hours in €/kWh. |
 
-De namen hierboven horen bij een Nederlandstalige installatie. Staat de systeemtaal van Home
-Assistant op Engels, dan heten ze `*_charge_plan`, `*_price_control` enzovoort; hernoem ze dan
-naar wens.
+The names above are for an English installation. With Home Assistant set to Dutch they are
+named `*_laadplan`, `*_prijssturing` and so on; rename them as you like. The state values and
+attribute names are Dutch in both languages.
 
-## Installatie
+## Installation
 
-1. Kopieer `custom_components/marstek_goedkoop_laden` naar `/config/custom_components/`
-   (of voeg deze repo toe als aangepaste repository in HACS) en herstart Home Assistant.
-2. Ga naar *Instellingen → Apparaten en diensten → Integratie toevoegen → Marstek Goedkoop Laden*.
-3. Kies de prijssensor en de entiteiten van de Marstek. Wat herkend wordt, staat al ingevuld.
+1. Copy `custom_components/marstek_goedkoop_laden` to `/config/custom_components/`
+   (or add this repository as a custom repository in HACS) and restart Home Assistant.
+2. Go to *Settings → Devices & services → Add integration → Marstek Goedkoop Laden*.
+3. Choose the price sensor and the Marstek entities. Whatever is detected is pre-filled.
 
-Vereist: Home Assistant 2026.3 of nieuwer.
+Requires Home Assistant 2026.3 or newer.
 
-### Prijssensor
+### Price sensor
 
-De integratie leest de prijzen uit een attribuut van één sensor (standaard `forecast`):
+The integration reads the prices from an attribute of one sensor (default `forecast`):
 
-- Zonneplan-uurprijzen: `start_date`, `end_date`, `price_tax_included.amount`
-- Zonneplan (oud): `datetime`, `electricity_price`
-- Algemeen: `start` (of `start_time`, `datetime`) en `price` (of `value`, `prijs`) in €/kWh
+- Zonneplan hourly prices: `start_date`, `end_date`, `price_tax_included.amount`
+- Zonneplan (old): `datetime`, `electricity_price`
+- Generic: `start` (or `start_time`, `datetime`) and `price` (or `value`, `prijs`) in €/kWh
 
-### Instellingen
+### Settings
 
-Via *Configureren* op de integratie:
+Under *Configure* on the integration:
 
-| Instelling | Standaard | Betekenis |
+| Setting | Default | Meaning |
 |---|---|---|
-| Minimale winst per kWh | € 0,02 | Wat bijladen na aftrek van het laadverlies minstens moet opleveren. |
-| Aantal duurste uren | 6 | Met hoeveel dure uren erna een uur wordt vergeleken. |
-| Uren vooruit kijken | 18 | Hoe ver na een uur naar dure uren wordt gezocht. |
-| Minimaal bekende uren vooruit | 8 | Uren met minder bekende prijzen erna tellen niet mee. |
-| Minimaal laadvermogen | 400 W | Ondergrens bij het uitsmeren. |
-| Rendement als de tellers ontbreken | 0,77 | Het rendement wordt berekend uit de energietellers van de Marstek (totaal ontladen ÷ totaal geladen, begrensd op 70–95 %). Deze vaste waarde geldt alleen als die tellers ontbreken. Het rendement van alleen laden of alleen ontladen is de wortel daarvan. |
-| Accucapaciteit | 5,12 kWh | Alleen gebruikt als er geen capaciteitssensor is ingevuld. |
-| Negatieve prijs: grens | € 0,00 | Onder deze uurprijs wordt op vol vermogen geladen. |
-| Verkoop: minimale winst per kWh | € 0,10 | Wat verkopen na terugladen minstens moet opleveren. |
-| Verkoop: gemiddeld eigen verbruik | 400 W | Bepaalt de reserve tot het terugladen. |
-| Verkoop: minimale reserve | 20 % | Onder deze SoC wordt nooit verkocht. |
-| Verkoopprijs: factor en aftrek | 1 en € 0 | Verkoopprijs = uurprijs × factor − aftrek. |
+| Minimum gain per kWh | €0.02 | What charging must earn at least, after charge losses. |
+| Number of most expensive hours | 6 | How many expensive hours later on an hour is compared with. |
+| Hours to look ahead | 18 | How far past an hour to look for expensive hours. |
+| Minimum known hours ahead | 8 | Hours with fewer known prices after them are ignored. |
+| Minimum charge power | 400 W | Lower limit when spreading. |
+| Efficiency when the counters are missing | 0.77 | The efficiency is computed from the Marstek's energy counters (total discharged ÷ total charged, clamped to 70–95 %). This fixed value only applies when those counters are missing. The one-way efficiency for charging or discharging alone is its square root. |
+| Battery capacity | 5.12 kWh | Only used when no capacity sensor is set. |
+| Negative price: limit | €0.00 | Below this hourly price the battery charges at full power. |
+| Selling: minimum gain per kWh | €0.10 | What selling must earn at least after recharging. |
+| Selling: average own consumption | 400 W | Determines the reserve until recharging. |
+| Selling: minimum reserve | 20 % | Nothing is sold below this SoC. |
+| Sell price: factor and deduction | 1 and €0 | Sell price = hourly price × factor − deduction. |
 
-Het maximale laadvermogen (de *Max. Charge power* van de Marstek) bepaalt het aantal laaduren.
-Zet je dat lager, dan plant hij meer uren en laadt hij rustiger.
+The maximum charge power (the Marstek's *Max. Charge power*) determines the number of charge
+hours. Set it lower and it plans more hours and charges more gently.
 
 ## Dashboard
 
-### Kaarten van de integratie
+### Cards from the integration
 
-De integratie levert vier kaarten mee; er hoeft geen resource te worden toegevoegd. Ververs de
-browser na het installeren of bijwerken.
+The integration ships four cards; no resource needs to be added. Refresh the browser after
+installing or updating.
 
-| Kaart | Inhoud |
+| Card | Contents |
 |---|---|
-| `custom:marstek-goedkoop-laden-card` | Stroomschema: de tijdlijn van vandaag en per onderdeel (bijladen, verkoop, negatieve prijs, vasthouden) welke controles slagen en op welke het stopt. |
-| `custom:marstek-goedkoop-laden-compact-card` | Hetzelfde in een paar regels: de tijdlijn, per onderdeel de uitkomst met de reden, en één regel met de opbrengst. |
-| `custom:marstek-goedkoop-laden-opbrengst-card` | Alleen de opbrengst: vandaag, deze week en de verwachting van het huidige plan. |
-| `custom:marstek-goedkoop-laden-schakelaars-card` | Compact: knoppen om bijladen, verkoop, laden bij negatieve prijs, vasthouden en geen verlies aan of uit te zetten. |
+| `custom:marstek-goedkoop-laden-card` | Flow chart: today's timeline and, per part (charging, selling, negative price, hold), which checks pass and where it stops. |
+| `custom:marstek-goedkoop-laden-compact-card` | The same in a few lines: the timeline, the outcome per part with the reason, and one line with the gain. |
+| `custom:marstek-goedkoop-laden-opbrengst-card` | Gain only: today, this week and the expectation of the current plan. |
+| `custom:marstek-goedkoop-laden-schakelaars-card` | Compact: buttons to turn charging, selling, charging at negative price, hold and no loss on or off. |
 
 ```yaml
 type: custom:marstek-goedkoop-laden-card
-entity: sensor.marstek_goedkoop_laden_laadplan   # optioneel
-title: Prijssturing                              # optioneel
-opbrengst: false                                 # optioneel, zie hieronder
+entity: sensor.marstek_goedkoop_laden_laadplan   # optional
+title: Price control                             # optional
+opbrengst: false                                 # optional, see below
 ```
 
-`opbrengst` bepaalt of de stroomschemakaart ook de opbrengst toont: standaard uit bij de gewone
-kaart, standaard één regel bij de compacte kaart. In het stroomschema is groen een geslaagde
-controle, rood de controle waarop het stopt en gestreept een uitkomst waarbij niets gebeurt.
-Alle kaarten lezen het attribuut `stroomschema` van de laadplan-sensor.
+`opbrengst` decides whether the flow card also shows the gain: off by default for the regular
+card, one line by default for the compact card. In the flow chart green is a check that
+passes, red is the check where it stops and dashed is an outcome where nothing happens. All
+cards read the `stroomschema` attribute of the charge plan sensor.
 
-## Opbrengst
+## Gain
 
-Er zijn twee soorten opbrengst: wat het huidige plan naar verwachting oplevert, en wat er
-werkelijk is verdiend.
+There are two kinds of gain: what the current plan is expected to earn, and what has actually
+been earned.
 
-### Verwacht (schatting vooraf)
+### Expected (estimate in advance)
 
-- **Bijladen**: wat de in te kopen stroom kost, tegenover wat die later waard is. Die waarde
-  is het rendement maal de gemiddelde prijs van de dure uren waarmee het laaduur is vergeleken.
-- **Verkoop**: de opbrengst van het overschot, min wat terugladen kost.
+- **Charging**: what the energy to buy costs, versus what it is worth later. That worth is the
+  efficiency times the average price of the expensive hours the charge hour was compared with.
+- **Selling**: the revenue of the surplus, minus what recharging costs.
 
-Tijdens een laadbeurt telt alleen wat nog geladen moet worden.
+During a charge only what is still to be charged counts.
 
-### Vandaag en deze week (gerealiseerd)
+### Today and this week (realized)
 
-1. Stroom die de integratie uit het net bijlaadt (laadplan of negatieve prijs) wordt een
-   **voorraad**: bruikbare kWh = geladen kWh × rendement, met als kostprijs wat die stroom op
-   dat moment kostte.
-2. Ontlaadt de accu daarna voor eigen verbruik, dan wordt eerst die voorraad opgebruikt. De
-   opbrengst is `ontladen kWh × (stroomprijs op dat moment − kostprijs per bruikbare kWh)`.
-3. Bij verkoop is de opbrengst `verkochte kWh × verkoopprijs − kostprijs`; voor stroom die niet
-   uit de voorraad komt (zonnestroom) is de kostprijs wat terugladen kost.
-4. **Vandaag** is de som sinds 00:00, **deze week** sinds maandag 00:00.
+1. Energy the integration charges from the grid (charge plan or negative price) becomes
+   **stock**: usable kWh = charged kWh × efficiency, with as cost price what that energy cost
+   at that moment.
+2. If the battery then discharges for own consumption, that stock is used first. The gain is
+   `discharged kWh × (electricity price at that moment − cost price per usable kWh)`.
+3. When selling, the gain is `sold kWh × sell price − cost price`; for energy that does not
+   come from the stock (solar energy) the cost price is what recharging costs.
+4. **Today** is the sum since 00:00, **this week** since Monday 00:00.
 
-Wat nog in de voorraad zit, is nog niet verdiend en telt pas mee als het wordt gebruikt. Stroom
-die de zon in de accu stopt en die je later zelf gebruikt telt niet mee: dat doet de Marstek
-ook zonder deze integratie. De bedragen komen uit de energietellers van de Marstek en de
-uurprijs van dat moment; een tellersprong na een storing wordt niet geboekt.
+What is still in the stock has not been earned yet and only counts once it is used. Energy
+that the sun puts in the battery and that you use yourself later does not count: the Marstek
+does that without this integration too. The amounts come from the Marstek's energy counters
+and the hourly price at that moment; a counter jump after a fault is not booked.
 
-### Losse kaarten
+### Separate cards
 
-Planregel (Markdown-kaart):
+Plan line (Markdown card):
 
 ```yaml
 type: markdown
 content: >-
-  **Laadplan:** {{ state_attr('sensor.marstek_goedkoop_laden_laadplan', 'tekst') }}
+  **Charge plan:** {{ state_attr('sensor.marstek_goedkoop_laden_laadplan', 'tekst') }}
   {% if is_state('switch.marstek_goedkoop_laden_prijssturing', 'off') %}
-  · ⚠️ prijssturing staat **uit**{% endif %}
+  · ⚠️ price control is **off**{% endif %}
 ```
 
-Grafiek met [apexcharts-card](https://github.com/RomRider/apexcharts-card): de Zonneplan-prijzen
-van vandaag en morgen, groen = bijladen, blauw = rest van het goedkope venster, grijs = overig.
-Herhaal de reeks drie keer met `'laden'`, `'venster'` en `'rest'` op de plek van `KIES`:
+Chart with [apexcharts-card](https://github.com/RomRider/apexcharts-card): the Zonneplan
+prices of today and tomorrow, green = charging, blue = rest of the cheap window, grey = other.
+Repeat the series three times with `'laden'`, `'venster'` and `'rest'` in place of `KIES`:
 
 ```yaml
 type: custom:apexcharts-card
@@ -268,11 +277,11 @@ span:
   start: day
 now:
   show: true
-  label: nu
+  label: now
 stacked: true
 series:
   - entity: sensor.zonneplan_current_hourly_electricity_tariff
-    name: Bijladen
+    name: Charging
     type: column
     color: "#22c55e"
     data_generator: |
@@ -286,17 +295,18 @@ series:
       });
 ```
 
-## Ontwikkelen
+## Development
 
-De rekenregel staat los van Home Assistant in `planner.py` en heeft tests met echte prijzen.
-De aansturing wordt getest tegen een nagebootst Home Assistant (`tests/test_sturing.py`):
+The calculation rule lives separately from Home Assistant in `planner.py` and has tests with
+real prices. The control logic is tested against a faked Home Assistant
+(`tests/test_sturing.py`):
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-Het icoon wordt getekend door `tools/maak_icoon.py` (alleen de standaardbibliotheek).
+The icon is drawn by `tools/maak_icoon.py` (standard library only).
 
-## Licentie
+## License
 
-Apache 2.0, zie [LICENSE](LICENSE).
+Apache 2.0, see [LICENSE](LICENSE).
