@@ -23,6 +23,7 @@ const ICONS = {
   stop: "mdi:close",
   actie: "mdi:flash",
   eind: "mdi:minus",
+  wacht: "mdi:clock-outline",
 };
 
 const STYLE = `
@@ -53,7 +54,10 @@ const STYLE = `
   .stop .dot { color: var(--error-color, #db4437); border-color: var(--error-color, #db4437);
             background: color-mix(in srgb, var(--error-color, #db4437) 16%, transparent); }
   .stop .text b { color: var(--error-color, #db4437); }
-  .stop .line, .eind .line { border-left-style: dashed; }
+  .wacht .dot { color: var(--warning-color, #ffa600); border-color: var(--warning-color, #ffa600);
+            background: color-mix(in srgb, var(--warning-color, #ffa600) 16%, transparent); }
+  .wacht .text b { color: var(--primary-text-color); }
+  .stop .line, .eind .line, .wacht .line { border-left-style: dashed; }
   .eind .dot { border-style: dashed; }
   .eind .text b { color: var(--secondary-text-color); }
   .nu .dot { border: 2px solid var(--primary-color); color: var(--primary-color); }
@@ -69,6 +73,7 @@ const STYLE = `
                border: 1px solid var(--divider-color); }
   .crow.nu .pip { border: 2px solid var(--primary-color); }
   .crow.actie .pip, .crow.ok .pip { background: var(--success-color, #43a047); border-color: var(--success-color, #43a047); }
+  .crow.wacht .pip { background: var(--warning-color, #ffa600); border-color: var(--warning-color, #ffa600); }
   .crow.stop .pip { background: var(--error-color, #db4437); border-color: var(--error-color, #db4437); }
   .crow.eind .pip { border-style: dashed; }
   .crow ha-icon { --mdc-icon-size: 16px; color: var(--secondary-text-color); justify-self: center; display: flex; }

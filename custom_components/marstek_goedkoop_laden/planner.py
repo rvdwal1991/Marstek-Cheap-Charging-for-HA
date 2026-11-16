@@ -448,6 +448,9 @@ def compute_sell_plan(
     params = params or SellParams()
     prices = list(charge_plan.prices)
     none_step = step("Geen verkoop", "Stopt bij deze stap", "eind")
+
+    def later(detail: str) -> dict:
+        return step("Geen verkoop gepland", detail, "eind")
     if soc is None or not prices:
         return SellPlan(
             steps=(step("Prijzen en SoC bekend", "Geen prijzen of SoC beschikbaar", "stop"), none_step)
@@ -465,13 +468,19 @@ def compute_sell_plan(
         return SellPlan(
             status=SELL_NONE,
             text="Geen verkoop: er is nog geen goedkoop laadvenster bekend",
-            steps=(step("Geen laadbeurt bekend", "Nog geen goedkoop laadvenster", "stop"), none_step),
+            steps=(
+                step("Wacht op laadvenster", "Nog geen goedkoop laadvenster bekend", "wacht"),
+                later("Zodra de prijzen van morgen bekend zijn"),
+            ),
         )
     if min(slot.start for slot in window_slots) <= now:
         return SellPlan(
             status=SELL_NONE,
             text="Geen verkoop: het goedkope laadvenster loopt",
-            steps=(step("Laadvenster loopt nu", "Stroom is nu goedkoop", "stop"), none_step),
+            steps=(
+                step("Laadvenster loopt nu", "Stroom is nu goedkoop", "wacht"),
+                later("Na het laadvenster, als er overschot is"),
+            ),
         )
 
     cheapest = sorted(window_slots, key=lambda s: (s.price, s.start))
@@ -513,7 +522,11 @@ def compute_sell_plan(
         return SellPlan(
             status=SELL_NONE,
             text=f"Geen verkoop: de opbrengst is te laag{detail}",
-            steps=(refill_step, step("Opbrengst te laag", short, "stop"), none_step),
+            steps=(
+                refill_step,
+                step("Opbrengst te laag", short, "stop"),
+                later(f"Verkoopt vanaf € {_euro(threshold)}, vóór {local(refill_at).strftime('%H:%M')}"),
+            ),
             **common,
         )
     price_step = step(
@@ -528,7 +541,7 @@ def compute_sell_plan(
                 refill_step,
                 price_step,
                 step("Geen overschot", f"Reserve is {round(reserve_soc)} %", "stop"),
-                none_step,
+                later(f"Verkoopt zodra de SoC boven {round(reserve_soc)} % komt"),
             ),
             **common,
         )
