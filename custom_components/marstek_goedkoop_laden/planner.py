@@ -146,10 +146,15 @@ def _use_prices(prices: list[PriceSlot], params: PlanParams) -> list[float | Non
     return result
 
 
+# Uren die minder dan een halve cent boven de drempel liggen tellen ook mee. Zonder
+# deze speling valt bij een bijna vlakke nacht een uur af om een fractie van een cent.
+WORTH_TOLERANCE = 0.005
+
+
 def _worth_charging(prices: list[PriceSlot], efficiency: float, params: PlanParams) -> list[bool]:
     """Per vak: is de prijs laag genoeg tegenover de dure vakken erna?"""
     return [
-        use is not None and slot.price <= efficiency * use - params.margin
+        use is not None and slot.price <= efficiency * use - params.margin + WORTH_TOLERANCE
         for slot, use in zip(prices, _use_prices(prices, params))
     ]
 

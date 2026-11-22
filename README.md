@@ -187,7 +187,7 @@ Under *Configure* on the integration:
 | Setting | Default | Meaning |
 |---|---|---|
 | Language | Automatic | Language of the plan text, flow chart and cards: Automatic, Nederlands or English. |
-| Minimum gain per kWh | €0.02 | What charging must earn at least, after charge losses. |
+| Minimum gain per kWh | €0.02 | What charging must earn at least, after charge losses. Hours less than half a cent above the limit still count, so a nearly flat night is not cut up over a fraction of a cent. |
 | Number of most expensive hours | 6 | How many expensive hours later on an hour is compared with. |
 | Hours to look ahead | 18 | How far past an hour to look for expensive hours. |
 | Minimum known hours ahead | 8 | Hours with fewer known prices after them are ignored. |

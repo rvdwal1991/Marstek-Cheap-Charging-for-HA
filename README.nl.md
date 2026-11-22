@@ -182,7 +182,7 @@ Via *Configureren* op de integratie:
 | Instelling | Standaard | Betekenis |
 |---|---|---|
 | Taal | Automatisch | Taal van planregel, stroomschema en kaarten: Automatisch, Nederlands of English. |
-| Minimale winst per kWh | € 0,02 | Wat bijladen na aftrek van het laadverlies minstens moet opleveren. |
+| Minimale winst per kWh | € 0,02 | Wat bijladen na aftrek van het laadverlies minstens moet opleveren. Uren die minder dan een halve cent boven de grens liggen tellen ook mee, zodat een bijna vlakke nacht niet om een fractie van een cent wordt versnipperd. |
 | Aantal duurste uren | 6 | Met hoeveel dure uren erna een uur wordt vergeleken. |
 | Uren vooruit kijken | 18 | Hoe ver na een uur naar dure uren wordt gezocht. |
 | Minimaal bekende uren vooruit | 8 | Uren met minder bekende prijzen erna tellen niet mee. |

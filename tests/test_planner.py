@@ -281,5 +281,24 @@ class WindowGapTest(unittest.TestCase):
             self.assertIn("van", result.text)
 
 
+PRICES_23 = [
+    planner.PriceSlot(datetime.fromisoformat(row["start"]), row["price"])
+    for row in json.loads((ROOT / "prijzen_2026_11_23.json").read_text())
+]
+
+
+class VlakkeNachtTest(unittest.TestCase):
+    """23 november 2026: 02:00, 03:00 en 04:00 verschilden minder dan een halve cent."""
+
+    def test_bijna_gelijke_uren_vallen_niet_af(self):
+        result = planner.compute_plan(
+            prices=PRICES_23, now=at("2026-11-22T15:45:00"), soc=12, capacity_kwh=5.12,
+            max_power_w=2500, efficiency=0.772, charging=False, active=True,
+            params=planner.PlanParams(margin=0.03), tz=TZ,
+        )
+        self.assertEqual(hours(result), ["23 02:00", "23 03:00", "23 04:00"])
+        self.assertNotIn("te kort", result.text)
+
+
 if __name__ == "__main__":
     unittest.main()
