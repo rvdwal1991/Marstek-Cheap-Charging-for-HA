@@ -120,6 +120,8 @@ async def async_setup_entry(
     entities.append(EfficiencySensor(coordinator))
     entities.append(RealizedGainSensor(coordinator, "opbrengst_vandaag"))
     entities.append(RealizedGainSensor(coordinator, "opbrengst_deze_week"))
+    entities.append(RealizedGainSensor(coordinator, "opbrengst_vorige_week"))
+    entities.append(RealizedGainSensor(coordinator, "opbrengst_deze_maand"))
     async_add_entities(entities)
 
 
@@ -193,7 +195,7 @@ class ExpectedGainSensor(ChargePlanEntity, SensorEntity):
 
 
 class RealizedGainSensor(ChargePlanEntity, SensorEntity):
-    """Gerealiseerde opbrengst van vandaag of van deze week (zie ledger.py)."""
+    """Gerealiseerde opbrengst van vandaag, deze/vorige week of deze maand (zie ledger.py)."""
 
     _attr_device_class = SensorDeviceClass.MONETARY
     _attr_state_class = SensorStateClass.TOTAL
@@ -203,17 +205,30 @@ class RealizedGainSensor(ChargePlanEntity, SensorEntity):
 
     def __init__(self, coordinator: ChargePlanCoordinator, key: str) -> None:
         super().__init__(coordinator, key)
-        self._week = key == "opbrengst_deze_week"
+        self._period = {
+            "opbrengst_deze_week": "week",
+            "opbrengst_vorige_week": "vorige_week",
+            "opbrengst_deze_maand": "maand",
+        }.get(key, "dag")
+        self._week = self._period != "dag"
+        if self._period == "vorige_week":
+            # Een vast eindbedrag, geen lopende teller.
+            self._attr_state_class = None
 
     @property
-    def native_value(self) -> float:
+    def native_value(self) -> float | None:
         ledger = self.coordinator.ledger
-        return round(ledger.week_gain if self._week else ledger.day_gain, 2)
+        if self._period == "vorige_week":
+            return None if ledger.prev_week_gain is None else round(ledger.prev_week_gain, 2)
+        value = {"week": ledger.week_gain, "maand": ledger.month_gain}.get(self._period, ledger.day_gain)
+        return round(value, 2)
 
     @property
     def last_reset(self) -> datetime | None:
+        if self._period == "vorige_week":
+            return None
         ledger = self.coordinator.ledger
-        start = ledger.week_start if self._week else ledger.day_start
+        start = {"week": ledger.week_start, "maand": ledger.month_start}.get(self._period, ledger.day_start)
         return dt_util.parse_datetime(start) if start else None
 
     @property
@@ -223,7 +238,7 @@ class RealizedGainSensor(ChargePlanEntity, SensorEntity):
             "voorraad_kwh": round(ledger.stock_kwh, 2),
             "voorraad_kostprijs": round(ledger.stock_price, 3) if ledger.stock_price is not None else None,
         }
-        if not self._week:
+        if self._period == "dag":
             attributes.update(
                 {
                     "bijgeladen_kwh": round(ledger.day_charged_kwh, 2),

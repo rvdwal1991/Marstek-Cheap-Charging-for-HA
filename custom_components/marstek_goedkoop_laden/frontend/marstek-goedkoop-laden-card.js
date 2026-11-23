@@ -94,7 +94,7 @@ const STYLE = `
          line-height: 16px; color: var(--secondary-text-color); }
   .row b { font-weight: 500; font-size: 13px; color: var(--primary-text-color); }
   .amount { font-size: 13px; font-weight: 500; white-space: nowrap; color: var(--primary-text-color); }
-  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; margin-bottom: 14px; }
   .tile { border: 1px solid var(--divider-color); border-radius: 10px; padding: 10px 12px; min-width: 0; }
   .tile small { display: block; font-size: 12px; color: var(--secondary-text-color); white-space: nowrap;
                 overflow: hidden; text-overflow: ellipsis; }
@@ -138,6 +138,10 @@ const EN = {
   "week": "week",
   "verwacht": "expected",
   "Deze week": "This week",
+  "Vorige week": "Last week",
+  "Opbrengst": "Gain",
+  "Deze maand": "This month",
+  "maand": "month",
   "Verwacht (plan)": "Expected (plan)",
   "niet gevonden.": "not found.",
   "Entiteit": "Entity",
@@ -205,6 +209,13 @@ function renderExpectedRows(result) {
 function renderExpected(result) {
   if (!result || !Array.isArray(result.regels)) return "";
   return `
+    <div class="head"><ha-icon icon="mdi:cash-check"></ha-icon><span>${t("Opbrengst")}</span></div>
+    <div class="tiles">
+      <div class="tile"><small>${t("Vandaag")}</small><b class="${tone(result.vandaag)}">${formatEuro(result.vandaag || 0)}</b></div>
+      <div class="tile"><small>${t("Deze week")}</small><b class="${tone(result.week)}">${formatEuro(result.week || 0)}</b></div>
+      ${result.vorige_week == null ? "" : `<div class="tile"><small>${t("Vorige week")}</small><b class="${tone(result.vorige_week)}">${formatEuro(result.vorige_week)}</b></div>`}
+      <div class="tile"><small>${t("Deze maand")}</small><b class="${tone(result.maand)}">${formatEuro(result.maand || 0)}</b></div>
+    </div>
     <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>${t("Verwachte opbrengst van dit plan (schatting)")}</span></div>
     <div class="result">
       <div class="total ${tone(result.totaal)}">${formatEuro(result.totaal)}<small>${t("totaal")}</small></div>
@@ -218,7 +229,7 @@ function renderGainLine(result) {
   return `
     <div class="crow">
       <ha-icon icon="mdi:cash-multiple"></ha-icon>
-      <div class="main">${part(t("Vandaag"), result.vandaag)} · ${part(t("week"), result.week)} · ${part(t("verwacht"), result.totaal)}</div>
+      <div class="main">${part(t("Vandaag"), result.vandaag)} · ${part(t("week"), result.week)} · ${part(t("maand"), result.maand)} · ${part(t("verwacht"), result.totaal)}</div>
       <div></div>
     </div>`;
 }
@@ -385,6 +396,8 @@ class MarstekGoedkoopLadenOpbrengstCard extends MarstekBaseCard {
       <div class="tiles">
         ${tile(t("Vandaag"), result.vandaag)}
         ${tile(t("Deze week"), result.week)}
+        ${result.vorige_week == null ? "" : tile(t("Vorige week"), result.vorige_week)}
+        ${tile(t("Deze maand"), result.maand)}
         ${tile(t("Verwacht (plan)"), result.totaal)}
       </div>
       <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>${t("Verwachte opbrengst van dit plan (schatting)")}</span></div>

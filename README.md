@@ -154,7 +154,8 @@ yourself is reset as long as price control is on; switch it off first if you wan
 | `sensor.*_planned_charge_power` | The spread charge power in W. |
 | `sensor.*_energy_to_charge` | Energy from the grid needed to fill up, in kWh. |
 | `sensor.*_charge_start` / `*_charge_end` | Start and end of the planned charge. |
-| `sensor.*_gain_today` / `*_gain_this_week` | Realized gain in euros since 00:00 and since Monday 00:00 (see *Gain*). Attributes: the stock and, for today, what was charged and used. |
+| `sensor.*_gain_today` / `*_gain_this_week` / `*_gain_this_month` | Realized gain in euros since 00:00, since Monday 00:00 and since the first of the month (see *Gain*). Attributes: the stock and, for today, what was charged and used. |
+| `sensor.*_gain_last_week` | The final gain of the previous week. |
 | `sensor.*_expected_gain` | Estimated gain of the current plans in euros (charging plus selling); attribute `regels` holds the breakdown. |
 | `sensor.*_efficiency` | The efficiency used, in percent. Attribute `bron`: measured from the energy counters or the fixed value. |
 | `sensor.*_average_charge_price` | Average price of the charge hours in €/kWh. |
@@ -214,7 +215,7 @@ installing or updating.
 |---|---|
 | `custom:marstek-goedkoop-laden-card` | Flow chart: today's timeline and, per part (charging, selling, negative price, hold), which checks pass and where it stops. |
 | `custom:marstek-goedkoop-laden-compact-card` | The same in a few lines: the timeline, the outcome per part with the reason, and one line with the gain. |
-| `custom:marstek-goedkoop-laden-opbrengst-card` | Gain only: today, this week and the expectation of the current plan. |
+| `custom:marstek-goedkoop-laden-opbrengst-card` | Gain only: today, this week, last week, this month and the expectation of the current plan. |
 | `custom:marstek-goedkoop-laden-schakelaars-card` | Compact: buttons to turn charging, selling, charging at negative price, hold and no loss on or off. |
 
 ```yaml
@@ -251,7 +252,7 @@ During a charge only what is still to be charged counts.
    `discharged kWh × (electricity price at that moment − cost price per usable kWh)`.
 3. When selling, the gain is `sold kWh × sell price − cost price`; for energy that does not
    come from the stock (solar energy) the cost price is what recharging costs.
-4. **Today** is the sum since 00:00, **this week** since Monday 00:00.
+4. **Today** is the sum since 00:00, **this week** since Monday 00:00 and **this month** since the first of the month. **Last week** is the final amount of the week before.
 
 What is still in the stock has not been earned yet and only counts once it is used. Energy
 that the sun puts in the battery and that you use yourself later does not count: the Marstek

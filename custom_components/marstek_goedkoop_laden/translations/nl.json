@@ -145,6 +145,12 @@
       },
       "rendement": {
         "name": "Rendement"
+      },
+      "opbrengst_vorige_week": {
+        "name": "Opbrengst vorige week"
+      },
+      "opbrengst_deze_maand": {
+        "name": "Opbrengst deze maand"
       }
     },
     "switch": {

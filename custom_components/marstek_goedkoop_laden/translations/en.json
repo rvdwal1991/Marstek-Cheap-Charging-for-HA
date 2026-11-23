@@ -145,6 +145,12 @@
       },
       "rendement": {
         "name": "Efficiency"
+      },
+      "opbrengst_vorige_week": {
+        "name": "Gain last week"
+      },
+      "opbrengst_deze_maand": {
+        "name": "Gain this month"
       }
     },
     "switch": {

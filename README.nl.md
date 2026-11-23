@@ -149,7 +149,8 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | `sensor.*_gepland_laadvermogen` | Het uitgesmeerde laadvermogen in W. |
 | `sensor.*_bij_te_laden` | Energie uit het net die nodig is om vol te komen, in kWh. |
 | `sensor.*_start_bijladen` / `*_einde_bijladen` | Begin en einde van de geplande laadbeurt. |
-| `sensor.*_opbrengst_vandaag` / `*_opbrengst_deze_week` | Gerealiseerde opbrengst in euro sinds 00:00 en sinds maandag 00:00 (zie *Opbrengst*). Attributen: de voorraad en, bij vandaag, wat er is bijgeladen en gebruikt. |
+| `sensor.*_opbrengst_vandaag` / `*_opbrengst_deze_week` / `*_opbrengst_deze_maand` | Gerealiseerde opbrengst in euro sinds 00:00, sinds maandag 00:00 en sinds de eerste van de maand (zie *Opbrengst*). Attributen: de voorraad en, bij vandaag, wat er is bijgeladen en gebruikt. |
+| `sensor.*_opbrengst_vorige_week` | Het eindbedrag van de week daarvoor. |
 | `sensor.*_verwachte_opbrengst` | Geschatte opbrengst van de huidige plannen in euro (bijladen plus verkoop); attribuut `regels` met de uitsplitsing. |
 | `sensor.*_rendement` | Het rendement waarmee wordt gerekend, in procent. Attribuut `bron`: gemeten uit de energietellers of de vaste waarde. |
 | `sensor.*_gemiddelde_laadprijs` | Gemiddelde prijs van de laaduren in €/kWh. |
@@ -209,7 +210,7 @@ browser na het installeren of bijwerken.
 |---|---|
 | `custom:marstek-goedkoop-laden-card` | Stroomschema: de tijdlijn van vandaag en per onderdeel (bijladen, verkoop, negatieve prijs, vasthouden) welke controles slagen en op welke het stopt. |
 | `custom:marstek-goedkoop-laden-compact-card` | Hetzelfde in een paar regels: de tijdlijn, per onderdeel de uitkomst met de reden, en één regel met de opbrengst. |
-| `custom:marstek-goedkoop-laden-opbrengst-card` | Alleen de opbrengst: vandaag, deze week en de verwachting van het huidige plan. |
+| `custom:marstek-goedkoop-laden-opbrengst-card` | Alleen de opbrengst: vandaag, deze week, vorige week, deze maand en de verwachting van het huidige plan. |
 | `custom:marstek-goedkoop-laden-schakelaars-card` | Compact: knoppen om bijladen, verkoop, laden bij negatieve prijs, vasthouden en geen verlies aan of uit te zetten. |
 
 ```yaml
@@ -246,7 +247,7 @@ Tijdens een laadbeurt telt alleen wat nog geladen moet worden.
    opbrengst is `ontladen kWh × (stroomprijs op dat moment − kostprijs per bruikbare kWh)`.
 3. Bij verkoop is de opbrengst `verkochte kWh × verkoopprijs − kostprijs`; voor stroom die niet
    uit de voorraad komt (zonnestroom) is de kostprijs wat terugladen kost.
-4. **Vandaag** is de som sinds 00:00, **deze week** sinds maandag 00:00.
+4. **Vandaag** is de som sinds 00:00, **deze week** sinds maandag 00:00 en **deze maand** sinds de eerste van de maand. **Vorige week** is het eindbedrag van de week daarvoor.
 
 Wat nog in de voorraad zit, is nog niet verdiend en telt pas mee als het wordt gebruikt. Stroom
 die de zon in de accu stopt en die je later zelf gebruikt telt niet mee: dat doet de Marstek

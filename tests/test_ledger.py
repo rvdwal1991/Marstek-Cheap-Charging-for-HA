@@ -82,6 +82,27 @@ class LedgerTest(unittest.TestCase):
         # De voorraad blijft over de dag- en weekgrens heen staan.
         self.assertAlmostEqual(ledger.stock_kwh, 0.3)
 
+    def test_vorige_week_en_maand(self):
+        ledger = Ledger()
+        step(ledger, "2026-11-19T01:00:00", 100.0, 50.0, 0.40)
+        for i in range(1, 5):
+            step(ledger, f"2026-11-19T02:{i:02d}:00", 100.0 + i, 50.0, 0.30, grid=True)
+        step(ledger, "2026-11-19T19:00:00", 104.0, 50.8, 0.50)
+        step(ledger, "2026-11-19T19:01:00", 104.0, 51.0, 0.50)
+        week_gain = ledger.week_gain
+        self.assertGreater(week_gain, 0)
+        self.assertAlmostEqual(ledger.month_gain, week_gain)
+        self.assertIsNone(ledger.prev_week_gain)
+        step(ledger, "2026-11-23T00:01:00", 104.0, 51.0, 0.40)
+        self.assertAlmostEqual(ledger.prev_week_gain, week_gain)
+        self.assertEqual(ledger.week_gain, 0.0)
+        self.assertAlmostEqual(ledger.month_gain, week_gain)  # zelfde maand: loopt door
+        step(ledger, "2026-12-01T00:01:00", 104.0, 51.0, 0.40)
+        self.assertEqual(ledger.month_gain, 0.0)
+        # Opslaan en teruglezen houdt de nieuwe velden vast.
+        again = Ledger.from_dict(ledger.to_dict())
+        self.assertEqual(again.prev_week_gain, ledger.prev_week_gain)
+
     def test_tellersprong_wordt_niet_geboekt(self):
         ledger = Ledger()
         step(ledger, "2026-11-11T02:00:00", 100.0, 50.0, 0.40, grid=True)

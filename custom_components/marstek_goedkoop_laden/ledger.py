@@ -15,7 +15,8 @@ Definitie van opbrengst
    waarbij de kostprijs die van de voorraad is, of (voor stroom die niet uit de
    voorraad komt, bijvoorbeeld zonnestroom) wat terugladen kost.
 4. "Vandaag" is de som van deze boekingen sinds 00:00, "deze week" sinds
-   maandag 00:00.
+   maandag 00:00 en "deze maand" sinds de eerste van de maand. "Vorige week" is
+   het eindbedrag van de week daarvoor.
 
 Stroom die de zon in de accu stopt en die je later zelf gebruikt telt niet mee:
 dat doet de Marstek ook zonder deze integratie. Wat nog in de voorraad zit, is
@@ -49,8 +50,12 @@ class Ledger:
     day_sold_kwh: float = 0.0
     week: str | None = None
     week_gain: float = 0.0
+    prev_week_gain: float | None = None
+    month: str | None = None
+    month_gain: float = 0.0
     day_start: str | None = None
     week_start: str | None = None
+    month_start: str | None = None
 
     @classmethod
     def from_dict(cls, data: dict | None) -> Ledger:
@@ -81,12 +86,21 @@ class Ledger:
         year, week_number, weekday = now.isocalendar()
         week = f"{year}-W{week_number:02d}"
         if week != self.week:
+            previous_week = self.week
             self.week = week
             monday = now.replace(hour=0, minute=0, second=0, microsecond=0)
             self.week_start = monday.fromordinal(monday.toordinal() - (weekday - 1)).replace(
                 tzinfo=now.tzinfo
             ).isoformat()
+            if previous_week is not None:
+                self.prev_week_gain = self.week_gain
             self.week_gain = 0.0
+            changed = True
+        month = now.strftime("%Y-%m")
+        if month != self.month:
+            self.month = month
+            self.month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+            self.month_gain = 0.0
             changed = True
         return changed
 
@@ -112,6 +126,7 @@ class Ledger:
     def _book(self, gain: float) -> None:
         self.day_gain += gain
         self.week_gain += gain
+        self.month_gain += gain
 
     def update(
         self,
