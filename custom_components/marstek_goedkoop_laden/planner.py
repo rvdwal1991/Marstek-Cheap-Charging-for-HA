@@ -74,6 +74,7 @@ class PlanParams:
     min_lookahead_hours: int = 8
     margin: float = 0.02
     min_power_w: int = 400
+    depreciation: float = 0.0  # afschrijving in euro per bruikbare kWh
 
 
 @dataclass(frozen=True)
@@ -154,7 +155,7 @@ WORTH_TOLERANCE = 0.005
 def _worth_charging(prices: list[PriceSlot], efficiency: float, params: PlanParams) -> list[bool]:
     """Per vak: is de prijs laag genoeg tegenover de dure vakken erna?"""
     return [
-        use is not None and slot.price <= efficiency * use - params.margin + WORTH_TOLERANCE
+        use is not None and slot.price <= efficiency * (use - params.depreciation) - params.margin + WORTH_TOLERANCE
         for slot, use in zip(prices, _use_prices(prices, params))
     ]
 
@@ -318,7 +319,10 @@ def compute_plan(
         use = _use_prices(prices, params)
         share = energy_plan / len(chosen)
         cost = energy_plan * average
-        value = sum(share * efficiency * (use[i] if use[i] is not None else prices[i].price / efficiency) for i in chosen)
+        value = sum(
+            share * efficiency * ((use[i] if use[i] is not None else prices[i].price / efficiency) - params.depreciation)
+            for i in chosen
+        )
         day = "morgen " if local(hours[0]).date() != local(now).date() else ""
         times = ", ".join(local(h).strftime("%H:%M") for h in hours)
         amount = (
@@ -402,6 +406,7 @@ class SellParams:
     price_offset: float = 0.0
     min_power_w: int = 400
     min_surplus_kwh: float = 0.3
+    depreciation: float = 0.0  # afschrijving in euro per verkochte kWh
 
 
 @dataclass(frozen=True)
@@ -492,7 +497,7 @@ def compute_sell_plan(
     refill = cheapest[: min(REFILL_HOURS, len(cheapest))]
     refill_price = sum(s.price for s in refill) / len(refill)
     refill_at = cheapest[0].start
-    threshold = refill_price / efficiency + params.margin
+    threshold = refill_price / efficiency + params.margin + params.depreciation
 
     hours_until = max((refill_at - now).total_seconds() / 3600.0, 0.0)
     discharge_efficiency = one_way_efficiency(efficiency)
@@ -584,7 +589,7 @@ def compute_sell_plan(
         text=text,
         revenue_eur=round(sold * average, 2),
         refill_cost_eur=round(sold * refill_price / efficiency, 2),
-        gain_eur=round(sold * (average - refill_price / efficiency), 2),
+        gain_eur=round(sold * (average - refill_price / efficiency - params.depreciation), 2),
         steps=(
             refill_step,
             price_step,

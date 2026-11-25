@@ -245,6 +245,7 @@ class RealizedGainSensor(ChargePlanEntity, SensorEntity):
                     "laadkosten": round(ledger.day_charge_cost, 2),
                     "gebruikt_kwh": round(ledger.day_used_kwh, 2),
                     "verkocht_kwh": round(ledger.day_sold_kwh, 2),
+                    "afschrijving": round(ledger.day_depreciation, 2),
                 }
             )
         return attributes

@@ -300,5 +300,20 @@ class VlakkeNachtTest(unittest.TestCase):
         self.assertNotIn("te kort", result.text)
 
 
+class AfschrijvingTest(unittest.TestCase):
+    def test_afschrijving_maakt_bijladen_minder_aantrekkelijk(self):
+        def run(dep):
+            return planner.compute_plan(
+                prices=PRICES_15, now=at("2026-11-15T15:45:00"), soc=11, capacity_kwh=5.12,
+                max_power_w=2500, efficiency=0.773, charging=False, active=True,
+                params=planner.PlanParams(margin=0.03, depreciation=dep), tz=TZ,
+            )
+        zonder, met, veel = run(0.0), run(0.03), run(0.2)
+        self.assertEqual(len(zonder.charge_hours), 3)
+        self.assertLessEqual(len(met.charge_hours), len(zonder.charge_hours))
+        self.assertLess(met.gain_eur, zonder.gain_eur)
+        self.assertEqual(veel.charge_hours, ())
+
+
 if __name__ == "__main__":
     unittest.main()

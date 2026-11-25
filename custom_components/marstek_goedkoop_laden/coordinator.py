@@ -36,6 +36,8 @@ from .const import (
     CONF_MIN_POWER,
     CONF_MIN_SOC,
     CONF_MIN_SOC_ENTITY,
+    CONF_BATTERY_CYCLES,
+    CONF_BATTERY_PRICE,
     CONF_LANGUAGE,
     CONF_NEGATIVE_PRICE_LIMIT,
     CONF_PRICE_ATTRIBUTE,
@@ -55,6 +57,8 @@ from .const import (
     DEFAULT_MIN_LOOKAHEAD_HOURS,
     DEFAULT_MIN_POWER,
     DEFAULT_MIN_SOC,
+    DEFAULT_BATTERY_CYCLES,
+    DEFAULT_BATTERY_PRICE,
     DEFAULT_LANGUAGE,
     DEFAULT_NEGATIVE_PRICE_LIMIT,
     DEFAULT_PRICE_ATTRIBUTE,
@@ -323,6 +327,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             min_lookahead_hours=int(conf.get(CONF_MIN_LOOKAHEAD_HOURS, DEFAULT_MIN_LOOKAHEAD_HOURS)),
             margin=float(conf.get(CONF_MARGIN, DEFAULT_MARGIN)),
             min_power_w=int(conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
+            depreciation=self.depreciation,
         )
 
     @property
@@ -335,6 +340,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             price_factor=float(conf.get(CONF_SELL_PRICE_FACTOR, DEFAULT_SELL_PRICE_FACTOR)),
             price_offset=float(conf.get(CONF_SELL_PRICE_OFFSET, DEFAULT_SELL_PRICE_OFFSET)),
             min_power_w=int(conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
+            depreciation=self.depreciation,
         )
 
     @property
@@ -431,6 +437,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 sell.refill_price / inputs["efficiency"] if sell.refill_price else None
             ),
             efficiency=inputs["efficiency"],
+            depreciation=self.depreciation,
         ):
             self._save()
 
@@ -444,7 +451,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             and self.ledger.clear_stock()
         ):
             self._save()
-        cost = self.ledger.stock_price
+        cost = self._stock_cost()
         has_stock = self.ledger.stock_kwh >= HOLD_MIN_STOCK_KWH and cost is not None
         export_now = (
             price_now * sell_params.price_factor - sell_params.price_offset
@@ -503,6 +510,21 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
     # ---------------------------------------------------------- stroomschema
 
     @property
+    def depreciation(self) -> float:
+        """Afschrijving van de accu in euro per kWh: prijs / (cycli x capaciteit)."""
+        price = float(self.conf.get(CONF_BATTERY_PRICE) or DEFAULT_BATTERY_PRICE)
+        cycles = float(self.conf.get(CONF_BATTERY_CYCLES) or DEFAULT_BATTERY_CYCLES)
+        capacity = float(self.inputs.get("capacity_kwh") or self.conf.get(CONF_CAPACITY_KWH) or 0)
+        if price <= 0 or cycles <= 0 or capacity <= 0:
+            return 0.0
+        return price / (cycles * capacity)
+
+    def _stock_cost(self) -> float | None:
+        """Kostprijs van de voorraad inclusief afschrijving: onder die prijs is gebruiken verlies."""
+        base = self.ledger.stock_price
+        return None if base is None else base + self.depreciation
+
+    @property
     def language(self) -> str:
         """De taal van de teksten: de keuze in de opties, of anders die van Home Assistant."""
         chosen = self.conf.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
@@ -541,7 +563,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                     result.append((start, end))
             return result
 
-        cost = self.ledger.stock_price
+        cost = self._stock_cost()
         control, force = inputs["control_mode"], inputs["force_mode"]
         if self.negative_active:
             doing = "Laden op vol vermogen (negatieve prijs)"
@@ -732,6 +754,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 "maand": round(self.ledger.month_gain, 2),
                 "geladen_kwh": round(self.ledger.day_charged_kwh, 2),
                 "laadkosten": round(self.ledger.day_charge_cost, 2),
+                "afschrijving": round(self.ledger.day_depreciation, 2),
                 "gebruikt_kwh": round(self.ledger.day_used_kwh + self.ledger.day_sold_kwh, 2),
                 "voorraad_kwh": round(self.ledger.stock_kwh, 2),
                 "voorraad_prijs": (

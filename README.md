@@ -188,6 +188,8 @@ Under *Configure* on the integration:
 | Setting | Default | Meaning |
 |---|---|---|
 | Language | Automatic | Language of the plan text, flow chart and cards: Automatic, Nederlands or English. |
+| Battery purchase price | €0 | Used for depreciation. 0 turns depreciation off. |
+| Battery lifetime (cycles) | 6000 | Expected number of full cycles. Depreciation per kWh = price ÷ (cycles × capacity); for example €1,500 over 6,000 cycles of 5.12 kWh is about €0.049 per kWh. |
 | Minimum gain per kWh | €0.02 | What charging must earn at least, after charge losses. Hours less than half a cent above the limit still count, so a nearly flat night is not cut up over a fraction of a cent. |
 | Number of most expensive hours | 6 | How many expensive hours later on an hour is compared with. |
 | Hours to look ahead | 18 | How far past an hour to look for expensive hours. |
@@ -231,6 +233,8 @@ passes, red is the check where it stops and dashed is an outcome where nothing h
 cards read the `stroomschema` attribute of the charge plan sensor.
 
 ## Gain
+
+**Depreciation.** If you set a purchase price, every kWh the battery discharges costs a bit of wear: price ÷ (cycles × capacity). It is subtracted from the realized gain (today, week, month), counted in the expected gain, and used in the decisions: an hour is only worth charging if it still beats the wear, selling needs the wear on top of the sell margin, and *Hold* and *No loss* treat cost price plus wear as the break-even price. With a price of 0 (default) nothing changes.
 
 There are two kinds of gain: what the current plan is expected to earn, and what has actually
 been earned.

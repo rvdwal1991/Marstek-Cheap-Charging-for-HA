@@ -183,6 +183,8 @@ Via *Configureren* op de integratie:
 | Instelling | Standaard | Betekenis |
 |---|---|---|
 | Taal | Automatisch | Taal van planregel, stroomschema en kaarten: Automatisch, Nederlands of English. |
+| Aanschafprijs accu | € 0 | Voor de afschrijving. 0 zet de afschrijving uit. |
+| Levensduur accu (cycli) | 6000 | Verwacht aantal volledige cycli. Afschrijving per kWh = prijs ÷ (cycli × capaciteit); bijvoorbeeld € 1.500 over 6.000 cycli van 5,12 kWh is ongeveer € 0,049 per kWh. |
 | Minimale winst per kWh | € 0,02 | Wat bijladen na aftrek van het laadverlies minstens moet opleveren. Uren die minder dan een halve cent boven de grens liggen tellen ook mee, zodat een bijna vlakke nacht niet om een fractie van een cent wordt versnipperd. |
 | Aantal duurste uren | 6 | Met hoeveel dure uren erna een uur wordt vergeleken. |
 | Uren vooruit kijken | 18 | Hoe ver na een uur naar dure uren wordt gezocht. |
@@ -226,6 +228,8 @@ controle, rood de controle waarop het stopt en gestreept een uitkomst waarbij ni
 Alle kaarten lezen het attribuut `stroomschema` van de laadplan-sensor.
 
 ## Opbrengst
+
+**Afschrijving.** Stel je een aanschafprijs in, dan kost elke kWh die de accu ontlaadt een beetje slijtage: prijs ÷ (cycli × capaciteit). Dat gaat af van de gerealiseerde opbrengst (vandaag, week, maand), telt mee in de verwachte opbrengst en in de beslissingen: een uur is alleen laadwaardig als het ook na de slijtage nog wint, verkopen vraagt de slijtage bovenop de verkoopmarge, en *Vasthouden* en *Geen verlies* nemen kostprijs plus slijtage als break-evenprijs. Bij een prijs van 0 (standaard) verandert er niets.
 
 Er zijn twee soorten opbrengst: wat het huidige plan naar verwachting oplevert, en wat er
 werkelijk is verdiend.

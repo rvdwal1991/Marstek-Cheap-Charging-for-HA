@@ -69,7 +69,9 @@
           "sell_price_factor": "Sell price: factor",
           "sell_price_offset": "Sell price: deduction",
           "negative_price_limit": "Negative price: limit",
-          "language": "Language"
+          "language": "Language",
+          "battery_price": "Battery purchase price",
+          "battery_cycles": "Battery lifetime (cycles)"
         },
         "data_description": {
           "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
@@ -92,7 +94,9 @@
           "min_soc": "Only used when no discharge cut-off entity is set.",
           "sell_price_factor": "Sell price = hourly price times this factor, minus the deduction. With net metering: 1 and 0. Without, for example 0.826 and 0.108 for the bare market price.",
           "negative_price_limit": "Below this hourly price the battery always charges at full power (when the switch is on). Default 0: only at a truly negative price.",
-          "language": "Language of the plan text, flow chart and cards. Automatic follows the Home Assistant language."
+          "language": "Language of the plan text, flow chart and cards. Automatic follows the Home Assistant language.",
+          "battery_price": "Purchase price of the battery in euros, for depreciation. 0 means no depreciation is counted.",
+          "battery_cycles": "Number of full cycles the battery is expected to last. Depreciation per kWh = price ÷ (cycles × capacity)."
         }
       }
     }

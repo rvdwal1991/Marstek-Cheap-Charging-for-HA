@@ -392,6 +392,11 @@ class MarstekGoedkoopLadenOpbrengstCard extends MarstekBaseCard {
           : `Charged today: ${number(result.geladen_kwh, 1)} kWh for € ${number(result.laadkosten, 2)}`
             + `, of which ${number(result.gebruikt_kwh, 1)} kWh used. `)
       : "";
+    const wear = result.afschrijving > 0.005
+      ? (LANG.toLowerCase().startsWith("nl")
+          ? `Afschrijving van de accu is meegerekend: € ${number(result.afschrijving, 2)}. `
+          : `Battery depreciation is included: € ${number(result.afschrijving, 2)}. `)
+      : "";
     return `
       <div class="tiles">
         ${tile(t("Vandaag"), result.vandaag)}
@@ -402,7 +407,7 @@ class MarstekGoedkoopLadenOpbrengstCard extends MarstekBaseCard {
       </div>
       <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>${t("Verwachte opbrengst van dit plan (schatting)")}</span></div>
       <div class="rows">${renderExpectedRows(result)}</div>
-      <div class="note">${escapeHtml(today + stock)}</div>`;
+      <div class="note">${escapeHtml(today + wear + stock)}</div>`;
   }
 }
 

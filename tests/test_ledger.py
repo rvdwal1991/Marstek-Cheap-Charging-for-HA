@@ -103,6 +103,26 @@ class LedgerTest(unittest.TestCase):
         again = Ledger.from_dict(ledger.to_dict())
         self.assertEqual(again.prev_week_gain, ledger.prev_week_gain)
 
+    def test_afschrijving_gaat_van_de_opbrengst_af(self):
+        def run(depreciation):
+            ledger = Ledger()
+            ledger.update(now=at("2026-11-11T01:59:00"), charged=100.0, discharged=50.0, price=0.40,
+                          grid_charging=False, selling=False, export_price=None, replacement_cost=None,
+                          efficiency=ETA, depreciation=depreciation)
+            for i in range(1, 6):
+                ledger.update(now=at(f"2026-11-11T02:{i:02d}:00"), charged=100.0 + i, discharged=50.0,
+                              price=0.40, grid_charging=True, selling=False, export_price=None,
+                              replacement_cost=None, efficiency=ETA, depreciation=depreciation)
+            for i in range(1, 5):
+                ledger.update(now=at(f"2026-11-11T19:{i:02d}:00"), charged=105.0, discharged=50.0 + i * 0.9,
+                              price=0.60, grid_charging=False, selling=False, export_price=None,
+                              replacement_cost=None, efficiency=ETA, depreciation=depreciation)
+            return ledger
+        zonder, met = run(0.0), run(0.05)
+        self.assertGreater(zonder.day_gain, 0)
+        self.assertAlmostEqual(zonder.day_gain - met.day_gain, met.day_depreciation, places=6)
+        self.assertGreater(met.day_depreciation, 0)
+
     def test_tellersprong_wordt_niet_geboekt(self):
         ledger = Ledger()
         step(ledger, "2026-11-11T02:00:00", 100.0, 50.0, 0.40, grid=True)

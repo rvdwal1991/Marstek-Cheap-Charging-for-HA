@@ -21,6 +21,9 @@ Definitie van opbrengst
 Stroom die de zon in de accu stopt en die je later zelf gebruikt telt niet mee:
 dat doet de Marstek ook zonder deze integratie. Wat nog in de voorraad zit, is
 nog niet verdiend en telt pas mee als het wordt gebruikt.
+
+Afschrijving: is die ingesteld, dan gaat er per ontladen kWh een bedrag van de
+opbrengst af (aanschafprijs / (levensduur in cycli x capaciteit)).
 """
 
 from __future__ import annotations
@@ -48,6 +51,7 @@ class Ledger:
     day_charge_cost: float = 0.0
     day_used_kwh: float = 0.0
     day_sold_kwh: float = 0.0
+    day_depreciation: float = 0.0
     week: str | None = None
     week_gain: float = 0.0
     prev_week_gain: float | None = None
@@ -81,7 +85,7 @@ class Ledger:
             self.day = day
             self.day_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
             self.day_gain = self.day_charged_kwh = self.day_charge_cost = 0.0
-            self.day_used_kwh = self.day_sold_kwh = 0.0
+            self.day_used_kwh = self.day_sold_kwh = self.day_depreciation = 0.0
             changed = True
         year, week_number, weekday = now.isocalendar()
         week = f"{year}-W{week_number:02d}"
@@ -140,6 +144,7 @@ class Ledger:
         export_price: float | None,
         replacement_cost: float | None,
         efficiency: float,
+        depreciation: float = 0.0,
     ) -> bool:
         """Verwerk de nieuwe tellerstanden. Geeft True als er iets is veranderd.
 
@@ -151,6 +156,7 @@ class Ledger:
         selling          : de integratie verkoopt nu aan het net
         export_price     : verkoopprijs van dit moment
         replacement_cost : wat het kost om een verkochte kWh terug te laden
+        depreciation     : afschrijving van de accu in euro per ontladen kWh
         """
         changed = self._roll(now)
         if charged is None or discharged is None:
@@ -185,9 +191,11 @@ class Ledger:
                 rest = d_discharged - used
                 sell_price = export_price if export_price is not None else price
                 rest_cost = rest * (replacement_cost if replacement_cost is not None else sell_price)
-                self._book(d_discharged * sell_price - cost - rest_cost)
+                self._book(d_discharged * sell_price - cost - rest_cost - d_discharged * depreciation)
+                self.day_depreciation += d_discharged * depreciation
                 self.day_sold_kwh += d_discharged
             elif used > 0:
-                self._book(used * price - cost)
+                self._book(used * price - cost - used * depreciation)
+                self.day_depreciation += used * depreciation
                 self.day_used_kwh += used
         return True
