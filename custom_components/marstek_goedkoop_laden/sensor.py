@@ -122,6 +122,7 @@ async def async_setup_entry(
     entities.append(RealizedGainSensor(coordinator, "opbrengst_deze_week"))
     entities.append(RealizedGainSensor(coordinator, "opbrengst_vorige_week"))
     entities.append(RealizedGainSensor(coordinator, "opbrengst_deze_maand"))
+    entities.append(RealizedGainSensor(coordinator, "opbrengst_dit_jaar"))
     async_add_entities(entities)
 
 
@@ -209,6 +210,7 @@ class RealizedGainSensor(ChargePlanEntity, SensorEntity):
             "opbrengst_deze_week": "week",
             "opbrengst_vorige_week": "vorige_week",
             "opbrengst_deze_maand": "maand",
+            "opbrengst_dit_jaar": "jaar",
         }.get(key, "dag")
         self._week = self._period != "dag"
         if self._period == "vorige_week":
@@ -220,7 +222,7 @@ class RealizedGainSensor(ChargePlanEntity, SensorEntity):
         ledger = self.coordinator.ledger
         if self._period == "vorige_week":
             return None if ledger.prev_week_gain is None else round(ledger.prev_week_gain, 2)
-        value = {"week": ledger.week_gain, "maand": ledger.month_gain}.get(self._period, ledger.day_gain)
+        value = {"week": ledger.week_gain, "maand": ledger.month_gain, "jaar": ledger.year_gain}.get(self._period, ledger.day_gain)
         return round(value, 2)
 
     @property
@@ -228,7 +230,7 @@ class RealizedGainSensor(ChargePlanEntity, SensorEntity):
         if self._period == "vorige_week":
             return None
         ledger = self.coordinator.ledger
-        start = {"week": ledger.week_start, "maand": ledger.month_start}.get(self._period, ledger.day_start)
+        start = {"week": ledger.week_start, "maand": ledger.month_start, "jaar": ledger.year_start}.get(self._period, ledger.day_start)
         return dt_util.parse_datetime(start) if start else None
 
     @property

@@ -752,6 +752,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                     round(self.ledger.prev_week_gain, 2) if self.ledger.prev_week_gain is not None else None
                 ),
                 "maand": round(self.ledger.month_gain, 2),
+                "jaar": round(self.ledger.year_gain, 2),
                 "geladen_kwh": round(self.ledger.day_charged_kwh, 2),
                 "laadkosten": round(self.ledger.day_charge_cost, 2),
                 "afschrijving": round(self.ledger.day_depreciation, 2),

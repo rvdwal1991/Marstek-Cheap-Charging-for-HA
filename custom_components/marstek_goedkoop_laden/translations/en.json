@@ -155,6 +155,9 @@
       },
       "opbrengst_deze_maand": {
         "name": "Gain this month"
+      },
+      "opbrengst_dit_jaar": {
+        "name": "Gain this year"
       }
     },
     "switch": {

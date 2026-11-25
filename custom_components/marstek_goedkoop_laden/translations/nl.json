@@ -155,6 +155,9 @@
       },
       "opbrengst_deze_maand": {
         "name": "Opbrengst deze maand"
+      },
+      "opbrengst_dit_jaar": {
+        "name": "Opbrengst dit jaar"
       }
     },
     "switch": {

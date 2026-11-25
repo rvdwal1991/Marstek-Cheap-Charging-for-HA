@@ -123,6 +123,18 @@ class LedgerTest(unittest.TestCase):
         self.assertAlmostEqual(zonder.day_gain - met.day_gain, met.day_depreciation, places=6)
         self.assertGreater(met.day_depreciation, 0)
 
+    def test_jaar_telt_door_en_begint_opnieuw(self):
+        ledger = Ledger()
+        ledger.month, ledger.month_gain = "2026-11", 0.5  # bestaande stand zonder jaarteller
+        step(ledger, "2026-11-23T10:00:00", 100.0, 50.0, 0.40)
+        self.assertAlmostEqual(ledger.year_gain, 0.5)  # overgenomen uit de lopende maand
+        ledger.day_gain = 0.0
+        step(ledger, "2026-12-02T10:00:00", 100.0, 50.0, 0.40)
+        self.assertAlmostEqual(ledger.year_gain, 0.5)  # nieuwe maand: jaar loopt door
+        step(ledger, "2027-01-02T10:00:00", 100.0, 50.0, 0.40)
+        self.assertEqual(ledger.year_gain, 0.0)
+        self.assertEqual(ledger.year, 2027)
+
     def test_tellersprong_wordt_niet_geboekt(self):
         ledger = Ledger()
         step(ledger, "2026-11-11T02:00:00", 100.0, 50.0, 0.40, grid=True)

@@ -155,6 +155,7 @@ yourself is reset as long as price control is on; switch it off first if you wan
 | `sensor.*_energy_to_charge` | Energy from the grid needed to fill up, in kWh. |
 | `sensor.*_charge_start` / `*_charge_end` | Start and end of the planned charge. |
 | `sensor.*_gain_today` / `*_gain_this_week` / `*_gain_this_month` | Realized gain in euros since 00:00, since Monday 00:00 and since the first of the month (see *Gain*). Attributes: the stock and, for today, what was charged and used. |
+| `sensor.*_gain_this_year` | Realized gain since 1 January. |
 | `sensor.*_gain_last_week` | The final gain of the previous week. |
 | `sensor.*_expected_gain` | Estimated gain of the current plans in euros (charging plus selling); attribute `regels` holds the breakdown. |
 | `sensor.*_efficiency` | The efficiency used, in percent. Attribute `bron`: measured from the energy counters or the fixed value. |

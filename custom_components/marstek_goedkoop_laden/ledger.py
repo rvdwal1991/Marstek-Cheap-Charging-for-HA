@@ -15,7 +15,7 @@ Definitie van opbrengst
    waarbij de kostprijs die van de voorraad is, of (voor stroom die niet uit de
    voorraad komt, bijvoorbeeld zonnestroom) wat terugladen kost.
 4. "Vandaag" is de som van deze boekingen sinds 00:00, "deze week" sinds
-   maandag 00:00 en "deze maand" sinds de eerste van de maand. "Vorige week" is
+   maandag 00:00, "deze maand" sinds de eerste van de maand en "dit jaar" sinds 1 januari. "Vorige week" is
    het eindbedrag van de week daarvoor.
 
 Stroom die de zon in de accu stopt en die je later zelf gebruikt telt niet mee:
@@ -57,6 +57,9 @@ class Ledger:
     prev_week_gain: float | None = None
     month: str | None = None
     month_gain: float = 0.0
+    year: int | None = None
+    year_gain: float = 0.0
+    year_start: str | None = None
     day_start: str | None = None
     week_start: str | None = None
     month_start: str | None = None
@@ -100,6 +103,16 @@ class Ledger:
                 self.prev_week_gain = self.week_gain
             self.week_gain = 0.0
             changed = True
+        if now.year != self.year:
+            if self.year is None and self.month and self.month.startswith(str(now.year)):
+                # Eerste keer met een jaarteller: de boekhouding begon dit jaar, dus
+                # wat er in de lopende maand staat is ook het jaar tot nu toe.
+                self.year_gain = self.month_gain
+            else:
+                self.year_gain = 0.0
+            self.year = now.year
+            self.year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+            changed = True
         month = now.strftime("%Y-%m")
         if month != self.month:
             self.month = month
@@ -131,6 +144,7 @@ class Ledger:
         self.day_gain += gain
         self.week_gain += gain
         self.month_gain += gain
+        self.year_gain += gain
 
     def update(
         self,

@@ -150,6 +150,7 @@ teruggezet zolang de prijssturing aan staat; zet daarvoor de schakelaar uit.
 | `sensor.*_bij_te_laden` | Energie uit het net die nodig is om vol te komen, in kWh. |
 | `sensor.*_start_bijladen` / `*_einde_bijladen` | Begin en einde van de geplande laadbeurt. |
 | `sensor.*_opbrengst_vandaag` / `*_opbrengst_deze_week` / `*_opbrengst_deze_maand` | Gerealiseerde opbrengst in euro sinds 00:00, sinds maandag 00:00 en sinds de eerste van de maand (zie *Opbrengst*). Attributen: de voorraad en, bij vandaag, wat er is bijgeladen en gebruikt. |
+| `sensor.*_opbrengst_dit_jaar` | Gerealiseerde opbrengst sinds 1 januari. |
 | `sensor.*_opbrengst_vorige_week` | Het eindbedrag van de week daarvoor. |
 | `sensor.*_verwachte_opbrengst` | Geschatte opbrengst van de huidige plannen in euro (bijladen plus verkoop); attribuut `regels` met de uitsplitsing. |
 | `sensor.*_rendement` | Het rendement waarmee wordt gerekend, in procent. Attribuut `bron`: gemeten uit de energietellers of de vaste waarde. |
