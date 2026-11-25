@@ -14,6 +14,11 @@
  * Extra voor de eerste twee:
  *   opbrengst: true | false   toon ook de opbrengst (standaard: uit bij de
  *                             gewone kaart, één regel bij de compacte kaart)
+ * Extra voor de opbrengstkaart:
+ *   tiles: [vandaag, week, vorige_week, maand, jaar, verwacht]
+ *                             welke tegels, in deze volgorde (standaard: alle zes)
+ *   expected_details: true | false   regels per onderdeel van het plan (standaard: aan)
+ *   notes: true | false              toelichting onder de kaart (standaard: aan)
  */
 const DEFAULT_ENTITY = "sensor.marstek_goedkoop_laden_laadplan";
 
@@ -141,6 +146,11 @@ const EN = {
   "Vorige week": "Last week",
   "Opbrengst": "Gain",
   "Deze maand": "This month",
+  "Dit jaar": "This year",
+  "Tegels": "Tiles",
+  "Regels per onderdeel van het plan": "Lines per part of the plan",
+  "Toelichting onder de kaart": "Note below the card",
+  "Titel": "Title",
   "maand": "month",
   "Verwacht (plan)": "Expected (plan)",
   "niet gevonden.": "not found.",
@@ -215,6 +225,7 @@ function renderExpected(result) {
       <div class="tile"><small>${t("Deze week")}</small><b class="${tone(result.week)}">${formatEuro(result.week || 0)}</b></div>
       ${result.vorige_week == null ? "" : `<div class="tile"><small>${t("Vorige week")}</small><b class="${tone(result.vorige_week)}">${formatEuro(result.vorige_week)}</b></div>`}
       <div class="tile"><small>${t("Deze maand")}</small><b class="${tone(result.maand)}">${formatEuro(result.maand || 0)}</b></div>
+      <div class="tile"><small>${t("Dit jaar")}</small><b class="${tone(result.jaar)}">${formatEuro(result.jaar || 0)}</b></div>
     </div>
     <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>${t("Verwachte opbrengst van dit plan (schatting)")}</span></div>
     <div class="result">
@@ -367,6 +378,12 @@ class MarstekGoedkoopLadenCompactCard extends MarstekGoedkoopLadenCard {
   }
 }
 
+const TILE_KEYS = ["vandaag", "week", "vorige_week", "maand", "jaar", "verwacht"];
+const TILE_LABELS = {
+  vandaag: "Vandaag", week: "Deze week", vorige_week: "Vorige week",
+  maand: "Deze maand", jaar: "Dit jaar", verwacht: "Verwacht (plan)",
+};
+
 class MarstekGoedkoopLadenOpbrengstCard extends MarstekBaseCard {
   getCardSize() {
     return 4;
@@ -377,6 +394,16 @@ class MarstekGoedkoopLadenOpbrengstCard extends MarstekBaseCard {
     if (!result) return `<div class="empty">${t("Nog geen opbrengst beschikbaar.")}</div>`;
     const tile = (label, value) => `
       <div class="tile"><small>${label}</small><b class="${tone(value)}">${formatEuro(value || 0)}</b></div>`;
+    const cfg = this._config;
+    const wanted = Array.isArray(cfg.tiles) ? cfg.tiles : TILE_KEYS;
+    const values = {
+      vandaag: result.vandaag, week: result.week, vorige_week: result.vorige_week,
+      maand: result.maand, jaar: result.jaar, verwacht: result.totaal,
+    };
+    const tiles = wanted
+      .filter((key) => TILE_LABELS[key] && values[key] != null)
+      .map((key) => tile(t(TILE_LABELS[key]), values[key]))
+      .join("");
     const stock = result.voorraad_kwh > 0.005
       ? (LANG.toLowerCase().startsWith("nl")
           ? `Nog in de accu: ${number(result.voorraad_kwh, 1)} kWh bijgeladen stroom`
@@ -397,17 +424,36 @@ class MarstekGoedkoopLadenOpbrengstCard extends MarstekBaseCard {
           ? `Afschrijving van de accu is meegerekend: € ${number(result.afschrijving, 2)}. `
           : `Battery depreciation is included: € ${number(result.afschrijving, 2)}. `)
       : "";
-    return `
-      <div class="tiles">
-        ${tile(t("Vandaag"), result.vandaag)}
-        ${tile(t("Deze week"), result.week)}
-        ${result.vorige_week == null ? "" : tile(t("Vorige week"), result.vorige_week)}
-        ${tile(t("Deze maand"), result.maand)}
-        ${tile(t("Verwacht (plan)"), result.totaal)}
-      </div>
+    const details = cfg.expected_details === false ? "" : `
       <div class="head"><ha-icon icon="mdi:cash-multiple"></ha-icon><span>${t("Verwachte opbrengst van dit plan (schatting)")}</span></div>
-      <div class="rows">${renderExpectedRows(result)}</div>
-      <div class="note">${escapeHtml(today + wear + stock)}</div>`;
+      <div class="rows">${renderExpectedRows(result)}</div>`;
+    const note = cfg.notes === false ? "" : `<div class="note">${escapeHtml(today + wear + stock)}</div>`;
+    return `${tiles ? `<div class="tiles">${tiles}</div>` : ""}${details}${note}`;
+  }
+
+  static getConfigForm() {
+    return {
+      schema: [
+        { name: "entity", selector: { entity: { domain: "sensor" } } },
+        { name: "title", selector: { text: {} } },
+        {
+          name: "tiles",
+          selector: {
+            select: {
+              multiple: true,
+              mode: "list",
+              options: TILE_KEYS.map((key) => ({ value: key, label: t(TILE_LABELS[key]) })),
+            },
+          },
+        },
+        { name: "expected_details", selector: { boolean: {} } },
+        { name: "notes", selector: { boolean: {} } },
+      ],
+      computeLabel: (schema) => ({
+        entity: "Entity", title: t("Titel"), tiles: t("Tegels"),
+        expected_details: t("Regels per onderdeel van het plan"), notes: t("Toelichting onder de kaart"),
+      }[schema.name] || schema.name),
+    };
   }
 }
 

@@ -223,6 +223,21 @@ title: Prijssturing                              # optioneel
 opbrengst: false                                 # optioneel, zie hieronder
 ```
 
+De opbrengstkaart is aan te passen, in YAML of in de kaarteditor:
+
+```yaml
+type: custom:marstek-goedkoop-laden-opbrengst-card
+tiles: [vandaag, maand, jaar]   # kies uit: vandaag, week, vorige_week, maand, jaar, verwacht (in deze volgorde)
+expected_details: false         # verberg de regels per onderdeel van het plan (standaard: true)
+notes: false                    # verberg de toelichting onder de kaart (standaard: true)
+```
+
+| Optie | Standaard | Betekenis |
+|---|---|---|
+| `tiles` | alle zes | Welke tegels en in welke volgorde: vandaag, deze week, vorige week, deze maand, dit jaar, verwacht (plan). |
+| `expected_details` | `true` | De regels met de verwachte opbrengst per onderdeel (bijladen, verkoop). |
+| `notes` | `true` | De toelichting met de bijgeladen voorraad, wat er vandaag is bijgeladen en de afschrijving. |
+
 `opbrengst` bepaalt of de stroomschemakaart ook de opbrengst toont: standaard uit bij de gewone
 kaart, standaard één regel bij de compacte kaart. In het stroomschema is groen een geslaagde
 controle, rood de controle waarop het stopt en gestreept een uitkomst waarbij niets gebeurt.

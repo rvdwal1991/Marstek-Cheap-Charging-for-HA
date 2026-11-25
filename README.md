@@ -228,6 +228,21 @@ title: Price control                             # optional
 opbrengst: false                                 # optional, see below
 ```
 
+The gain card can be customized, in YAML or in the card editor:
+
+```yaml
+type: custom:marstek-goedkoop-laden-opbrengst-card
+tiles: [vandaag, maand, jaar]   # any of: vandaag, week, vorige_week, maand, jaar, verwacht (in this order)
+expected_details: false         # hide the lines per part of the plan (default: true)
+notes: false                    # hide the note below the card (default: true)
+```
+
+| Option | Default | Meaning |
+|---|---|---|
+| `tiles` | all six | Which tiles to show and in which order: today, this week, last week, this month, this year, expected (plan). |
+| `expected_details` | `true` | The lines with the expected gain per part (charging, selling). |
+| `notes` | `true` | The note with the charged stock, what was charged today and the depreciation. |
+
 `opbrengst` decides whether the flow card also shows the gain: off by default for the regular
 card, one line by default for the compact card. In the flow chart green is a check that
 passes, red is the check where it stops and dashed is an outcome where nothing happens. All
