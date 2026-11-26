@@ -4,7 +4,7 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
-## 1.25.0 (unreleased)
+## 1.25.0 (2026-11-26)
 - **Cleanup, no change in behaviour:** the flow chart and the solar forecast moved out of
   `coordinator.py` into `flow.py` and `solar.py`, the long update routine is split into steps, and
   unused code is gone.
