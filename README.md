@@ -24,13 +24,25 @@ expensive hours.
 >   *Forcible Charge Power* (required) and, optionally, *Max. Charge Power*, *Max. Discharge Power*,
 >   *Forcible Discharge Power*, *Discharging Cutoff Capacity* and the total charged/discharged
 >   energy counters.
-> - **Modbus in Home Assistant** (for example an Elfin EW11 or another RS485-to-TCP converter), using
->   the [MarstekVenus-ElfinEW11](https://github.com/Superduper1969/MarstekVenus-ElfinEW11)
->   configuration. The integration reads that setup's register sensors (RS485 control mode, force
->   mode, forcible charge/discharge power, SoC) and writes registers 42000, 42010, 42020 and 42021
->   with `modbus.write_register`. **New and so far only tested with simulated Modbus calls, not on a
->   real Elfin EW11.** Without maximum charge/discharge power and cut-off registers, *Hold* and
->   *No loss* are not available in this mode.
+> - **Modbus in Home Assistant**, with a Modbus hub that you define yourself in `configuration.yaml`:
+>   an Elfin EW11 or another RS485-to-TCP converter
+>   ([MarstekVenus-ElfinEW11](https://github.com/Superduper1969/MarstekVenus-ElfinEW11)), or the
+>   **Venus E v3 straight over Ethernet** (Modbus TCP, port 502, unit 1, EMS V144 or newer;
+>   [MarstekVenusV3-modbus-TCP-IP](https://github.com/fonske/MarstekVenusV3-modbus-TCP-IP)). The
+>   integration reads that setup's register sensors and writes the registers 42000 (RS485 control),
+>   42010 (force mode), 42020/42021 (forcible charge/discharge power) and, if you give the sensors,
+>   44002/44003 (maximum charge/discharge power) with `modbus.write_register`. With the maximum
+>   discharge power, *Hold* and *No loss* work as well; without it they are not available. The
+>   Venus E v3 keeps its state of charge in register 34002 (scale 0.1), not in 32104.
+> - **The *Marstek Venus Modbus* integration**
+>   ([ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus)), which
+>   also talks Modbus TCP (Ethernet on a Venus E v3, or an RS485 gateway). Choose this when you
+>   already use that integration: it supplies the entities (`switch` RS485 control mode, `select`
+>   force mode, `number` powers). Enable the *RS485 control mode* switch and *Force mode* select
+>   there first, they are disabled by default.
+>
+> The Modbus and Marstek Venus Modbus options are **new and so far only tested with simulated
+> calls, not on real hardware**.
 >
 > Other ways of connecting the battery (cloud, other integrations) are untested and most likely do
 > not work, because they do not offer these RS485 control entities.
@@ -197,7 +209,7 @@ same in both languages.
    *Integration*), or copy `custom_components/marstek_goedkoop_laden` to
    `/config/custom_components/`. Restart Home Assistant.
 2. Go to *Settings → Devices & services → Add integration → Marstek Goedkoop Laden*.
-3. Choose how your Marstek is connected (*LilyGO RS485 with ESPHome* or *Modbus in Home Assistant*),
+3. Choose how your Marstek is connected (*LilyGO RS485 with ESPHome*, *Modbus in Home Assistant* or *Marstek Venus Modbus integration*),
    then the price sensor and the Marstek entities. Whatever is detected is pre-filled. For Modbus you
    also enter the name of your Modbus hub (for example `MarstekVenus`) and the slave address.
 

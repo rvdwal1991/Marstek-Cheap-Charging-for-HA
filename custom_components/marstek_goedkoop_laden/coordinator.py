@@ -22,6 +22,7 @@ from .const import (
     CONF_CONNECTION,
     CONF_MODBUS_HUB,
     CONF_MODBUS_SLAVE,
+    CONNECTION_MARSTEK_MODBUS,
     CONNECTION_MODBUS,
     DEFAULT_MODBUS_HUB,
     DEFAULT_MODBUS_SLAVE,
@@ -32,6 +33,8 @@ from .const import (
     REG_FORCE_CHARGE_POWER,
     REG_FORCE_DISCHARGE_POWER,
     REG_FORCE_MODE,
+    REG_MAX_CHARGE_POWER,
+    REG_MAX_DISCHARGE_POWER,
     CONF_CAPACITY_KWH,
     CONF_CHARGED_ENERGY_ENTITY,
     CONF_CONTROL_MODE_ENTITY,
@@ -302,6 +305,9 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         force = self._state(CONF_FORCE_MODE_ENTITY)
         if self.is_modbus:
             control, force = self._decode_modbus(control, force)
+        elif self.is_marstek_modbus:
+            control = {"on": MODE_ENABLE, "off": MODE_DISABLE}.get(control or "")
+            force = {"standby": FORCE_STOP}.get(force or "", force)
         return {
             "prices": prices,
             "soc": self._number(CONF_SOC_ENTITY),
@@ -822,6 +828,10 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
     def is_modbus(self) -> bool:
         return self.conf.get(CONF_CONNECTION) == CONNECTION_MODBUS
 
+    @property
+    def is_marstek_modbus(self) -> bool:
+        return self.conf.get(CONF_CONNECTION) == CONNECTION_MARSTEK_MODBUS
+
     @staticmethod
     def _decode_modbus(control: str | None, force: str | None) -> tuple[str | None, str | None]:
         """Zet de ruwe registerwaarden om naar de woorden van de ESPHome-selects."""
@@ -861,6 +871,16 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 code = {v: k for k, v in RAW_FORCE.items()}[option]
                 await self._async_write_register(REG_FORCE_MODE, code)
             return
+        if self.is_marstek_modbus:
+            if key == CONF_CONTROL_MODE_ENTITY:
+                await self.hass.services.async_call(
+                    "switch",
+                    "turn_on" if option == MODE_ENABLE else "turn_off",
+                    {"entity_id": self.conf[key]},
+                    blocking=True,
+                )
+                return
+            option = "standby" if option == FORCE_STOP else option
         await self.hass.services.async_call(
             "select",
             "select_option",
@@ -873,6 +893,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             address = {
                 CONF_FORCE_POWER_ENTITY: REG_FORCE_CHARGE_POWER,
                 CONF_FORCE_DISCHARGE_POWER_ENTITY: REG_FORCE_DISCHARGE_POWER,
+                CONF_MAX_POWER_ENTITY: REG_MAX_CHARGE_POWER,
+                CONF_MAX_DISCHARGE_POWER_ENTITY: REG_MAX_DISCHARGE_POWER,
             }.get(key)
             if address is not None:
                 await self._async_write_register(address, int(watts))

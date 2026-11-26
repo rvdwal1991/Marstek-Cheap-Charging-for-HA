@@ -4,6 +4,17 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.18.0 (2026-11-26)
+- **New:** Marstek Venus E v3 over Modbus TCP. Two ways: the *Modbus in Home Assistant* option now also
+  accepts the register sensors of
+  [MarstekVenusV3-modbus-TCP-IP](https://github.com/fonske/MarstekVenusV3-modbus-TCP-IP) (state of
+  charge lives in register 34002), and a new option *Marstek Venus Modbus integration* uses the entities
+  of [ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus).
+- Modbus option: optional sensors for maximum charge power (44002), maximum discharge power (44003, also
+  written for *Hold* and *No loss*), battery capacity and the energy counters.
+- Not tested on real hardware, only with simulated calls. The charge and discharge cut-off is not
+  available on the Venus E v3, the fixed value from the options is used.
+
 ## 1.17.0 (2026-11-26)
 - **New:** support for a Marstek connected through a **Modbus hub in Home Assistant**, for example an
   Elfin EW11 with [MarstekVenus-ElfinEW11](https://github.com/Superduper1969/MarstekVenus-ElfinEW11).

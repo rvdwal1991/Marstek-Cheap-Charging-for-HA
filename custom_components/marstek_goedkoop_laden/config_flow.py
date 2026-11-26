@@ -16,6 +16,7 @@ from .const import (
     CONF_MODBUS_HUB,
     CONF_MODBUS_SLAVE,
     CONNECTION_ESPHOME,
+    CONNECTION_MARSTEK_MODBUS,
     CONNECTION_MODBUS,
     DEFAULT_MODBUS_HUB,
     DEFAULT_MODBUS_SLAVE,
@@ -90,20 +91,43 @@ ENTITY_FIELDS: tuple[tuple[str, str, bool, tuple[str, ...]], ...] = (
 # ontlaadgrens zijn daar geen registers van deze opzet en vallen dus weg.
 MODBUS_FIELDS: tuple[tuple[str, str, bool, tuple[str, ...]], ...] = (
     (CONF_PRICE_ENTITY, "sensor", True, ("zonneplan_current_hourly_electricity_tariff", "current_electricity_tariff")),
+    (CONF_SOC_ENTITY, "sensor", True, ("battery_state_of_charge", "battery_soc")),
+    (CONF_CONTROL_MODE_ENTITY, "sensor", True, ("rs485_control_mode_number", "my_battery_rs485_control_mode")),
+    (CONF_FORCE_MODE_ENTITY, "sensor", True, ("forcible_charge_discharge_number", "my_battery_force_charge_discharge_mode")),
+    (CONF_FORCE_POWER_ENTITY, "sensor", True, ("forcible_charge_power_number", "forcible_charge_power")),
+    (CONF_MAX_POWER_ENTITY, "sensor", False, ("max_charge_power_number",)),
+    (CONF_CAPACITY_ENTITY, "sensor", False, ("battery_total_energy",)),
+    (CONF_CHARGED_ENERGY_ENTITY, "sensor", False, ("lifetime_charging_energy", "total_charging_energy")),
+    (CONF_DISCHARGED_ENERGY_ENTITY, "sensor", False, ("lifetime_discharging_energy", "total_discharging_energy")),
+    (CONF_FORCE_DISCHARGE_POWER_ENTITY, "sensor", False, ("forcible_discharge_power_number", "forcible_discharge_power")),
+    (CONF_MAX_DISCHARGE_POWER_ENTITY, "sensor", False, ("max_discharge_power_number",)),
+)
+
+# Integratie "Marstek Venus Modbus" (ViperRNMC): eigen entiteiten, met een schakelaar voor
+# de RS485-besturing en een select voor de richting (standby/charge/discharge).
+MARSTEK_MODBUS_FIELDS: tuple[tuple[str, str, bool, tuple[str, ...]], ...] = (
+    (CONF_PRICE_ENTITY, "sensor", True, ("zonneplan_current_hourly_electricity_tariff", "current_electricity_tariff")),
     (CONF_SOC_ENTITY, "sensor", True, ("battery_soc",)),
-    (CONF_CONTROL_MODE_ENTITY, "sensor", True, ("my_battery_rs485_control_mode",)),
-    (CONF_FORCE_MODE_ENTITY, "sensor", True, ("my_battery_force_charge_discharge_mode",)),
-    (CONF_FORCE_POWER_ENTITY, "sensor", True, ("forcible_charge_power",)),
-    (CONF_FORCE_DISCHARGE_POWER_ENTITY, "sensor", False, ("forcible_discharge_power",)),
+    (CONF_CONTROL_MODE_ENTITY, "switch", True, ("rs485_control_mode",)),
+    (CONF_FORCE_MODE_ENTITY, "select", True, ("force_mode",)),
+    (CONF_FORCE_POWER_ENTITY, "number", True, ("set_charge_power",)),
+    (CONF_MAX_POWER_ENTITY, "number", False, ("max_charge_power",)),
+    (CONF_CAPACITY_ENTITY, "sensor", False, ("battery_total_energy",)),
     (CONF_CHARGED_ENERGY_ENTITY, "sensor", False, ("total_charging_energy",)),
     (CONF_DISCHARGED_ENERGY_ENTITY, "sensor", False, ("total_discharging_energy",)),
+    (CONF_FORCE_DISCHARGE_POWER_ENTITY, "number", False, ("set_discharge_power",)),
+    (CONF_MAX_DISCHARGE_POWER_ENTITY, "number", False, ("max_discharge_power",)),
 )
 
 OPTIONAL_KEYS = tuple(key for key, _, required, _ in ENTITY_FIELDS if not required)
 
 
 def _fields(connection: str | None):
-    return MODBUS_FIELDS if connection == CONNECTION_MODBUS else ENTITY_FIELDS
+    if connection == CONNECTION_MODBUS:
+        return MODBUS_FIELDS
+    if connection == CONNECTION_MARSTEK_MODBUS:
+        return MARSTEK_MODBUS_FIELDS
+    return ENTITY_FIELDS
 
 
 def _guess(hass: HomeAssistant, domain: str, endings: tuple[str, ...]) -> str | None:
@@ -195,13 +219,16 @@ class MarstekGoedkoopLadenConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        return self.async_show_menu(step_id="user", menu_options=[CONNECTION_ESPHOME, CONNECTION_MODBUS])
+        return self.async_show_menu(step_id="user", menu_options=[CONNECTION_ESPHOME, CONNECTION_MODBUS, CONNECTION_MARSTEK_MODBUS])
 
     async def async_step_esphome(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         return await self._async_entities(CONNECTION_ESPHOME, "esphome", user_input)
 
     async def async_step_modbus(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         return await self._async_entities(CONNECTION_MODBUS, "modbus", user_input)
+
+    async def async_step_marstek_modbus(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return await self._async_entities(CONNECTION_MARSTEK_MODBUS, "marstek_modbus", user_input)
 
     async def _async_entities(
         self, connection: str, step_id: str, user_input: dict[str, Any] | None

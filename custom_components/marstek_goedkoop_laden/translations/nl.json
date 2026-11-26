@@ -6,7 +6,8 @@
         "description": "Hoe is je Marstek gekoppeld?",
         "menu_options": {
           "esphome": "LilyGO RS485 met ESPHome",
-          "modbus": "Modbus in Home Assistant (bijv. Elfin EW11)"
+          "modbus": "Modbus in Home Assistant (bijv. Elfin EW11)",
+          "marstek_modbus": "Marstek Venus Modbus-integratie (ViperRNMC)"
         }
       },
       "esphome": {
@@ -41,7 +42,7 @@
       },
       "modbus": {
         "title": "Marstek Goedkoop Laden",
-        "description": "Kies de prijssensor en de Modbus-sensoren van de Marstek (bijvoorbeeld uit MarstekVenus-ElfinEW11). Schrijven gaat via de Modbus-hub die je hier noemt.",
+        "description": "Kies de prijssensor en de Modbus-registersensoren van de Marstek (bijvoorbeeld uit MarstekVenus-ElfinEW11 of, voor een Venus E v3 via Ethernet, MarstekVenusV3-modbus-TCP-IP). Schrijven gaat via de Modbus-hub die je hier noemt. Maximaal vermogen en capaciteit zijn optioneel; met het maximale ontlaadvermogen werken Vasthouden en Geen verlies ook.",
         "data": {
           "price_entity": "Prijssensor",
           "soc_entity": "Laadniveau (SoC)",
@@ -61,6 +62,34 @@
         "data_description": {
           "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
           "modbus_hub": "De naam van de hub in je modbus:-configuratie, bijvoorbeeld MarstekVenus."
+        }
+      },
+      "marstek_modbus": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Kies de prijssensor en de entiteiten van de integratie Marstek Venus Modbus (ViperRNMC), die een Venus E v3 rechtstreeks via Ethernet kan aansturen. Zet in die integratie eerst de schakelaar RS485-besturing en de forceermodus-select aan: ze staan standaard uit.",
+        "data": {
+          "price_entity": "Prijssensor",
+          "soc_entity": "Laadniveau (SoC)",
+          "control_mode_entity": "RS485-besturing (schakelaar)",
+          "force_mode_entity": "Forceermodus (select)",
+          "force_power_entity": "Forcible charge power",
+          "max_power_entity": "Maximaal laadvermogen",
+          "capacity_entity": "Accucapaciteit (sensor)",
+          "charged_energy_entity": "Totaal geladen energie",
+          "discharged_energy_entity": "Totaal ontladen energie",
+          "force_discharge_power_entity": "Forcible discharge power",
+          "max_discharge_power_entity": "Maximaal ontlaadvermogen"
+        },
+        "data_description": {
+          "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
+          "control_mode_entity": "Hoofdschakelaar voor forceren: enable of disable.",
+          "force_mode_entity": "Richting bij forceren: charge, discharge of stop.",
+          "force_power_entity": "Wordt tijdens het bijladen op het uitgesmeerde vermogen gezet.",
+          "max_power_entity": "Bepaalt het aantal laaduren en de bovengrens van het vermogen. Leeg = 2500 W.",
+          "capacity_entity": "Leeg = de vaste capaciteit uit de instellingen.",
+          "charged_energy_entity": "Samen met de ontladen energie bepaalt dit het rendement. Leeg = vast rendement.",
+          "force_discharge_power_entity": "Nodig voor verkopen. Leeg = verkopen is niet mogelijk.",
+          "max_discharge_power_entity": "Bovengrens van het verkoopvermogen. Leeg = 2500 W."
         }
       }
     },

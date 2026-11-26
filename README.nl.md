@@ -18,13 +18,25 @@ stroomcontract, zodat hij vol is voordat de stroom duur wordt.
   deze opzet levert: *RS485 Control Mode*, *Forcible Charge/Discharge*, *Forcible Charge Power*
   (verplicht) en, optioneel, *Max. Charge Power*, *Max. Discharge Power*, *Forcible Discharge
   Power*, *Discharging Cutoff Capacity* en de totaaltellers van geladen en ontladen energie.
-- **Modbus in Home Assistant** (bijvoorbeeld een Elfin EW11 of een andere RS485-naar-TCP-converter),
-  met de configuratie van [MarstekVenus-ElfinEW11](https://github.com/Superduper1969/MarstekVenus-ElfinEW11).
-  De integratie leest de registersensoren van die opzet (RS485-besturing, forceermodus,
-  geforceerd laad-/ontlaadvermogen, SoC) en schrijft de registers 42000, 42010, 42020 en 42021 met
-  `modbus.write_register`. **Nieuw en tot nu toe alleen getest met nagebootste Modbus-aanroepen, niet
-  op een echte Elfin EW11.** Zonder registers voor maximaal laad-/ontlaadvermogen en ontlaadgrens
-  zijn *Vasthouden* en *Geen verlies* in deze modus niet beschikbaar.
+- **Modbus in Home Assistant**, met een Modbus-hub die je zelf in `configuration.yaml` zet: een
+  Elfin EW11 of andere RS485-naar-TCP-converter
+  ([MarstekVenus-ElfinEW11](https://github.com/Superduper1969/MarstekVenus-ElfinEW11)), of de
+  **Venus E v3 rechtstreeks via Ethernet** (Modbus TCP, poort 502, unit 1, EMS V144 of nieuwer;
+  [MarstekVenusV3-modbus-TCP-IP](https://github.com/fonske/MarstekVenusV3-modbus-TCP-IP)). De
+  integratie leest de registersensoren van die opzet en schrijft de registers 42000
+  (RS485-besturing), 42010 (forceermodus), 42020/42021 (geforceerd laad-/ontlaadvermogen) en, als je
+  de sensoren opgeeft, 44002/44003 (maximaal laad-/ontlaadvermogen) met `modbus.write_register`. Met
+  het maximale ontlaadvermogen werken *Vasthouden* en *Geen verlies* ook, zonder niet. De Venus E v3
+  heeft de laadtoestand in register 34002 (schaal 0,1), niet in 32104.
+- **De integratie *Marstek Venus Modbus***
+  ([ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus)), die ook
+  Modbus TCP spreekt (Ethernet bij een Venus E v3, of een RS485-gateway). Kies dit als je die
+  integratie al gebruikt: zij levert de entiteiten (`switch` RS485-besturing, `select` forceermodus,
+  `number` vermogens). Zet daar eerst de schakelaar *RS485 control mode* en de select *Force mode*
+  aan, ze staan standaard uit.
+
+De opties Modbus en Marstek Venus Modbus zijn **nieuw en tot nu toe alleen getest met nagebootste
+aanroepen, niet op echte hardware**.
 
 Andere manieren om de accu te koppelen (cloud, andere integraties) zijn niet getest en werken
 vermoedelijk niet, omdat ze deze RS485-besturing niet bieden.
@@ -194,7 +206,7 @@ planregel, het stroomschema en de kaarten Engels.
    *Integratie*), of kopieer `custom_components/marstek_goedkoop_laden` naar
    `/config/custom_components/`. Herstart Home Assistant.
 2. Ga naar *Instellingen → Apparaten en diensten → Integratie toevoegen → Marstek Goedkoop Laden*.
-3. Kies hoe je Marstek is gekoppeld (*LilyGO RS485 met ESPHome* of *Modbus in Home Assistant*) en
+3. Kies hoe je Marstek is gekoppeld (*LilyGO RS485 met ESPHome*, *Modbus in Home Assistant* of *Marstek Venus Modbus-integratie*) en
    daarna de prijssensor en de entiteiten van de Marstek. Wat herkend wordt, staat al ingevuld. Bij
    Modbus vul je ook de naam van je Modbus-hub in (bijvoorbeeld `MarstekVenus`) en het slaveadres.
 

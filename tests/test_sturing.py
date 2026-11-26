@@ -134,6 +134,7 @@ MODBUS_CONF = {
     "force_mode_entity": "sensor.force_raw",
     "force_power_entity": "sensor.laad_raw",
     "force_discharge_power_entity": "sensor.ontlaad_raw",
+    "max_discharge_power_entity": "sensor.max_ontlaad_raw",
     "house_power": 150,
 }
 MODBUS_SENSORS = {
@@ -141,6 +142,17 @@ MODBUS_SENSORS = {
     42010: "sensor.force_raw",
     42020: "sensor.laad_raw",
     42021: "sensor.ontlaad_raw",
+    44003: "sensor.max_ontlaad_raw",
+}
+VIPER_CONF = {
+    "connection": "marstek_modbus",
+    "price_entity": "sensor.prijs",
+    "soc_entity": "sensor.soc",
+    "control_mode_entity": "switch.rs485",
+    "force_mode_entity": "select.force_mode",
+    "force_power_entity": "number.laadvermogen",
+    "force_discharge_power_entity": "number.ontlaadvermogen",
+    "house_power": 150,
 }
 
 
@@ -173,6 +185,10 @@ class _Hass:
         self.services = types.SimpleNamespace(async_call=self._call)
 
     async def _call(self, domain, service, data, blocking=False):
+        if domain == "switch":
+            self.calls.append((data["entity_id"], service))
+            self.values[data["entity_id"]] = _State("on" if service == "turn_on" else "off")
+            return
         if domain == "modbus":
             self.calls.append((data["hub"], data["slave"], data["address"], data["value"]))
             sensor = MODBUS_SENSORS.get(data["address"])
@@ -215,6 +231,7 @@ class ModbusTest(unittest.TestCase):
                 "sensor.force_raw": _State(1),
                 "sensor.laad_raw": _State(2500),
                 "sensor.ontlaad_raw": _State(2500),
+                "sensor.max_ontlaad_raw": _State(2500),
             }
         )
         return hass, coordinator
@@ -265,9 +282,62 @@ class ModbusTest(unittest.TestCase):
         self.assertEqual(decode("0", "0"), (None, "stop"))
         self.assertEqual(decode(None, "x"), (None, None))
 
-    def test_geen_vasthouden_zonder_max_ontlaadregister(self):
+    def test_vasthouden_met_max_ontlaadregister(self):
         hass, coordinator = self.make(50)
+        self.assertTrue(coordinator.can_hold)
+        run(coordinator._async_set_number("max_discharge_power_entity", 0))
+        self.assertEqual(hass.calls[-1], ("MarstekVenus", 1, 44003, 0))
+        self.assertEqual(hass.get("sensor.max_ontlaad_raw"), "0")
+
+    def test_geen_vasthouden_zonder_max_ontlaadregister(self):
+        conf = {k: v for k, v in MODBUS_CONF.items() if k != "max_discharge_power_entity"}
+        hass, coordinator = make(50, conf)
         self.assertFalse(coordinator.can_hold)
+
+
+class MarstekModbusIntegrationTest(unittest.TestCase):
+    """Integratie "Marstek Venus Modbus" (ViperRNMC): schakelaar + select."""
+
+    def make(self, soc):
+        hass, coordinator = make(soc, VIPER_CONF)
+        hass.values.update(
+            {
+                "switch.rs485": _State("off"),
+                "select.force_mode": _State("charge"),
+                "number.laadvermogen": _State(2500),
+                "number.ontlaadvermogen": _State(2500),
+            }
+        )
+        return hass, coordinator
+
+    def test_laadnacht(self):
+        at("2026-11-10T19:40:00")
+        hass, coordinator = self.make(12)
+        run(coordinator.async_set_enabled(True))
+        at("2026-11-11T02:00:20")
+        run(coordinator.async_refresh())
+        self.assertEqual(
+            hass.calls,
+            [("number.laadvermogen", 2100), ("select.force_mode", "charge"), ("switch.rs485", "turn_on")],
+        )
+        hass.calls.clear()
+        at("2026-11-11T04:50:00")
+        hass.set("sensor.soc", 99)
+        run(coordinator.async_refresh())
+        self.assertEqual(coordinator.data.status, "klaar")
+        self.assertEqual(
+            hass.calls,
+            [("switch.rs485", "turn_off"), ("select.force_mode", "charge"), ("number.laadvermogen", 2500)],
+        )
+
+    def test_standby_is_stop(self):
+        hass, coordinator = self.make(50)
+        hass.set("switch.rs485", "on")
+        hass.set("select.force_mode", "standby")
+        inputs = coordinator._read_inputs()
+        self.assertEqual((inputs["control_mode"], inputs["force_mode"]), ("enable", "stop"))
+        run(coordinator._async_select("force_mode_entity", "stop"))
+        self.assertEqual(hass.calls[-1], ("select.force_mode", "standby"))
 
 
 class SturingTest(unittest.TestCase):
