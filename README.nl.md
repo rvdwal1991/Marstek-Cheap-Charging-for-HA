@@ -10,7 +10,19 @@
 Laadt een Marstek Venus-thuisbatterij bij in de goedkoopste uren van een dynamisch
 stroomcontract, zodat hij vol is voordat de stroom duur wordt.
 
-**Hardware.** Er zijn twee manieren om een Marstek Venus (5,12 kWh) te koppelen:
+**Hardware en compatibiliteit.** De integratie stuurt een Marstek Venus aan via de RS485-besturingsregisters.
+Alleen de eerste rij is op een echte accu gedraaid:
+
+| Koppeling | Model | Status |
+|---|---|---|
+| LilyGO T-CAN485 + ESPHome (RS485) | Venus E v2 | **Getest** op echte hardware (de opzet waarop hij is gebouwd) |
+| Modbus-hub in Home Assistant, via RS485-naar-TCP-converter (Elfin EW11 en vergelijkbaar) | Venus E v1/v2 | Alleen getest met nagebootste aanroepen |
+| Modbus-hub in Home Assistant, rechtstreeks via Ethernet | Venus E v3 | Alleen getest met nagebootste aanroepen |
+| Integratie *Marstek Venus Modbus* (ViperRNMC) | Venus E v3 | Alleen getest met nagebootste aanroepen |
+| Een van bovenstaande | Venus A, Venus D, andere modellen | **Niet gecontroleerd, niet getest.** Ze zouden de besturingsregisters delen, maar dat is niet geverifieerd. Stel de accucapaciteit in bij de opties (standaard 5,12 kWh). |
+| Cloud, app of andere integraties | alle | Niet ondersteund |
+
+De koppelingen in detail:
 
 - **LilyGO T-CAN485 met ESPHome** via RS485, met de configuratie van
   [MarstekVenus-LilygoRS485](https://github.com/Superduper1969/MarstekVenus-LilygoRS485). Dit is de

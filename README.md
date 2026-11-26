@@ -15,7 +15,19 @@ zero on the meter). This integration adds one thing: charging from the grid in t
 hours. There is also a separate option, off by default, to **sell surplus** in the most
 expensive hours.
 
-> **Hardware.** Two ways of connecting a Marstek Venus (5.12 kWh) are supported:
+> **Hardware and compatibility.** The integration controls a Marstek Venus through its RS485 control
+> registers. Only the first row has been run on a real battery:
+>
+> | Connection | Model | Status |
+> |---|---|---|
+> | LilyGO T-CAN485 + ESPHome (RS485) | Venus E v2 | **Tested** on real hardware (the setup it was built on) |
+> | Modbus hub in Home Assistant, via RS485-to-TCP converter (Elfin EW11 and similar) | Venus E v1/v2 | Tested with simulated calls only |
+> | Modbus hub in Home Assistant, direct over Ethernet | Venus E v3 | Tested with simulated calls only |
+> | *Marstek Venus Modbus* integration (ViperRNMC) | Venus E v3 | Tested with simulated calls only |
+> | Any of the above | Venus A, Venus D, other models | **Not checked, not tested.** They are said to share the control registers, but that is unverified. Set the battery capacity in the options (default 5.12 kWh). |
+> | Cloud, app or other integrations | any | Not supported |
+>
+> The connections in detail:
 >
 > - **LilyGO T-CAN485 running ESPHome** over RS485, using the
 >   [MarstekVenus-LilygoRS485](https://github.com/Superduper1969/MarstekVenus-LilygoRS485)
