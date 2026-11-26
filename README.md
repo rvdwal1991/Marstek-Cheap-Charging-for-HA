@@ -17,7 +17,8 @@ expensive hours.
 
 > **Hardware: only tested with the LilyGO RS485 setup.** This integration is built on, and has
 > only been tested with, a Marstek Venus (5.12 kWh) that is controlled over RS485 by a
-> **LilyGO T-CAN485 running ESPHome**. It uses the entities that this setup exposes:
+> **LilyGO T-CAN485 running ESPHome**, using the
+> [MarstekVenus-LilygoRS485](https://github.com/Superduper1969/MarstekVenus-LilygoRS485) configuration. It uses the entities that this setup exposes:
 > *RS485 Control Mode*, *Forcible Charge/Discharge*, *Forcible Charge Power* (required) and, optionally,
 > *Max. Charge Power*, *Max. Discharge Power*, *Forcible Discharge Power*, *Discharging Cutoff Capacity*
 > and the total charged/discharged energy counters. Other ways of connecting the battery (cloud,

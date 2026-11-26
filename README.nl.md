@@ -12,7 +12,7 @@ stroomcontract, zodat hij vol is voordat de stroom duur wordt.
 
 **Hardware: alleen getest met de LilyGO RS485.** Deze integratie is gebouwd op, en alleen getest
 met, een Marstek Venus (5,12 kWh) die via RS485 wordt aangestuurd door een **LilyGO T-CAN485 met
-ESPHome**. Hij gebruikt de entiteiten die deze opzet levert: *RS485 Control Mode*, *Forcible
+ESPHome**, met de configuratie van [MarstekVenus-LilygoRS485](https://github.com/Superduper1969/MarstekVenus-LilygoRS485). Hij gebruikt de entiteiten die deze opzet levert: *RS485 Control Mode*, *Forcible
 Charge/Discharge*, *Forcible Charge Power* (verplicht) en, optioneel, *Max. Charge Power*,
 *Max. Discharge Power*, *Forcible Discharge Power*, *Discharging Cutoff Capacity* en de
 totaaltellers van geladen en ontladen energie. Andere manieren om de accu te koppelen (cloud,
