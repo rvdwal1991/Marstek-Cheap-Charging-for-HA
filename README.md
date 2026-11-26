@@ -114,6 +114,14 @@ makes the most of it:
 4. The plan text and the flow chart show the window, the chosen hours, the power and the expected
    gain (what you are paid to charge).
 
+The option *Negative price: how to divide the energy* switches between two ways:
+
+- **Spread by value** (default): as described above, lower power, slightly less gain.
+- **Maximum gain**: the hours are filled one by one, best price first, each at full power, and the
+  remainder goes to the next best hour. In the example the −€0.20 hour takes 2.25 kWh at full power
+  and the −€0.12 hour the remaining 0.8 kWh, which earns about €0.55 instead of €0.52. The cost is
+  more short bursts at full power.
+
 As soon as the price turns positive again or the battery is full, the Marstek goes back to
 anti-feed. The plan is recalculated every minute; an hour that was already in use gets a little extra
 room before it drops out for being below the minimum power.

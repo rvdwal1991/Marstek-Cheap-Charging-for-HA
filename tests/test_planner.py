@@ -359,10 +359,10 @@ class NegatiefVensterTest(unittest.TestCase):
         first = at(start)
         return [planner.PriceSlot(first + timedelta(hours=i), p) for i, p in enumerate(prices)]
 
-    def run_plan(self, prices, now, soc, previous=()):
+    def run_plan(self, prices, now, soc, previous=(), max_gain=False):
         return planner.plan_negative(
             self.slots(prices), at(now), soc, capacity_kwh=5.12, max_power_w=2500,
-            min_power_w=400, limit=0.0, previous=previous,
+            min_power_w=400, limit=0.0, previous=previous, max_gain=max_gain,
         )
 
     def test_geen_negatief_uur_geen_plan(self):
@@ -396,6 +396,23 @@ class NegatiefVensterTest(unittest.TestCase):
         # Een enkel negatief uur dat de accu niet kan vullen: vol vermogen.
         result = self.run_plan([-0.2], "2026-11-12T12:10:00", 40)
         self.assertEqual(result.power_w, 2500)
+
+    def test_maximale_opbrengst_vult_het_beste_uur_eerst(self):
+        prices = [0.30, -0.03, -0.20, -0.12, 0.25]
+        # 13:00 (-0,03) wordt overgeslagen.
+        result = self.run_plan(prices, "2026-11-12T13:00:05", 40, max_gain=True)
+        self.assertEqual(result.status, planner.NEGATIVE_WAITING)
+        # 14:00 (-0,20): vol vermogen, 2,25 kWh; de rest (0,82 kWh) naar -0,12.
+        result = self.run_plan(prices, "2026-11-12T14:00:00", 40, max_gain=True)
+        self.assertEqual(result.status, planner.NEGATIVE_CHARGING)
+        self.assertEqual(result.power_w, 2500)
+        self.assertAlmostEqual(result.allocation[at("2026-11-12T14:00:00")], 2.25, delta=0.01)
+        self.assertAlmostEqual(result.allocation[at("2026-11-12T15:00:00")], 3.072 - 2.25, delta=0.02)
+        by_value = self.run_plan(prices, "2026-11-12T14:00:00", 40)
+        self.assertGreater(result.gain, by_value.gain)  # 0,55 tegen 0,52
+        # Het laatste uur krijgt het restje op een lager vermogen.
+        late = self.run_plan(prices, "2026-11-12T15:00:00", 84, max_gain=True)  # nog 0,8 kWh
+        self.assertLess(late.power_w, 1500)
 
     def test_lege_accu_gebruikt_alle_uren(self):
         prices = [-0.03, -0.20, -0.12]

@@ -654,6 +654,7 @@ def plan_negative(
     min_power_w: float = 0.0,
     limit: float = 0.0,
     previous: tuple[datetime, ...] = (),
+    max_gain: bool = False,
 ) -> NegativePlan | None:
     """Verdeel het laden over het negatieve venster waar we nu in zitten.
 
@@ -715,10 +716,22 @@ def plan_negative(
         return alloc
 
     candidates = [slot for slot in ahead if duration(slot) > 0]
-    alloc = spread(candidates)
+    if max_gain:
+        # Hoogste opbrengst: de beste uren eerst helemaal vol, de rest naar het volgende.
+        alloc = {}
+        left = need
+        for slot in sorted(candidates, key=lambda slot: slot.price - (NEGATIVE_STICKY if slot.start in previous else 0.0)):
+            if left <= 1e-9:
+                break
+            alloc[slot.start] = min(room(slot), left)
+            left -= alloc[slot.start]
+        candidates = [slot for slot in candidates if slot.start in alloc]
+        weak = []
+    else:
+        alloc = spread(candidates)
     # Uren die te weinig opleveren om op het minimale vermogen te laden, vallen af; hun
     # deel gaat naar de andere uren. Een eerder gekozen uur krijgt iets meer speling.
-    while True:
+    while not max_gain:
         weak = [
             slot for slot in candidates
             if alloc.get(slot.start, 0.0) / duration(slot) * 1000.0
@@ -728,7 +741,7 @@ def plan_negative(
             break
         candidates = [slot for slot in candidates if slot not in weak]
         alloc = spread(candidates)
-    if len(weak) == len(candidates):  # alles te klein: alleen het beste uur houden
+    if not max_gain and len(weak) == len(candidates):  # alles te klein: alleen het beste uur houden
         best = max(candidates, key=value)
         candidates = [best]
         alloc = spread(candidates)

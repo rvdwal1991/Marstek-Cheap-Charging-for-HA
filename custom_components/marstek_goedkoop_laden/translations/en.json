@@ -134,7 +134,8 @@
           "battery_price": "Battery purchase price",
           "battery_cycles": "Battery lifetime (cycles)",
           "modbus_hub": "Modbus hub name",
-          "modbus_slave": "Modbus slave address"
+          "modbus_slave": "Modbus slave address",
+          "negative_strategy": "Negative price: how to divide the energy"
         },
         "data_description": {
           "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
@@ -159,7 +160,8 @@
           "negative_price_limit": "Below this hourly price the battery always charges at full power (when the switch is on). Default 0: only at a truly negative price.",
           "language": "Language of the plan text, flow chart and cards. Automatic follows the Home Assistant language.",
           "battery_price": "Purchase price of the battery in euros, for depreciation. 0 means no depreciation is counted.",
-          "battery_cycles": "Number of full cycles the battery is expected to last. Depreciation per kWh = price ÷ (cycles × capacity)."
+          "battery_cycles": "Number of full cycles the battery is expected to last. Depreciation per kWh = price ÷ (cycles × capacity).",
+          "negative_strategy": "Spread by value: more in the more negative hours, lower power. Maximum gain: fill the best hours first at full power."
         }
       }
     }
@@ -238,6 +240,14 @@
       },
       "geen_verlies": {
         "name": "No loss"
+      }
+    }
+  },
+  "selector": {
+    "negative_strategy": {
+      "options": {
+        "value": "Spread by value (lower power)",
+        "max_gain": "Maximum gain (best hours first)"
       }
     }
   }

@@ -56,6 +56,8 @@ from .const import (
     CONF_BATTERY_PRICE,
     CONF_LANGUAGE,
     CONF_NEGATIVE_PRICE_LIMIT,
+    CONF_NEGATIVE_STRATEGY,
+    NEGATIVE_STRATEGY_MAX_GAIN,
     CONF_PRICE_ATTRIBUTE,
     CONF_PRICE_ENTITY,
     CONF_RESERVE_MIN_SOC,
@@ -444,6 +446,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 float(self.conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
                 limit,
                 self._negative_hours,
+                self.conf.get(CONF_NEGATIVE_STRATEGY) == NEGATIVE_STRATEGY_MAX_GAIN,
             )
         self._negative_hours = self.negative_plan.hours if self.negative_plan else ()
         self.negative_active = bool(
@@ -675,7 +678,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 negative_steps = [
                     price_step,
                     step("Negatief venster", window_text, "ok"),
-                    step("Energie naar waarde per uur", picked, "ok"),
+                    step("Beste uren eerst vol" if self.conf.get(CONF_NEGATIVE_STRATEGY) == NEGATIVE_STRATEGY_MAX_GAIN else "Energie naar waarde per uur", picked, "ok"),
                 ]
                 if neg.status == NEGATIVE_CHARGING:
                     negative_steps.append(step("Laden uitgesmeerd", f"{neg.power_w} W · {euro(neg.energy_kwh, 1)} kWh · verwacht € {euro(neg.gain)}", "actie"))

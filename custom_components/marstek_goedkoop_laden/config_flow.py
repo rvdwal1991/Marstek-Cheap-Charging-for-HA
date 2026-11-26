@@ -41,6 +41,8 @@ from .const import (
     CONF_BATTERY_PRICE,
     CONF_LANGUAGE,
     CONF_NEGATIVE_PRICE_LIMIT,
+    CONF_NEGATIVE_STRATEGY,
+    DEFAULT_NEGATIVE_STRATEGY,
     CONF_PRICE_ATTRIBUTE,
     CONF_PRICE_ENTITY,
     CONF_RESERVE_MIN_SOC,
@@ -193,6 +195,13 @@ def _param_schema(current: dict[str, Any]) -> dict[Any, Any]:
         vol.Required(CONF_MIN_LOOKAHEAD_HOURS, default=default(CONF_MIN_LOOKAHEAD_HOURS, DEFAULT_MIN_LOOKAHEAD_HOURS)): _number(1, 48, 1),
         vol.Required(CONF_MIN_POWER, default=default(CONF_MIN_POWER, DEFAULT_MIN_POWER)): _number(100, 5000, 50, "W"),
         vol.Required(CONF_NEGATIVE_PRICE_LIMIT, default=default(CONF_NEGATIVE_PRICE_LIMIT, DEFAULT_NEGATIVE_PRICE_LIMIT)): _number(-1, 1, 0.005, "€/kWh"),
+        vol.Required(CONF_NEGATIVE_STRATEGY, default=default(CONF_NEGATIVE_STRATEGY, DEFAULT_NEGATIVE_STRATEGY)): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=["value", "max_gain"],
+                mode=selector.SelectSelectorMode.DROPDOWN,
+                translation_key="negative_strategy",
+            )
+        ),
         vol.Required(CONF_SELL_MARGIN, default=default(CONF_SELL_MARGIN, DEFAULT_SELL_MARGIN)): _number(0, 1, 0.005, "€/kWh"),
         vol.Required(CONF_HOUSE_POWER, default=default(CONF_HOUSE_POWER, DEFAULT_HOUSE_POWER)): _number(0, 5000, 10, "W"),
         vol.Required(CONF_RESERVE_MIN_SOC, default=default(CONF_RESERVE_MIN_SOC, DEFAULT_RESERVE_MIN_SOC)): _number(0, 100, 1, "%"),

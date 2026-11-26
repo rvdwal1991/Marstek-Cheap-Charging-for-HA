@@ -4,6 +4,11 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.21.0 (2026-11-26)
+- New option *Negative price: how to divide the energy*: *Spread by value* (default, unchanged) or
+  *Maximum gain*, which fills the best negative hours first at full power. Nothing changes unless you
+  switch the option.
+
 ## 1.20.0 (2026-11-26)
 - **Behaviour change:** the energy in a negative-price window is now divided over the hours **by their
   value** (more in the more negative hours, up to what an hour can take) instead of evenly over the

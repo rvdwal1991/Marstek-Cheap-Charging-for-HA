@@ -134,7 +134,8 @@
           "battery_price": "Aanschafprijs accu",
           "battery_cycles": "Levensduur accu (cycli)",
           "modbus_hub": "Naam van de Modbus-hub",
-          "modbus_slave": "Modbus-slaveadres"
+          "modbus_slave": "Modbus-slaveadres",
+          "negative_strategy": "Negatieve prijs: verdeling van de energie"
         },
         "data_description": {
           "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
@@ -159,7 +160,8 @@
           "negative_price_limit": "Onder deze uurprijs laadt de accu altijd op vol vermogen (als de schakelaar aan staat). Standaard 0: alleen bij een echt negatieve prijs.",
           "language": "Taal van planregel, stroomschema en kaarten. Automatisch volgt de taal van Home Assistant.",
           "battery_price": "Aanschafprijs van de accu in euro, voor de afschrijving. 0 betekent dat er geen afschrijving wordt meegeteld.",
-          "battery_cycles": "Aantal volledige cycli dat de accu naar verwachting meegaat. Afschrijving per kWh = prijs ÷ (cycli × capaciteit)."
+          "battery_cycles": "Aantal volledige cycli dat de accu naar verwachting meegaat. Afschrijving per kWh = prijs ÷ (cycli × capaciteit).",
+          "negative_strategy": "Naar waarde verdeeld: meer in de negatievere uren, lager vermogen. Maximale opbrengst: de beste uren eerst vol op vol vermogen."
         }
       }
     }
@@ -238,6 +240,14 @@
       },
       "geen_verlies": {
         "name": "Geen verlies"
+      }
+    }
+  },
+  "selector": {
+    "negative_strategy": {
+      "options": {
+        "value": "Naar waarde verdelen (lager vermogen)",
+        "max_gain": "Maximale opbrengst (beste uren eerst)"
       }
     }
   }

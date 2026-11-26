@@ -113,6 +113,15 @@ huidige uur, en daar wordt het meeste uit gehaald:
 4. De planregel en het stroomschema tonen het venster, de gekozen uren, het vermogen en de
    verwachte opbrengst (wat je krijgt om te laden).
 
+De optie *Negatieve prijs: verdeling van de energie* schakelt tussen twee manieren:
+
+- **Naar waarde verdelen** (standaard): zoals hierboven beschreven, lager vermogen, iets minder
+  opbrengst.
+- **Maximale opbrengst**: de uren worden een voor een gevuld, de beste prijs eerst, elk op vol
+  vermogen, en de rest gaat naar het volgende beste uur. In het voorbeeld neemt het uur van −€ 0,20
+  2,25 kWh op vol vermogen en het uur van −€ 0,12 de resterende 0,8 kWh, wat ongeveer € 0,55
+  oplevert in plaats van € 0,52. De prijs is meer korte stoten op vol vermogen.
+
 Zodra de prijs weer positief is of de accu vol is, gaat de Marstek terug naar anti-feed. Het plan
 wordt elke minuut opnieuw berekend; een uur dat al in gebruik is krijgt iets extra speling
 voordat het afvalt omdat het onder het minimale vermogen blijft.
