@@ -412,36 +412,6 @@ content: >-
   · ⚠️ prijssturing staat **uit**{% endif %}
 ```
 
-De prijzenkaart hierboven doet hetzelfde zonder extra kaarten. Als alternatief een grafiek met
-[apexcharts-card](https://github.com/RomRider/apexcharts-card): de Zonneplan-prijzen
-van vandaag en morgen, groen = bijladen, blauw = rest van het goedkope venster, grijs = overig.
-Herhaal de reeks drie keer met `'laden'`, `'venster'` en `'rest'` op de plek van `KIES`:
-
-```yaml
-type: custom:apexcharts-card
-graph_span: 48h
-span:
-  start: day
-now:
-  show: true
-  label: nu
-stacked: true
-series:
-  - entity: sensor.zonneplan_current_hourly_electricity_tariff
-    name: Bijladen
-    type: column
-    color: "#22c55e"
-    data_generator: |
-      const a = hass.states['sensor.marstek_goedkoop_laden_laadplan'].attributes;
-      const L = new Set((a.laaduren || []).map(s => new Date(s).getTime()));
-      const V = new Set((a.venster || []).map(s => new Date(s).getTime()));
-      return (entity.attributes.forecast || []).map(i => {
-        const t = new Date(i.start_date).getTime();
-        const k = L.has(t) ? 'laden' : (V.has(t) ? 'venster' : 'rest');
-        return [t, k === 'KIES' ? Math.round(i.price_tax_included.amount / 1e5) / 100 : null];
-      });
-```
-
 ## Ontwikkelen
 
 De rekenregel staat los van Home Assistant in `planner.py` en heeft tests met echte prijzen.

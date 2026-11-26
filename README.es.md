@@ -417,36 +417,6 @@ content: >-
   · ⚠️ price control is **off**{% endif %}
 ```
 
-La tarjeta de precios de arriba hace lo mismo sin tarjetas adicionales. Como alternativa, un gráfico con
-[apexcharts-card](https://github.com/RomRider/apexcharts-card): los precios de
-Zonneplan de hoy y mañana, verde = carga, azul = resto de la ventana barata, gris = otras horas.
-Repite la serie tres veces con `'laden'`, `'venster'` y `'rest'` en lugar de `KIES`:
-
-```yaml
-type: custom:apexcharts-card
-graph_span: 48h
-span:
-  start: day
-now:
-  show: true
-  label: now
-stacked: true
-series:
-  - entity: sensor.zonneplan_current_hourly_electricity_tariff
-    name: Charging
-    type: column
-    color: "#22c55e"
-    data_generator: |
-      const a = hass.states['sensor.marstek_goedkoop_laden_laadplan'].attributes;
-      const L = new Set((a.laaduren || []).map(s => new Date(s).getTime()));
-      const V = new Set((a.venster || []).map(s => new Date(s).getTime()));
-      return (entity.attributes.forecast || []).map(i => {
-        const t = new Date(i.start_date).getTime();
-        const k = L.has(t) ? 'laden' : (V.has(t) ? 'venster' : 'rest');
-        return [t, k === 'KIES' ? Math.round(i.price_tax_included.amount / 1e5) / 100 : null];
-      });
-```
-
 ## Desarrollo
 
 La regla de cálculo vive separada de Home Assistant en `planner.py` y tiene pruebas con

@@ -412,36 +412,6 @@ content: >-
   · ⚠️ price control is **off**{% endif %}
 ```
 
-The price card above does the same without extra cards. As an alternative, a chart with
-[apexcharts-card](https://github.com/RomRider/apexcharts-card): the Zonneplan
-prices of today and tomorrow, green = charging, blue = rest of the cheap window, grey = other.
-Repeat the series three times with `'laden'`, `'venster'` and `'rest'` in place of `KIES`:
-
-```yaml
-type: custom:apexcharts-card
-graph_span: 48h
-span:
-  start: day
-now:
-  show: true
-  label: now
-stacked: true
-series:
-  - entity: sensor.zonneplan_current_hourly_electricity_tariff
-    name: Charging
-    type: column
-    color: "#22c55e"
-    data_generator: |
-      const a = hass.states['sensor.marstek_goedkoop_laden_laadplan'].attributes;
-      const L = new Set((a.laaduren || []).map(s => new Date(s).getTime()));
-      const V = new Set((a.venster || []).map(s => new Date(s).getTime()));
-      return (entity.attributes.forecast || []).map(i => {
-        const t = new Date(i.start_date).getTime();
-        const k = L.has(t) ? 'laden' : (V.has(t) ? 'venster' : 'rest');
-        return [t, k === 'KIES' ? Math.round(i.price_tax_included.amount / 1e5) / 100 : null];
-      });
-```
-
 ## Development
 
 The calculation rule lives separately from Home Assistant in `planner.py` and has tests with

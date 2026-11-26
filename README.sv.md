@@ -414,35 +414,6 @@ content: >-
   · ⚠️ prisstyrningen är **av**{% endif %}
 ```
 
-Priskortet ovan gör samma sak utan extra kort. Som alternativ ett diagram med [apexcharts-card](https://github.com/RomRider/apexcharts-card): Zonneplans
-priser för idag och i morgon, grönt = laddning, blått = resten av det billiga fönstret, grått = övrigt.
-Upprepa serien tre gånger med `'laden'`, `'venster'` och `'rest'` i stället för `KIES`:
-
-```yaml
-type: custom:apexcharts-card
-graph_span: 48h
-span:
-  start: day
-now:
-  show: true
-  label: nu
-stacked: true
-series:
-  - entity: sensor.zonneplan_current_hourly_electricity_tariff
-    name: Laddning
-    type: column
-    color: "#22c55e"
-    data_generator: |
-      const a = hass.states['sensor.marstek_goedkoop_laden_laadplan'].attributes;
-      const L = new Set((a.laaduren || []).map(s => new Date(s).getTime()));
-      const V = new Set((a.venster || []).map(s => new Date(s).getTime()));
-      return (entity.attributes.forecast || []).map(i => {
-        const t = new Date(i.start_date).getTime();
-        const k = L.has(t) ? 'laden' : (V.has(t) ? 'venster' : 'rest');
-        return [t, k === 'KIES' ? Math.round(i.price_tax_included.amount / 1e5) / 100 : null];
-      });
-```
-
 ## Utveckling
 
 Beräkningsregeln ligger separat från Home Assistant i `planner.py` och har tester med
