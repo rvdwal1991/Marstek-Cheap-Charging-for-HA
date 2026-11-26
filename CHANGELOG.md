@@ -4,6 +4,10 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.24.1 (2026-11-26)
+- **Fix:** the manifest now lists `energy` under `after_dependencies`, because the solar forecast is read
+  from the Energy dashboard. This also fixes the hassfest check on GitHub. Nothing else changes.
+
 ## 1.24.0 (2026-11-26)
 - **New: house power sensor** (optional). Choose a sensor with the power the whole house uses (W or kW,
   without the battery) and the integration learns your average consumption per hour of the day, for
