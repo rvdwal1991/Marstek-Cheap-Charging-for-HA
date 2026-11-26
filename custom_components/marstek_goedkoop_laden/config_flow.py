@@ -180,6 +180,12 @@ def _param_schema(current: dict[str, Any]) -> dict[Any, Any]:
                     {"value": "auto", "label": "Automatic / Automatisch"},
                     {"value": "nl", "label": "Nederlands"},
                     {"value": "en", "label": "English"},
+                    {"value": "fy", "label": "Frysk"},
+                    {"value": "de", "label": "Deutsch"},
+                    {"value": "fr", "label": "Français"},
+                    {"value": "es", "label": "Español"},
+                    {"value": "sv", "label": "Svenska"},
+                    {"value": "nb", "label": "Norsk"},
                 ],
                 mode=selector.SelectSelectorMode.DROPDOWN,
             )

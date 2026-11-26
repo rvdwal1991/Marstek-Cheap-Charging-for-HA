@@ -1,0 +1,254 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Wie ist deine Marstek angebunden?",
+        "menu_options": {
+          "esphome": "LilyGO RS485 mit ESPHome",
+          "modbus": "Modbus in Home Assistant (z. B. Elfin EW11)",
+          "marstek_modbus": "Marstek Venus Modbus-Integration (ViperRNMC)"
+        }
+      },
+      "esphome": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Wähle den Preissensor und die Entitäten der Marstek (LilyGO RS485). Erkannte Entitäten sind bereits eingetragen.",
+        "data": {
+          "price_entity": "Preissensor",
+          "soc_entity": "Ladestand (SoC)",
+          "control_mode_entity": "RS485-Steuermodus",
+          "force_mode_entity": "Erzwungenes Laden/Entladen",
+          "force_power_entity": "Erzwungene Ladeleistung",
+          "max_power_entity": "Maximale Ladeleistung",
+          "capacity_entity": "Akkukapazität (Sensor)",
+          "charged_energy_entity": "Gesamt geladene Energie",
+          "discharged_energy_entity": "Gesamt entladene Energie",
+          "force_discharge_power_entity": "Erzwungene Entladeleistung",
+          "max_discharge_power_entity": "Maximale Entladeleistung",
+          "min_soc_entity": "Entladegrenze (SoC)"
+        },
+        "data_description": {
+          "price_entity": "Sensor, der die veröffentlichten Stundenpreise in einem Attribut enthält, z. B. der Zonneplan-Stundenpreissensor.",
+          "control_mode_entity": "Hauptschalter zum Erzwingen: enable oder disable.",
+          "force_mode_entity": "Richtung beim Erzwingen: charge, discharge oder stop.",
+          "force_power_entity": "Wird beim Laden auf die verteilte Leistung gesetzt.",
+          "max_power_entity": "Bestimmt die Anzahl der Ladestunden und die Obergrenze der Leistung. Leer = 2500 W.",
+          "capacity_entity": "Leer = die feste Kapazität aus den Optionen.",
+          "charged_energy_entity": "Zusammen mit der entladenen Energie bestimmt dies den Wirkungsgrad. Leer = fester Wirkungsgrad.",
+          "force_discharge_power_entity": "Für den Verkauf nötig. Leer = Verkaufen ist nicht möglich.",
+          "max_discharge_power_entity": "Obergrenze der Verkaufsleistung. Leer = 2500 W.",
+          "min_soc_entity": "Unter diesem SoC entlädt die Marstek nicht. Leer = der feste Wert aus den Optionen."
+        }
+      },
+      "modbus": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Wähle den Preissensor und die Modbus-Registersensoren der Marstek (z. B. aus MarstekVenus-ElfinEW11 oder, für einen Venus E v3 über Ethernet, MarstekVenusV3-modbus-TCP-IP). Geschrieben wird über den Modbus-Hub, den du hier angibst. Maximale Leistung und Kapazität sind optional; mit der maximalen Entladeleistung funktionieren auch Halten und Kein Verlust.",
+        "data": {
+          "price_entity": "Preissensor",
+          "soc_entity": "Ladestand (SoC)",
+          "control_mode_entity": "RS485-Steuerung (Sensor, Register 42000)",
+          "force_mode_entity": "Laden/Entladen erzwingen (Sensor, Register 42010)",
+          "force_power_entity": "Erzwungene Ladeleistung (Sensor, Register 42020)",
+          "max_power_entity": "Maximale Ladeleistung",
+          "capacity_entity": "Akkukapazität (Sensor)",
+          "charged_energy_entity": "Gesamt geladene Energie",
+          "discharged_energy_entity": "Gesamt entladene Energie",
+          "force_discharge_power_entity": "Erzwungene Entladeleistung (Sensor, Register 42021)",
+          "max_discharge_power_entity": "Maximale Entladeleistung",
+          "min_soc_entity": "Entladegrenze (SoC)",
+          "modbus_hub": "Name des Modbus-Hubs",
+          "modbus_slave": "Modbus-Slave-Adresse"
+        },
+        "data_description": {
+          "price_entity": "Sensor, der die veröffentlichten Stundenpreise in einem Attribut enthält, z. B. der Zonneplan-Stundenpreissensor.",
+          "modbus_hub": "Der Name des Hubs in deiner modbus:-Konfiguration, z. B. MarstekVenus."
+        }
+      },
+      "marstek_modbus": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Wähle den Preissensor und die Entitäten der Integration Marstek Venus Modbus (ViperRNMC), die einen Venus E v3 direkt über Ethernet ansteuern kann. Schalte in dieser Integration zuerst den Schalter für die RS485-Steuerung und die Auswahl für den Erzwingen-Modus ein: Sie sind standardmäßig deaktiviert.",
+        "data": {
+          "price_entity": "Preissensor",
+          "soc_entity": "Ladestand (SoC)",
+          "control_mode_entity": "RS485-Steuerung (Schalter)",
+          "force_mode_entity": "Erzwingen-Modus (Auswahl)",
+          "force_power_entity": "Erzwungene Ladeleistung",
+          "max_power_entity": "Maximale Ladeleistung",
+          "capacity_entity": "Akkukapazität (Sensor)",
+          "charged_energy_entity": "Gesamt geladene Energie",
+          "discharged_energy_entity": "Gesamt entladene Energie",
+          "force_discharge_power_entity": "Erzwungene Entladeleistung",
+          "max_discharge_power_entity": "Maximale Entladeleistung"
+        },
+        "data_description": {
+          "price_entity": "Sensor, der die veröffentlichten Stundenpreise in einem Attribut enthält, z. B. der Zonneplan-Stundenpreissensor.",
+          "control_mode_entity": "Hauptschalter zum Erzwingen: enable oder disable.",
+          "force_mode_entity": "Richtung beim Erzwingen: charge, discharge oder stop.",
+          "force_power_entity": "Wird beim Laden auf die verteilte Leistung gesetzt.",
+          "max_power_entity": "Bestimmt die Anzahl der Ladestunden und die Obergrenze der Leistung. Leer = 2500 W.",
+          "capacity_entity": "Leer = die feste Kapazität aus den Optionen.",
+          "charged_energy_entity": "Zusammen mit der entladenen Energie bestimmt dies den Wirkungsgrad. Leer = fester Wirkungsgrad.",
+          "force_discharge_power_entity": "Für den Verkauf nötig. Leer = Verkaufen ist nicht möglich.",
+          "max_discharge_power_entity": "Obergrenze der Verkaufsleistung. Leer = 2500 W."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Diese Marstek ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Optionen",
+        "description": "Passe die Entitäten oder die Rechenregel an. Danach wird die Integration neu geladen.",
+        "data": {
+          "price_entity": "Preissensor",
+          "soc_entity": "Ladestand (SoC)",
+          "control_mode_entity": "RS485-Steuermodus",
+          "force_mode_entity": "Erzwungenes Laden/Entladen",
+          "force_power_entity": "Erzwungene Ladeleistung",
+          "max_power_entity": "Maximale Ladeleistung",
+          "capacity_entity": "Akkukapazität (Sensor)",
+          "charged_energy_entity": "Gesamt geladene Energie",
+          "discharged_energy_entity": "Gesamt entladene Energie",
+          "price_attribute": "Attribut mit den Preisen",
+          "capacity_kwh": "Akkukapazität",
+          "default_efficiency": "Wirkungsgrad, wenn die Zähler fehlen",
+          "margin": "Mindestgewinn pro kWh",
+          "top_hours": "Anzahl der teuersten Stunden zum Vergleich",
+          "lookahead_hours": "Stunden Vorausschau",
+          "min_lookahead_hours": "Mindestanzahl bekannter Stunden im Voraus",
+          "min_power": "Minimale Ladeleistung",
+          "force_discharge_power_entity": "Erzwungene Entladeleistung",
+          "max_discharge_power_entity": "Maximale Entladeleistung",
+          "min_soc_entity": "Entladegrenze (SoC)",
+          "sell_margin": "Verkauf: Mindestgewinn pro kWh",
+          "house_power": "Verkauf: durchschnittlicher Eigenverbrauch",
+          "reserve_min_soc": "Verkauf: Mindestreserve",
+          "min_soc": "Entladegrenze",
+          "sell_price_factor": "Verkaufspreis: Faktor",
+          "sell_price_offset": "Verkaufspreis: Abzug",
+          "negative_price_limit": "Negativer Preis: Grenze",
+          "language": "Sprache",
+          "battery_price": "Anschaffungspreis des Akkus",
+          "battery_cycles": "Lebensdauer des Akkus (Zyklen)",
+          "modbus_hub": "Name des Modbus-Hubs",
+          "modbus_slave": "Modbus-Slave-Adresse",
+          "negative_strategy": "Negativer Preis: Aufteilung der Energie"
+        },
+        "data_description": {
+          "price_entity": "Sensor, der die veröffentlichten Stundenpreise in einem Attribut enthält, z. B. der Zonneplan-Stundenpreissensor.",
+          "control_mode_entity": "Hauptschalter zum Erzwingen: enable oder disable.",
+          "force_mode_entity": "Richtung beim Erzwingen: charge, discharge oder stop.",
+          "force_power_entity": "Wird beim Laden auf die verteilte Leistung gesetzt.",
+          "max_power_entity": "Bestimmt die Anzahl der Ladestunden und die Obergrenze der Leistung. Leer = 2500 W.",
+          "capacity_entity": "Leer = die feste Kapazität aus den Optionen.",
+          "charged_energy_entity": "Zusammen mit der entladenen Energie bestimmt dies den Wirkungsgrad. Leer = fester Wirkungsgrad.",
+          "default_efficiency": "Der Wirkungsgrad wird aus den Energiezählern der Marstek berechnet (gesamt entladen geteilt durch gesamt geladen). Dieser feste Wert gilt nur, wenn diese Zähler nicht gesetzt sind oder keinen Wert liefern.",
+          "margin": "Nach Abzug des Ladeverlusts muss das Laden mindestens diesen Betrag einbringen.",
+          "top_hours": "Eine Stunde ist günstig genug, wenn ihr Preis unter dem Wirkungsgrad mal dem Durchschnitt dieser teuersten Stunden danach liegt, abzüglich der Marge.",
+          "min_lookahead_hours": "Stunden, nach denen weniger Preise bekannt sind, zählen nicht mit.",
+          "force_discharge_power_entity": "Für den Verkauf nötig. Leer = Verkaufen ist nicht möglich.",
+          "max_discharge_power_entity": "Obergrenze der Verkaufsleistung. Leer = 2500 W.",
+          "min_soc_entity": "Unter diesem SoC entlädt die Marstek nicht. Leer = der feste Wert aus den Optionen.",
+          "sell_margin": "Verkauft wird nur, wenn der Verkaufspreis höher ist als die Kosten des Wiederaufladens (Ladepreis geteilt durch den Wirkungsgrad) plus dieser Betrag.",
+          "house_power": "Bestimmt die Reserve: Diese Leistung mal die Stunden bis zum Wiederaufladen bleibt im Akku.",
+          "reserve_min_soc": "Unter diesem SoC wird nie verkauft.",
+          "min_soc": "Wird nur verwendet, wenn keine Entität für die Entladegrenze gesetzt ist.",
+          "sell_price_factor": "Verkaufspreis = Stundenpreis mal diesen Faktor, minus den Abzug. Mit Netto-Messung (Saldierung): 1 und 0. Ohne z. B. 0,826 und 0,108 für den reinen Marktpreis.",
+          "negative_price_limit": "Unter diesem Stundenpreis lädt der Akku immer mit voller Leistung (wenn der Schalter an ist). Standard 0: nur bei einem wirklich negativen Preis.",
+          "language": "Sprache von Planzeile, Flussdiagramm und Karten. Automatisch folgt der Sprache von Home Assistant.",
+          "battery_price": "Anschaffungspreis des Akkus in Euro, für die Abschreibung. 0 bedeutet, dass keine Abschreibung eingerechnet wird.",
+          "battery_cycles": "Anzahl der vollen Zyklen, die der Akku voraussichtlich hält. Abschreibung pro kWh = Preis ÷ (Zyklen × Kapazität).",
+          "negative_strategy": "Nach Wert verteilen: mehr in den stärker negativen Stunden, geringere Leistung. Maximaler Ertrag: die besten Stunden zuerst mit voller Leistung füllen."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "laadplan": {
+        "name": "Ladeplan",
+        "state": {
+          "laden": "Lädt",
+          "gepland": "Geplant",
+          "klaar": "Fertig",
+          "vol": "Akku voll",
+          "geen": "Kein Ladezeitpunkt",
+          "onbekend": "Unbekannt"
+        }
+      },
+      "laadvermogen": {
+        "name": "Geplante Ladeleistung"
+      },
+      "bij_te_laden": {
+        "name": "Noch zu laden"
+      },
+      "start_bijladen": {
+        "name": "Ladebeginn"
+      },
+      "einde_bijladen": {
+        "name": "Ladeende"
+      },
+      "laadprijs": {
+        "name": "Durchschnittlicher Ladepreis"
+      },
+      "verkoopplan": {
+        "name": "Verkaufsplan",
+        "state": {
+          "verkopen": "Verkauft",
+          "gepland": "Geplant",
+          "geen": "Kein Verkauf",
+          "onbekend": "Unbekannt"
+        }
+      },
+      "verwachte_opbrengst": {
+        "name": "Erwarteter Ertrag"
+      },
+      "opbrengst_vandaag": {
+        "name": "Ertrag heute"
+      },
+      "opbrengst_deze_week": {
+        "name": "Ertrag diese Woche"
+      },
+      "rendement": {
+        "name": "Wirkungsgrad"
+      },
+      "opbrengst_vorige_week": {
+        "name": "Ertrag letzte Woche"
+      },
+      "opbrengst_deze_maand": {
+        "name": "Ertrag diesen Monat"
+      },
+      "opbrengst_dit_jaar": {
+        "name": "Ertrag dieses Jahr"
+      }
+    },
+    "switch": {
+      "prijssturing": {
+        "name": "Preissteuerung"
+      },
+      "verkoop": {
+        "name": "Verkauf"
+      },
+      "negatieve_prijs": {
+        "name": "Laden bei negativem Preis"
+      },
+      "vasthouden": {
+        "name": "Halten unter Einstandspreis"
+      },
+      "geen_verlies": {
+        "name": "Kein Verlust"
+      }
+    }
+  },
+  "selector": {
+    "negative_strategy": {
+      "options": {
+        "value": "Nach Wert verteilen (geringere Leistung)",
+        "max_gain": "Maximaler Ertrag (beste Stunden zuerst)"
+      }
+    }
+  }
+}

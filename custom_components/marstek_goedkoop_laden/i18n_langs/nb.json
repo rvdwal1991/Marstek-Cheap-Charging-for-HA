@@ -1,0 +1,661 @@
+{
+ "phrases": [
+  [
+   "Geen laadmoment in de gepubliceerde prijzen (prijsverschil te klein, of morgen is nog niet bekend)",
+   "Ingen ladetidspunkt i de publiserte prisene (prisforskjellen er for liten, eller morgendagen er ikke kjent ennå)"
+  ],
+  [
+   "Bijladen is klaar · de Marstek regelt weer zelf (anti-feed)",
+   "Lading ferdig · Marstek regulerer seg selv igjen (anti-feed)"
+  ],
+  [
+   "Accu is vol · bijladen is niet nodig",
+   "Batteriet er fullt · lading er ikke nødvendig"
+  ],
+  [
+   " · het goedkope venster is te kort om vol te komen",
+   " · det billige vinduet er for kort til å bli fullt"
+  ],
+  [
+   "Prijsverschil te klein of morgen onbekend",
+   "For liten prisforskjell eller morgendagen ukjent"
+  ],
+  [
+   "Geen prijzen of SoC beschikbaar",
+   "Ingen priser eller SoC tilgjengelig"
+  ],
+  [
+   "Niet in de gepubliceerde prijzen",
+   "Ikke i de publiserte prisene"
+  ],
+  [
+   "Prijzen en SoC bekend",
+   "Priser og SoC kjent"
+  ],
+  [
+   "Geen goedkoop venster",
+   "Intet billig vindu"
+  ],
+  [
+   "Goedkoop venster",
+   "Billig vindu"
+  ],
+  [
+   "In dit goedkope venster",
+   "I dette billige vinduet"
+  ],
+  [
+   "Bijladen is niet nodig",
+   "Lading er ikke nødvendig"
+  ],
+  [
+   "Wacht op gegevens",
+   "Venter på data"
+  ],
+  [
+   "Geen bijladen gepland",
+   "Ingen lading planlagt"
+  ],
+  [
+   "Geen bijladen",
+   "Ingen lading"
+  ],
+  [
+   "Accu niet vol",
+   "Batteriet er ikke fullt"
+  ],
+  [
+   "Accu is vol",
+   "Batteriet er fullt"
+  ],
+  [
+   "Laadbeurt gedaan",
+   "Ladeøkt fullført"
+  ],
+  [
+   "Geen nieuwe start tot",
+   "Ingen ny start før"
+  ],
+  [
+   "Stopt bij deze stap",
+   "Stopper ved dette trinnet"
+  ],
+  [
+   "Klaar",
+   "Ferdig"
+  ],
+  [
+   "Verkopen is niet ingesteld: kies de entiteit voor het ontlaadvermogen",
+   "Salg er ikke satt opp: velg entiteten for utladeeffekten"
+  ],
+  [
+   "Geen verkoop: er is nog geen goedkoop laadvenster bekend",
+   "Ikke noe salg: det er ennå ikke kjent noe billig ladevindu"
+  ],
+  [
+   "Geen verkoop: het goedkope laadvenster loopt",
+   "Ikke noe salg: det billige ladevinduet pågår"
+  ],
+  [
+   "Geen verkoop: de opbrengst is te laag",
+   "Ikke noe salg: gevinsten er for lav"
+  ],
+  [
+   "Geen verkoop: geen overschot boven de reserve van",
+   "Ikke noe salg: ikke noe overskudd over reserven på"
+  ],
+  [
+   "Nog geen goedkoop laadvenster",
+   "Ennå intet billig ladevindu"
+  ],
+  [
+   "Wacht op laadvenster",
+   "Venter på ladevindu"
+  ],
+  [
+   "Nog geen goedkoop laadvenster bekend",
+   "Ennå intet billig ladevindu kjent"
+  ],
+  [
+   "Zodra de prijzen van morgen bekend zijn",
+   "Så snart morgendagens priser er kjent"
+  ],
+  [
+   "Na het laadvenster, als er overschot is",
+   "Etter ladevinduet, hvis det er overskudd"
+  ],
+  [
+   "Geen verkoop gepland",
+   "Ikke noe salg planlagt"
+  ],
+  [
+   "Verkoopt vanaf",
+   "Selger fra"
+  ],
+  [
+   "Verkoopt zodra de SoC boven",
+   "Selger så snart SoC er over"
+  ],
+  [
+   "vóór",
+   "før"
+  ],
+  [
+   "Geen laadbeurt bekend",
+   "Ingen ladeøkt kjent"
+  ],
+  [
+   "Laadvenster loopt nu",
+   "Ladevinduet pågår nå"
+  ],
+  [
+   "Stroom is nu goedkoop",
+   "Strømmen er billig nå"
+  ],
+  [
+   "Laadbeurt komt eraan",
+   "Ladeøkt på vei"
+  ],
+  [
+   "Opbrengst hoog genoeg",
+   "Gevinst høy nok"
+  ],
+  [
+   "Opbrengst te laag",
+   "Gevinst for lav"
+  ],
+  [
+   "Overschot boven reserve",
+   "Overskudd over reserve"
+  ],
+  [
+   "Geen overschot",
+   "Ikke noe overskudd"
+  ],
+  [
+   "Geen verkoop",
+   "Ikke noe salg"
+  ],
+  [
+   "Geen uren",
+   "Ingen timer"
+  ],
+  [
+   "Reserve is",
+   "Reserven er"
+  ],
+  [
+   "Laden op vol vermogen (negatieve prijs)",
+   "Lader med full effekt (negativ pris)"
+  ],
+  [
+   "Negatieve prijs (",
+   "Negativ pris ("
+  ],
+  [
+   "dit uur wordt overgeslagen, andere uren leveren meer op",
+   "denne timen hoppes over, andre timer gir mer"
+  ],
+  [
+   "Beste uren eerst vol",
+   "Beste timer fylles først"
+  ],
+  [
+   "Energie naar waarde per uur",
+   "Energi etter verdi per time"
+  ],
+  [
+   "Een ander uur levert meer op",
+   "En annen time gir mer"
+  ],
+  [
+   "Negatief venster",
+   "Negativt vindu"
+  ],
+  [
+   "Laden uitgesmeerd",
+   "Lading fordelt"
+  ],
+  [
+   "Dit uur overslaan",
+   "Hopp over denne timen"
+  ],
+  [
+   "laden op ",
+   "lader med "
+  ],
+  [
+   "verwacht",
+   "forventet"
+  ],
+  [
+   "laden op vol vermogen",
+   "lader med full effekt"
+  ],
+  [
+   "Laden op vol vermogen",
+   "Lader med full effekt"
+  ],
+  [
+   "Bijladen uit het net",
+   "Lading fra nettet"
+  ],
+  [
+   "Verkopen aan het net",
+   "Salg til nettet"
+  ],
+  [
+   "Ontladen (handmatig)",
+   "Utlading (manuell)"
+  ],
+  [
+   "Stilgezet (handmatig)",
+   "Stoppet (manuell)"
+  ],
+  [
+   "Marstek niet bereikbaar",
+   "Marstek ikke tilgjengelig"
+  ],
+  [
+   "Vasthouden: ontladen geblokkeerd",
+   "Tilbakehold: utlading blokkert"
+  ],
+  [
+   "Zelf regelen (anti-feed)",
+   "Regulerer selv (anti-feed)"
+  ],
+  [
+   "Wordt niet uitgevoerd: bijladen staat uit",
+   "Utføres ikke: lading er av"
+  ],
+  [
+   "Wordt niet uitgevoerd: verkopen staat uit",
+   "Utføres ikke: salg er av"
+  ],
+  [
+   "ontladen vrij",
+   "utlading frigitt"
+  ],
+  [
+   "Prijs komt boven de kostprijs van",
+   "Prisen stiger over kostprisen på"
+  ],
+  [
+   "Geen acties gepland",
+   "Ingen handlinger planlagt"
+  ],
+  [
+   "De Marstek blijft zelf regelen",
+   "Marstek fortsetter å regulere seg selv"
+  ],
+  [
+   "Weer zelf regelen (anti-feed)",
+   "Regulerer seg selv igjen (anti-feed)"
+  ],
+  [
+   "Prijs onder de grens",
+   "Pris under grensen"
+  ],
+  [
+   "Laden op vol vermogen",
+   "Lader med full effekt"
+  ],
+  [
+   "Niets te laden",
+   "Ingenting å lade"
+  ],
+  [
+   "Niet actief",
+   "Ikke aktiv"
+  ],
+  [
+   "Wacht op een negatief uur",
+   "Venter på en negativ time"
+  ],
+  [
+   "Prijs niet onder",
+   "Pris ikke under"
+  ],
+  [
+   "Prijs onbekend",
+   "Pris ukjent"
+  ],
+  [
+   "Niet ingesteld",
+   "Ikke satt opp"
+  ],
+  [
+   "Kies de entiteit voor het maximale ontlaadvermogen",
+   "Velg entiteten for maksimal utladeeffekt"
+  ],
+  [
+   "Kies de entiteit voor het ontlaadvermogen",
+   "Velg entiteten for utladeeffekten"
+  ],
+  [
+   "Geen bijgeladen voorraad",
+   "Ingen ladet beholdning"
+  ],
+  [
+   "Niets om vast te houden",
+   "Ingenting å holde tilbake"
+  ],
+  [
+   "De Marstek regelt zelf",
+   "Marstek regulerer selv"
+  ],
+  [
+   "Bijgeladen voorraad",
+   "Ladet beholdning"
+  ],
+  [
+   "kostprijs €",
+   "kostpris €"
+  ],
+  [
+   "Tot de prijs boven",
+   "Til prisen er over"
+  ],
+  [
+   " komt",
+   "."
+  ],
+  [
+   "Prijs onder kostprijs",
+   "Pris under kostpris"
+  ],
+  [
+   "Prijs niet onder kostprijs",
+   "Pris ikke under kostpris"
+  ],
+  [
+   "Ontladen geblokkeerd",
+   "Utlading blokkert"
+  ],
+  [
+   "Ontladen vrij",
+   "Utlading frigitt"
+  ],
+  [
+   "De voorraad wordt met winst gebruikt",
+   "Beholdningen brukes med gevinst"
+  ],
+  [
+   "Voorraad bewaakt",
+   "Beholdning overvåket"
+  ],
+  [
+   "alleen boven",
+   "kun over"
+  ],
+  [
+   "Geen voorraad",
+   "Ingen beholdning"
+  ],
+  [
+   "Nu niets te bewaken",
+   "Ingenting å overvåke nå"
+  ],
+  [
+   "Ontladen boven kostprijs",
+   "Utlading over kostpris"
+  ],
+  [
+   "Vasthouden geldt altijd",
+   "Tilbakehold gjelder alltid"
+  ],
+  [
+   "Verkopen boven kostprijs",
+   "Salg over kostpris"
+  ],
+  [
+   "Nooit onder de kostprijs",
+   "Aldri under kostprisen"
+  ],
+  [
+   "Onder de kostprijs",
+   "Under kostprisen"
+  ],
+  [
+   "Voorraad kost",
+   "Beholdningen koster"
+  ],
+  [
+   "Tegengehouden door geen verlies",
+   "Stoppet av «Ingen tap»"
+  ],
+  [
+   "Verkopen ingesteld",
+   "Salg satt opp"
+  ],
+  [
+   "Staat uit",
+   "Av"
+  ],
+  [
+   "Bijladen",
+   "Lading"
+  ],
+  [
+   "Vasthouden",
+   "Tilbakehold"
+  ],
+  [
+   "Negatieve prijs",
+   "Negativ pris"
+  ],
+  [
+   "Geen verlies",
+   "Ingen tap"
+  ],
+  [
+   "verkopen voor",
+   "solgt for"
+  ],
+  [
+   "terugladen kost",
+   "gjenlading koster"
+  ],
+  [
+   "Terugladen vanaf",
+   "Gjenlading fra"
+  ],
+  [
+   "terugladen vanaf",
+   "gjenlading fra"
+  ],
+  [
+   "Nog ",
+   "Ennå "
+  ],
+  [
+   "nodig",
+   "nødvendig"
+  ],
+  [
+   "hoogste",
+   "høyeste"
+  ],
+  [
+   "gemiddeld",
+   "gjennomsnittlig"
+  ],
+  [
+   "gem.",
+   "gj.sn."
+  ],
+  [
+   "voor ca.",
+   "for ca."
+  ],
+  [
+   "op ca.",
+   "med ca."
+  ],
+  [
+   "Ca.",
+   "Ca."
+  ],
+  [
+   "boven reserve",
+   "over reserve"
+  ],
+  [
+   "boven",
+   "over"
+  ],
+  [
+   "Verkoop",
+   "Salg"
+  ],
+  [
+   "Verkopen",
+   "Salg"
+  ],
+  [
+   "verkopen",
+   "salg"
+  ],
+  [
+   "bijladen",
+   "lading"
+  ],
+  [
+   "Laden",
+   "Lading"
+  ],
+  [
+   "klaar om",
+   "ferdig kl."
+  ],
+  [
+   "klaar",
+   "ferdig"
+  ],
+  [
+   "morgen ",
+   "i morgen "
+  ],
+  [
+   "Tot ",
+   "Til "
+  ],
+  [
+   "om ",
+   "kl. "
+  ],
+  [
+   " van ",
+   " av "
+  ],
+  [
+   "Nu",
+   "Nå"
+  ],
+  [
+   "Geen",
+   "Ingen"
+  ]
+ ],
+ "pre": [
+  [
+   "Nog (\\S+) kWh nodig",
+   "Trenger fortsatt \\1 kWh"
+  ],
+  [
+   "(\\S+) kWh in (\\d+) van (\\d+) negatieve uren",
+   "\\1 kWh i \\2 av \\3 negative timer"
+  ],
+  [
+   "inkopen voor (€ \\S+), later (€ \\S+) waard",
+   "kjøpt inn for \\1, verdt \\2 senere"
+  ]
+ ],
+ "post": [
+  [
+   "(\\d+) uur\\b",
+   "\\1 t"
+  ]
+ ],
+ "card": {
+  "Marstek Goedkoop Laden (opbrengst)": "Marstek Billig Lading (gevinst)",
+  "Marstek Goedkoop Laden (schakelaars)": "Marstek Billig Lading (brytere)",
+  "Marstek Goedkoop Laden": "Marstek Billig Lading",
+  "Marstek Goedkoop Laden (compact)": "Marstek Billig Lading (kompakt)",
+  "Staat uit": "Av",
+  "Zet de schakelaar aan om dit te gebruiken": "Slå på bryteren for å bruke dette",
+  "Verwachte opbrengst van dit plan (schatting)": "Forventet gevinst for denne planen (estimat)",
+  "totaal": "totalt",
+  "Vandaag": "I dag",
+  "week": "uke",
+  "verwacht": "forventet",
+  "Deze week": "Denne uken",
+  "Vorige week": "Forrige uke",
+  "Opbrengst": "Gevinst",
+  "Deze maand": "Denne måneden",
+  "Dit jaar": "I år",
+  "Tegels": "Fliser",
+  "Regels per onderdeel van het plan": "Linjer per del av planen",
+  "Toelichting onder de kaart": "Merknad under kortet",
+  "Titel": "Tittel",
+  "maand": "måned",
+  "Verwacht (plan)": "Forventet (plan)",
+  "niet gevonden.": "ikke funnet.",
+  "Entiteit": "Entitet",
+  "Nog geen gegevens beschikbaar.": "Ingen data tilgjengelig ennå.",
+  "Nog geen opbrengst beschikbaar.": "Ingen gevinst tilgjengelig ennå.",
+  "Nu": "Nå",
+  "aan": "på",
+  "uit": "av",
+  "Aan": "På",
+  "Uit": "Av",
+  "Dat telt pas mee als het wordt gebruikt.": "Det teller først med når det brukes.",
+  "Er zit geen bijgeladen stroom meer in de accu.": "Det er ikke mer ladet strøm igjen i batteriet.",
+  "Tijdlijn en controles van het laadplan als stroomschema.": "Tidslinje og kontroller for ladeplanen som flytskjema.",
+  "Het stroomschema in een paar regels.": "Flytskjemaet i noen få linjer.",
+  "Opbrengst van vandaag, deze week en het huidige plan.": "Gevinst i dag, denne uken og for gjeldende plan.",
+  "De schakelaars voor bijladen, verkoop en negatieve prijs.": "Bryterne for lading, salg og negativ pris.",
+  "Nog in de accu: {kwh} kWh bijgeladen stroom": "Fortsatt i batteriet: {kwh} kWh ladet strøm",
+  " (kostprijs € {price} per kWh)": " (kostpris € {price} per kWh)",
+  "Vandaag bijgeladen: {kwh} kWh voor € {cost}, waarvan {used} kWh gebruikt. ": "Ladet i dag: {kwh} kWh for € {cost}, hvorav {used} kWh brukt. ",
+  "Afschrijving van de accu is meegerekend: € {wear}. ": "Avskrivning av batteriet er medregnet: € {wear}. ",
+  "Afschrijving per kWh": "Avskrivning per kWh",
+  "Bijgeladen voorraad, kostprijs, rendement en afschrijving.": "Ladet beholdning, kostpris, virkningsgrad og avskrivning.",
+  "Bijladen": "Lading",
+  "Boven de kostprijs levert gebruiken of verkopen winst op, eronder verlies.": "Over kostprisen gir bruk eller salg gevinst, under kostprisen gir det tap.",
+  "Capaciteit": "Kapasitet",
+  "Geen plan": "Ingen plan",
+  "Geen prijzen beschikbaar.": "Ingen priser tilgjengelig.",
+  "Geen verlies": "Ingen tap",
+  "Gepland": "Planlagt",
+  "Hoogte (pixels)": "Høyde (piksler)",
+  "Klaar": "Ferdig",
+  "Kostprijs": "Kostpris",
+  "Laadtoestand": "Ladenivå",
+  "Laadtoestand tonen": "Vis ladenivå",
+  "Laden": "Lader",
+  "Marstek Goedkoop Laden (prijzen)": "Marstek Billig Lading (priser)",
+  "Marstek Goedkoop Laden (status)": "Marstek Billig Lading (status)",
+  "Marstek Goedkoop Laden (voorraad)": "Marstek Billig Lading (beholdning)",
+  "Negatieve prijs": "Negativ pris",
+  "Onbekend": "Ukjent",
+  "Onderdelen": "Deler",
+  "Opbrengst tonen": "Vis gevinst",
+  "Prijs nu": "Pris nå",
+  "Prijs nu tonen": "Vis pris nå",
+  "Prijsgrafiek met de uren waarin wordt bijgeladen of verkocht.": "Prisdiagram med timene det lades eller selges i.",
+  "Prijzen bij de staven tonen": "Vis priser ved søylene",
+  "Prijzen per uur in € per kWh": "Priser per time i € per kWh",
+  "Rendement": "Virkningsgrad",
+  "Tijdlijn van vandaag tonen": "Vis dagens tidslinje",
+  "Uren terug": "Timer tilbake",
+  "Uren vooruit (0 = tot de laatste bekende prijs)": "Timer fremover (0 = til siste kjente pris)",
+  "Vasthouden": "Tilbakehold",
+  "Verkoop": "Salg",
+  "Vol": "Full",
+  "Volgende stap": "Neste trinn",
+  "Volgende stap tonen": "Vis neste trinn",
+  "Voorraad": "Beholdning",
+  "Wat er nu gebeurt, de laadtoestand, de prijs en de volgende stap.": "Hva som skjer nå, ladenivået, prisen og neste trinn."
+ }
+}

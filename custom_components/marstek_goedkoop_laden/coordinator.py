@@ -93,7 +93,7 @@ from .const import (
     MODE_ENABLE,
     UPDATE_INTERVAL_SECONDS,
 )
-from .i18n import tr
+from .i18n import resolve as resolve_language, tr
 from .ledger import Ledger
 from .planner import (
     FULL_SOC,
@@ -569,7 +569,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
     def language(self) -> str:
         """De taal van de teksten: de keuze in de opties, of anders die van Home Assistant."""
         chosen = self.conf.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
-        return self.hass.config.language if chosen in (None, "auto") else chosen
+        return resolve_language(self.hass.config.language if chosen in (None, "auto") else chosen)
 
     def _switch_entity(self, key: str) -> str | None:
         """De entity_id van een van de eigen schakelaars (voor de schakelaarkaart)."""
@@ -791,8 +791,41 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             lines.append({"titel": "Verkoop", "bedrag": 0.0, "detail": "Geen verkoop gepland"})
         self.expected_gain = round(total, 2)
 
+        charge_hours = set(plan.charge_hours)
+        sell_hours = set(sell.sell_hours)
+        negative_hours = set(self.negative_plan.hours) if self.negative_plan else set()
+        window_start = now - timedelta(hours=3)
+        prices = []
+        for slot in plan.prices:
+            if slot.end <= window_start:
+                continue
+            kind = (
+                "negatief" if slot.start in negative_hours
+                else "laden" if slot.start in charge_hours
+                else "verkoop" if slot.start in sell_hours
+                else "negatief_venster" if slot.price < limit
+                else ""
+            )
+            prices.append({"start": slot.start.isoformat(), "prijs": round(slot.price, 4), "soort": kind})
+        current_price = next((s.price for s in plan.prices if s.start <= now < s.end), None)
+        stock_cost = self._stock_cost()
+        overview = {
+            "status": plan.status,
+            "bezig": doing,
+            "soc": inputs["soc"],
+            "prijs_nu": None if current_price is None else round(current_price, 4),
+            "laadvermogen_w": plan.power_w,
+            "rendement": round(inputs["efficiency"], 3),
+            "afschrijving_per_kwh": round(self.depreciation, 4),
+            "kostprijs": None if stock_cost is None else round(stock_cost, 4),
+            "grens_negatief": limit,
+            "capaciteit_kwh": inputs["capacity_kwh"],
+        }
+
         return {
             "tijdlijn": timeline,
+            "overzicht": overview,
+            "prijzen": prices,
             "resultaat": {
                 "totaal": round(total, 2),
                 "regels": lines,
@@ -813,11 +846,11 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 ),
             },
             "banen": [
-                {"titel": "Bijladen", "icoon": "mdi:battery-charging", "aan": self.enabled, "stappen": list(plan.steps), "schakelaar": self._switch_entity("prijssturing")},
-                {"titel": "Verkoop", "icoon": "mdi:transmission-tower-export", "aan": self.sell_enabled, "stappen": sell_steps, "schakelaar": self._switch_entity("verkoop")},
-                {"titel": "Negatieve prijs", "icoon": "mdi:cash-minus", "aan": self.negative_enabled, "stappen": negative_steps, "schakelaar": self._switch_entity("negatieve_prijs")},
-                {"titel": "Vasthouden", "icoon": "mdi:lock-clock", "aan": self.hold_on, "stappen": hold_steps, "schakelaar": self._switch_entity("vasthouden")},
-                {"titel": "Geen verlies", "icoon": "mdi:shield-check", "aan": self.no_loss_enabled, "stappen": no_loss_steps, "schakelaar": self._switch_entity("geen_verlies")},
+                {"id": "bijladen", "titel": "Bijladen", "icoon": "mdi:battery-charging", "aan": self.enabled, "stappen": list(plan.steps), "schakelaar": self._switch_entity("prijssturing")},
+                {"id": "verkoop", "titel": "Verkoop", "icoon": "mdi:transmission-tower-export", "aan": self.sell_enabled, "stappen": sell_steps, "schakelaar": self._switch_entity("verkoop")},
+                {"id": "negatief", "titel": "Negatieve prijs", "icoon": "mdi:cash-minus", "aan": self.negative_enabled, "stappen": negative_steps, "schakelaar": self._switch_entity("negatieve_prijs")},
+                {"id": "vasthouden", "titel": "Vasthouden", "icoon": "mdi:lock-clock", "aan": self.hold_on, "stappen": hold_steps, "schakelaar": self._switch_entity("vasthouden")},
+                {"id": "geen_verlies", "titel": "Geen verlies", "icoon": "mdi:shield-check", "aan": self.no_loss_enabled, "stappen": no_loss_steps, "schakelaar": self._switch_entity("geen_verlies")},
             ],
         }
 

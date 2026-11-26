@@ -2,7 +2,7 @@
 
 # Marstek Cheap Charging for Home Assistant
 
-[🇳🇱 Nederlands](README.nl.md) · 🇬🇧 English
+🇬🇧 English · [🇳🇱 Nederlands](README.nl.md) · [🏳️ Frysk](README.fy.md) · [🇩🇪 Deutsch](README.de.md) · [🇫🇷 Français](README.fr.md) · [🇪🇸 Español](README.es.md) · [🇸🇪 Svenska](README.sv.md) · [🇳🇴 Norsk](README.nb.md)
 
 [![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rvdwal1991&repository=Marstek-Cheap-Charging-for-HA&category=integration)
 [![Open your Home Assistant instance and start setting up the integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=marstek_goedkoop_laden)
@@ -67,8 +67,8 @@ expensive hours.
 > [Price sensor](#price-sensor).
 >
 > **Language:** the plan text, the flow chart and the cards follow the *Language* option
-> (Automatic, Nederlands or English; Automatic follows Home Assistant: Dutch for Dutch, English
-> for any other language). Entity names follow the language of Home Assistant. State values and attribute names (`laden`, `tekst`, …) are fixed.
+> (Automatic, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska or Norsk;
+> Automatic follows Home Assistant when it is one of these, otherwise English). Entity names follow the language of Home Assistant. State values and attribute names (`laden`, `tekst`, …) are fixed.
 
 ## What it does
 
@@ -266,7 +266,7 @@ Under *Configure* on the integration:
 
 | Setting | Default | Meaning |
 |---|---|---|
-| Language | Automatic | Language of the plan text, flow chart and cards: Automatic, Nederlands or English. |
+| Language | Automatic | Language of the plan text, flow chart and cards: Automatic, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska or Norsk. |
 | Battery purchase price | €0 | Used for depreciation. 0 turns depreciation off. |
 | Battery lifetime (cycles) | 6000 | Expected number of full cycles. Depreciation per kWh = price ÷ (cycles × capacity); for example €1,500 over 6,000 cycles of 5.12 kWh is about €0.049 per kWh. |
 | Minimum gain per kWh | €0.02 | What charging must earn at least, after charge losses. Hours less than half a cent above the limit still count, so a nearly flat night is not cut up over a fraction of a cent. |
@@ -289,8 +289,9 @@ hours. Set it lower and it plans more hours and charges more gently.
 
 ### Cards from the integration
 
-The integration ships four cards; no resource needs to be added. Refresh the browser after
-installing or updating.
+The integration ships seven cards; no resource needs to be added. Refresh the browser after
+installing or updating. Every card can be set up in the card editor (the visual editor) as well as
+in YAML, and when you leave `entity` out the charge plan sensor is found automatically.
 
 | Card | Contents |
 |---|---|
@@ -298,6 +299,9 @@ installing or updating.
 | `custom:marstek-goedkoop-laden-compact-card` | The same in a few lines: the timeline, the outcome per part with the reason, and one line with the gain. |
 | `custom:marstek-goedkoop-laden-opbrengst-card` | Gain only: today, this week, last week, this month and the expectation of the current plan. |
 | `custom:marstek-goedkoop-laden-schakelaars-card` | Compact: buttons to turn charging, selling, charging at negative price, hold and no loss on or off. |
+| `custom:marstek-goedkoop-laden-status-card` | What is happening now, the state of charge as a bar, the price now and the next step. |
+| `custom:marstek-goedkoop-laden-prijzen-card` | Price chart without extra cards: the hours with charging, selling and negative prices marked, and a line for now. |
+| `custom:marstek-goedkoop-laden-voorraad-card` | The charged stock, its cost price, the efficiency, the depreciation per kWh and the capacity. |
 
 ```yaml
 type: custom:marstek-goedkoop-laden-card
@@ -320,6 +324,20 @@ notes: false                    # hide the note below the card (default: true)
 | `tiles` | all six | Which tiles to show and in which order: today, this week, last week, this month, this year, expected (plan). |
 | `expected_details` | `true` | The lines with the expected gain per part (charging, selling). |
 | `notes` | `true` | The note with the charged stock, what was charged today and the depreciation. |
+
+Options of the other cards (all are also in the card editor):
+
+| Card | Option | Default | Meaning |
+|---|---|---|---|
+| flow, compact | `show_timeline` | `true` | Show today's timeline. |
+| flow, compact, switches | `lanes` | all five | Which parts to show: `bijladen`, `verkoop`, `negatief`, `vasthouden`, `geen_verlies`. |
+| status | `show_soc`, `show_price`, `show_next` | `true` | The state of charge bar, the price now, the next step. |
+| prices | `hours_back` | `2` | Hours of the past to show. |
+| prices | `hours_ahead` | `0` | Hours ahead to show; 0 is up to the last known price. |
+| prices | `show_values` | `false` | Print the price above each bar (up to 24 bars). |
+| prices | `height` | `140` | Height of the chart in pixels. |
+| stock | `tiles` | all five | `voorraad`, `kostprijs`, `rendement`, `afschrijving`, `capaciteit`. |
+| stock | `notes` | `true` | The note below the card. |
 
 `opbrengst` decides whether the flow card also shows the gain: off by default for the regular
 card, one line by default for the compact card. In the flow chart green is a check that
@@ -369,7 +387,8 @@ content: >-
   · ⚠️ price control is **off**{% endif %}
 ```
 
-Chart with [apexcharts-card](https://github.com/RomRider/apexcharts-card): the Zonneplan
+The price card above does the same without extra cards. As an alternative, a chart with
+[apexcharts-card](https://github.com/RomRider/apexcharts-card): the Zonneplan
 prices of today and tomorrow, green = charging, blue = rest of the cheap window, grey = other.
 Repeat the series three times with `'laden'`, `'venster'` and `'rest'` in place of `KIES`:
 

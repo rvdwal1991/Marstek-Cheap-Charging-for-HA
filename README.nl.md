@@ -2,7 +2,7 @@
 
 # Marstek Goedkoop Laden voor Home Assistant
 
-🇳🇱 Nederlands · [🇬🇧 English](README.md)
+[🇬🇧 English](README.md) · 🇳🇱 Nederlands · [🏳️ Frysk](README.fy.md) · [🇩🇪 Deutsch](README.de.md) · [🇫🇷 Français](README.fr.md) · [🇪🇸 Español](README.es.md) · [🇸🇪 Svenska](README.sv.md) · [🇳🇴 Norsk](README.nb.md)
 
 [![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rvdwal1991&repository=Marstek-Cheap-Charging-for-HA&category=integration)
 [![Open your Home Assistant instance and start setting up the integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=marstek_goedkoop_laden)
@@ -59,8 +59,8 @@ vast tarief valt er niets te winnen. Hij is gebouwd rond de Nederlandse markt en
 Zonneplan (uurprijzen, voor de volgende dag gepubliceerd tussen 13:00 en 15:00). Elke prijssensor
 met een uurprijslijst als attribuut volstaat, zie [Prijssensor](#prijssensor).
 
-Planregel, stroomschema en kaarten volgen de optie *Taal* (Automatisch, Nederlands of English;
-automatisch volgt Home Assistant: Nederlands bij Nederlands, anders Engels). Entiteitsnamen volgen
+Planregel, stroomschema en kaarten volgen de optie *Taal* (Automatisch, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska of Norsk;
+automatisch volgt Home Assistant als dat een van deze is, anders Engels). Entiteitsnamen volgen
 de taal van Home Assistant. Statuswaarden en attribuutnamen
 (`laden`, `tekst`, …) staan vast.
 
@@ -264,7 +264,7 @@ Via *Configureren* op de integratie:
 
 | Instelling | Standaard | Betekenis |
 |---|---|---|
-| Taal | Automatisch | Taal van planregel, stroomschema en kaarten: Automatisch, Nederlands of English. |
+| Taal | Automatisch | Taal van planregel, stroomschema en kaarten: Automatisch, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska of Norsk. |
 | Aanschafprijs accu | € 0 | Voor de afschrijving. 0 zet de afschrijving uit. |
 | Levensduur accu (cycli) | 6000 | Verwacht aantal volledige cycli. Afschrijving per kWh = prijs ÷ (cycli × capaciteit); bijvoorbeeld € 1.500 over 6.000 cycli van 5,12 kWh is ongeveer € 0,049 per kWh. |
 | Minimale winst per kWh | € 0,02 | Wat bijladen na aftrek van het laadverlies minstens moet opleveren. Uren die minder dan een halve cent boven de grens liggen tellen ook mee, zodat een bijna vlakke nacht niet om een fractie van een cent wordt versnipperd. |
@@ -287,8 +287,9 @@ Zet je dat lager, dan plant hij meer uren en laadt hij rustiger.
 
 ### Kaarten van de integratie
 
-De integratie levert vier kaarten mee; er hoeft geen resource te worden toegevoegd. Ververs de
-browser na het installeren of bijwerken.
+De integratie levert zeven kaarten mee; er hoeft geen resource te worden toegevoegd. Ververs de
+browser na het installeren of bijwerken. Elke kaart is in te stellen in de kaarteditor (de
+visuele editor) en in YAML, en laat je `entity` weg dan wordt de laadplan-sensor zelf gevonden.
 
 | Kaart | Inhoud |
 |---|---|
@@ -296,6 +297,9 @@ browser na het installeren of bijwerken.
 | `custom:marstek-goedkoop-laden-compact-card` | Hetzelfde in een paar regels: de tijdlijn, per onderdeel de uitkomst met de reden, en één regel met de opbrengst. |
 | `custom:marstek-goedkoop-laden-opbrengst-card` | Alleen de opbrengst: vandaag, deze week, vorige week, deze maand en de verwachting van het huidige plan. |
 | `custom:marstek-goedkoop-laden-schakelaars-card` | Compact: knoppen om bijladen, verkoop, laden bij negatieve prijs, vasthouden en geen verlies aan of uit te zetten. |
+| `custom:marstek-goedkoop-laden-status-card` | Wat er nu gebeurt, de laadtoestand als balk, de prijs nu en de volgende stap. |
+| `custom:marstek-goedkoop-laden-prijzen-card` | Prijsgrafiek zonder extra kaarten: de uren met bijladen, verkoop en negatieve prijzen gemarkeerd, en een lijn voor nu. |
+| `custom:marstek-goedkoop-laden-voorraad-card` | De bijgeladen voorraad, de kostprijs, het rendement, de afschrijving per kWh en de capaciteit. |
 
 ```yaml
 type: custom:marstek-goedkoop-laden-card
@@ -318,6 +322,20 @@ notes: false                    # verberg de toelichting onder de kaart (standaa
 | `tiles` | alle zes | Welke tegels en in welke volgorde: vandaag, deze week, vorige week, deze maand, dit jaar, verwacht (plan). |
 | `expected_details` | `true` | De regels met de verwachte opbrengst per onderdeel (bijladen, verkoop). |
 | `notes` | `true` | De toelichting met de bijgeladen voorraad, wat er vandaag is bijgeladen en de afschrijving. |
+
+Opties van de andere kaarten (allemaal ook in de kaarteditor):
+
+| Kaart | Optie | Standaard | Betekenis |
+|---|---|---|---|
+| stroomschema, compact | `show_timeline` | `true` | De tijdlijn van vandaag tonen. |
+| stroomschema, compact, schakelaars | `lanes` | alle vijf | Welke onderdelen: `bijladen`, `verkoop`, `negatief`, `vasthouden`, `geen_verlies`. |
+| status | `show_soc`, `show_price`, `show_next` | `true` | De laadtoestandbalk, de prijs nu, de volgende stap. |
+| prijzen | `hours_back` | `2` | Aantal uren terug. |
+| prijzen | `hours_ahead` | `0` | Aantal uren vooruit; 0 is tot de laatste bekende prijs. |
+| prijzen | `show_values` | `false` | De prijs boven elke staaf tonen (tot 24 staven). |
+| prijzen | `height` | `140` | Hoogte van de grafiek in pixels. |
+| voorraad | `tiles` | alle vijf | `voorraad`, `kostprijs`, `rendement`, `afschrijving`, `capaciteit`. |
+| voorraad | `notes` | `true` | De toelichting onder de kaart. |
 
 `opbrengst` bepaalt of de stroomschemakaart ook de opbrengst toont: standaard uit bij de gewone
 kaart, standaard één regel bij de compacte kaart. In het stroomschema is groen een geslaagde
@@ -367,7 +385,8 @@ content: >-
   · ⚠️ prijssturing staat **uit**{% endif %}
 ```
 
-Grafiek met [apexcharts-card](https://github.com/RomRider/apexcharts-card): de Zonneplan-prijzen
+De prijzenkaart hierboven doet hetzelfde zonder extra kaarten. Als alternatief een grafiek met
+[apexcharts-card](https://github.com/RomRider/apexcharts-card): de Zonneplan-prijzen
 van vandaag en morgen, groen = bijladen, blauw = rest van het goedkope venster, grijs = overig.
 Herhaal de reeks drie keer met `'laden'`, `'venster'` en `'rest'` op de plek van `KIES`:
 

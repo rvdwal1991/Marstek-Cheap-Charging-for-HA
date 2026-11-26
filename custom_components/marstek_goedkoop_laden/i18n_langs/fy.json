@@ -1,0 +1,661 @@
+{
+ "phrases": [
+  [
+   "Geen laadmoment in de gepubliceerde prijzen (prijsverschil te klein, of morgen is nog niet bekend)",
+   "Gjin laadmomint yn de publisearre prizen (priisferskil te lyts, of moarn is noch net bekend)"
+  ],
+  [
+   "Bijladen is klaar · de Marstek regelt weer zelf (anti-feed)",
+   "Bylade is klear · de Marstek regelet wer sels (anti-feed)"
+  ],
+  [
+   "Accu is vol · bijladen is niet nodig",
+   "Accu is fol · bylade is net nedich"
+  ],
+  [
+   " · het goedkope venster is te kort om vol te komen",
+   " · it goedkeape finster is te koart om fol te kommen"
+  ],
+  [
+   "Prijsverschil te klein of morgen onbekend",
+   "Priisferskil te lyts of moarn ûnbekend"
+  ],
+  [
+   "Geen prijzen of SoC beschikbaar",
+   "Gjin prizen of SoC beskikber"
+  ],
+  [
+   "Niet in de gepubliceerde prijzen",
+   "Net yn de publisearre prizen"
+  ],
+  [
+   "Prijzen en SoC bekend",
+   "Prizen en SoC bekend"
+  ],
+  [
+   "Geen goedkoop venster",
+   "Gjin goedkeap finster"
+  ],
+  [
+   "Goedkoop venster",
+   "Goedkeap finster"
+  ],
+  [
+   "In dit goedkope venster",
+   "Yn dit goedkeape finster"
+  ],
+  [
+   "Bijladen is niet nodig",
+   "Bylade is net nedich"
+  ],
+  [
+   "Wacht op gegevens",
+   "Wachtet op gegevens"
+  ],
+  [
+   "Geen bijladen gepland",
+   "Gjin bylade pland"
+  ],
+  [
+   "Geen bijladen",
+   "Gjin bylade"
+  ],
+  [
+   "Accu niet vol",
+   "Accu net fol"
+  ],
+  [
+   "Accu is vol",
+   "Accu is fol"
+  ],
+  [
+   "Laadbeurt gedaan",
+   "Laadbeurt dien"
+  ],
+  [
+   "Geen nieuwe start tot",
+   "Gjin nije start oant"
+  ],
+  [
+   "Stopt bij deze stap",
+   "Stoppet by dizze stap"
+  ],
+  [
+   "Klaar",
+   "Klear"
+  ],
+  [
+   "Verkopen is niet ingesteld: kies de entiteit voor het ontlaadvermogen",
+   "Ferkeapje is net ynsteld: kies de entiteit foar it ûntladefermogen"
+  ],
+  [
+   "Geen verkoop: er is nog geen goedkoop laadvenster bekend",
+   "Gjin ferkeap: der is noch gjin goedkeap laadfinster bekend"
+  ],
+  [
+   "Geen verkoop: het goedkope laadvenster loopt",
+   "Gjin ferkeap: it goedkeape laadfinster rint"
+  ],
+  [
+   "Geen verkoop: de opbrengst is te laag",
+   "Gjin ferkeap: de opbringst is te leech"
+  ],
+  [
+   "Geen verkoop: geen overschot boven de reserve van",
+   "Gjin ferkeap: gjin oerskot boppe de reserve fan"
+  ],
+  [
+   "Nog geen goedkoop laadvenster",
+   "Noch gjin goedkeap laadfinster"
+  ],
+  [
+   "Wacht op laadvenster",
+   "Wachtet op laadfinster"
+  ],
+  [
+   "Nog geen goedkoop laadvenster bekend",
+   "Noch gjin goedkeap laadfinster bekend"
+  ],
+  [
+   "Zodra de prijzen van morgen bekend zijn",
+   "Sadree't de prizen fan moarn bekend binne"
+  ],
+  [
+   "Na het laadvenster, als er overschot is",
+   "Nei it laadfinster, as der oerskot is"
+  ],
+  [
+   "Geen verkoop gepland",
+   "Gjin ferkeap pland"
+  ],
+  [
+   "Verkoopt vanaf",
+   "Ferkeapet fan"
+  ],
+  [
+   "Verkoopt zodra de SoC boven",
+   "Ferkeapet sadree't de SoC boppe"
+  ],
+  [
+   "vóór",
+   "foar"
+  ],
+  [
+   "Geen laadbeurt bekend",
+   "Gjin laadbeurt bekend"
+  ],
+  [
+   "Laadvenster loopt nu",
+   "Laadfinster rint no"
+  ],
+  [
+   "Stroom is nu goedkoop",
+   "Stroom is no goedkeap"
+  ],
+  [
+   "Laadbeurt komt eraan",
+   "Laadbeurt komt der oan"
+  ],
+  [
+   "Opbrengst hoog genoeg",
+   "Opbringst heech genôch"
+  ],
+  [
+   "Opbrengst te laag",
+   "Opbringst te leech"
+  ],
+  [
+   "Overschot boven reserve",
+   "Oerskot boppe reserve"
+  ],
+  [
+   "Geen overschot",
+   "Gjin oerskot"
+  ],
+  [
+   "Geen verkoop",
+   "Gjin ferkeap"
+  ],
+  [
+   "Geen uren",
+   "Gjin oeren"
+  ],
+  [
+   "Reserve is",
+   "Reserve is"
+  ],
+  [
+   "Laden op vol vermogen (negatieve prijs)",
+   "Lade op fol fermogen (negative priis)"
+  ],
+  [
+   "Negatieve prijs (",
+   "Negative priis ("
+  ],
+  [
+   "dit uur wordt overgeslagen, andere uren leveren meer op",
+   "dit oere wurdt oerslein, oare oeren bringe mear op"
+  ],
+  [
+   "Beste uren eerst vol",
+   "Bêste oeren earst fol"
+  ],
+  [
+   "Energie naar waarde per uur",
+   "Enerzjy nei wearde per oere"
+  ],
+  [
+   "Een ander uur levert meer op",
+   "In oar oere bringt mear op"
+  ],
+  [
+   "Negatief venster",
+   "Negatyf finster"
+  ],
+  [
+   "Laden uitgesmeerd",
+   "Lade útsmard"
+  ],
+  [
+   "Dit uur overslaan",
+   "Dit oere oerslaan"
+  ],
+  [
+   "laden op ",
+   "lade op "
+  ],
+  [
+   "verwacht",
+   "ferwachte"
+  ],
+  [
+   "laden op vol vermogen",
+   "lade op fol fermogen"
+  ],
+  [
+   "Laden op vol vermogen",
+   "Lade op fol fermogen"
+  ],
+  [
+   "Bijladen uit het net",
+   "Bylade út it net"
+  ],
+  [
+   "Verkopen aan het net",
+   "Ferkeapje oan it net"
+  ],
+  [
+   "Ontladen (handmatig)",
+   "Ûntlade (mei de hân)"
+  ],
+  [
+   "Stilgezet (handmatig)",
+   "Stilset (mei de hân)"
+  ],
+  [
+   "Marstek niet bereikbaar",
+   "Marstek net berikber"
+  ],
+  [
+   "Vasthouden: ontladen geblokkeerd",
+   "Fêsthâlde: ûntlade blokkearre"
+  ],
+  [
+   "Zelf regelen (anti-feed)",
+   "Sels regelje (anti-feed)"
+  ],
+  [
+   "Wordt niet uitgevoerd: bijladen staat uit",
+   "Wurdt net útfierd: bylade stiet út"
+  ],
+  [
+   "Wordt niet uitgevoerd: verkopen staat uit",
+   "Wurdt net útfierd: ferkeapje stiet út"
+  ],
+  [
+   "ontladen vrij",
+   "ûntlade frij"
+  ],
+  [
+   "Prijs komt boven de kostprijs van",
+   "Priis komt boppe de kostpriis fan"
+  ],
+  [
+   "Geen acties gepland",
+   "Gjin aksjes pland"
+  ],
+  [
+   "De Marstek blijft zelf regelen",
+   "De Marstek bliuwt sels regelje"
+  ],
+  [
+   "Weer zelf regelen (anti-feed)",
+   "Wer sels regelje (anti-feed)"
+  ],
+  [
+   "Prijs onder de grens",
+   "Priis ûnder de grins"
+  ],
+  [
+   "Laden op vol vermogen",
+   "Lade op fol fermogen"
+  ],
+  [
+   "Niets te laden",
+   "Neat te laden"
+  ],
+  [
+   "Niet actief",
+   "Net aktyf"
+  ],
+  [
+   "Wacht op een negatief uur",
+   "Wachtet op in negatyf oere"
+  ],
+  [
+   "Prijs niet onder",
+   "Priis net ûnder"
+  ],
+  [
+   "Prijs onbekend",
+   "Priis ûnbekend"
+  ],
+  [
+   "Niet ingesteld",
+   "Net ynsteld"
+  ],
+  [
+   "Kies de entiteit voor het maximale ontlaadvermogen",
+   "Kies de entiteit foar it maksimale ûntladefermogen"
+  ],
+  [
+   "Kies de entiteit voor het ontlaadvermogen",
+   "Kies de entiteit foar it ûntladefermogen"
+  ],
+  [
+   "Geen bijgeladen voorraad",
+   "Gjin byladen foarried"
+  ],
+  [
+   "Niets om vast te houden",
+   "Neat om fêst te hâlden"
+  ],
+  [
+   "De Marstek regelt zelf",
+   "De Marstek regelet sels"
+  ],
+  [
+   "Bijgeladen voorraad",
+   "Byladen foarried"
+  ],
+  [
+   "kostprijs €",
+   "kostpriis €"
+  ],
+  [
+   "Tot de prijs boven",
+   "Oant de priis boppe"
+  ],
+  [
+   " komt",
+   " komt"
+  ],
+  [
+   "Prijs onder kostprijs",
+   "Priis ûnder kostpriis"
+  ],
+  [
+   "Prijs niet onder kostprijs",
+   "Priis net ûnder kostpriis"
+  ],
+  [
+   "Ontladen geblokkeerd",
+   "Ûntlade blokkearre"
+  ],
+  [
+   "Ontladen vrij",
+   "Ûntlade frij"
+  ],
+  [
+   "De voorraad wordt met winst gebruikt",
+   "It foarried wurdt mei winst brûkt"
+  ],
+  [
+   "Voorraad bewaakt",
+   "Foarried bewekke"
+  ],
+  [
+   "alleen boven",
+   "allinnich boppe"
+  ],
+  [
+   "Geen voorraad",
+   "Gjin foarried"
+  ],
+  [
+   "Nu niets te bewaken",
+   "No neat te bewekjen"
+  ],
+  [
+   "Ontladen boven kostprijs",
+   "Ûntlade boppe kostpriis"
+  ],
+  [
+   "Vasthouden geldt altijd",
+   "Fêsthâlde jildt altyd"
+  ],
+  [
+   "Verkopen boven kostprijs",
+   "Ferkeapje boppe kostpriis"
+  ],
+  [
+   "Nooit onder de kostprijs",
+   "Nea ûnder de kostpriis"
+  ],
+  [
+   "Onder de kostprijs",
+   "Ûnder de kostpriis"
+  ],
+  [
+   "Voorraad kost",
+   "Foarried kostet"
+  ],
+  [
+   "Tegengehouden door geen verlies",
+   "Tsjinholden troch gjin ferlies"
+  ],
+  [
+   "Verkopen ingesteld",
+   "Ferkeapje ynsteld"
+  ],
+  [
+   "Staat uit",
+   "Stiet út"
+  ],
+  [
+   "Bijladen",
+   "Bylade"
+  ],
+  [
+   "Vasthouden",
+   "Fêsthâlde"
+  ],
+  [
+   "Negatieve prijs",
+   "Negative priis"
+  ],
+  [
+   "Geen verlies",
+   "Gjin ferlies"
+  ],
+  [
+   "verkopen voor",
+   "ferkeapje foar"
+  ],
+  [
+   "terugladen kost",
+   "weromlade kostet"
+  ],
+  [
+   "Terugladen vanaf",
+   "Weromlade fan"
+  ],
+  [
+   "terugladen vanaf",
+   "weromlade fan"
+  ],
+  [
+   "Nog ",
+   "Noch "
+  ],
+  [
+   "nodig",
+   "nedich"
+  ],
+  [
+   "hoogste",
+   "heechste"
+  ],
+  [
+   "gemiddeld",
+   "gemiddeld"
+  ],
+  [
+   "gem.",
+   "gem."
+  ],
+  [
+   "voor ca.",
+   "foar ca."
+  ],
+  [
+   "op ca.",
+   "op ca."
+  ],
+  [
+   "Ca.",
+   "Ca."
+  ],
+  [
+   "boven reserve",
+   "boppe reserve"
+  ],
+  [
+   "boven",
+   "boppe"
+  ],
+  [
+   "Verkoop",
+   "Ferkeap"
+  ],
+  [
+   "Verkopen",
+   "Ferkeapje"
+  ],
+  [
+   "verkopen",
+   "ferkeapje"
+  ],
+  [
+   "bijladen",
+   "bylade"
+  ],
+  [
+   "Laden",
+   "Lade"
+  ],
+  [
+   "klaar om",
+   "klear om"
+  ],
+  [
+   "klaar",
+   "klear"
+  ],
+  [
+   "morgen ",
+   "moarn "
+  ],
+  [
+   "Tot ",
+   "Oant "
+  ],
+  [
+   "om ",
+   "om "
+  ],
+  [
+   " van ",
+   " fan "
+  ],
+  [
+   "Nu",
+   "No"
+  ],
+  [
+   "Geen",
+   "Gjin"
+  ]
+ ],
+ "pre": [
+  [
+   "Nog (\\S+) kWh nodig",
+   "\\1 kWh noch nedich"
+  ],
+  [
+   "(\\S+) kWh in (\\d+) van (\\d+) negatieve uren",
+   "\\1 kWh yn \\2 fan \\3 negative oeren"
+  ],
+  [
+   "inkopen voor (€ \\S+), later (€ \\S+) waard",
+   "ynkeapje foar \\1, letter \\2 wurdich"
+  ]
+ ],
+ "post": [
+  [
+   "(\\d+) uur\\b",
+   "\\1 oere"
+  ]
+ ],
+ "card": {
+  "Marstek Goedkoop Laden (opbrengst)": "Marstek Goedkeap Lade (opbringst)",
+  "Marstek Goedkoop Laden (schakelaars)": "Marstek Goedkeap Lade (skeakelers)",
+  "Marstek Goedkoop Laden": "Marstek Goedkeap Lade",
+  "Marstek Goedkoop Laden (compact)": "Marstek Goedkeap Lade (kompakt)",
+  "Staat uit": "Stiet út",
+  "Zet de schakelaar aan om dit te gebruiken": "Set de skeakeler oan om dit te brûken",
+  "Verwachte opbrengst van dit plan (schatting)": "Ferwachte opbringst fan dit plan (skatting)",
+  "totaal": "totaal",
+  "Vandaag": "Hjoed",
+  "week": "wike",
+  "verwacht": "ferwachte",
+  "Deze week": "Dizze wike",
+  "Vorige week": "Foarige wike",
+  "Opbrengst": "Opbringst",
+  "Deze maand": "Dizze moanne",
+  "Dit jaar": "Dit jier",
+  "Tegels": "Tegels",
+  "Regels per onderdeel van het plan": "Rigels per ûnderdiel fan it plan",
+  "Toelichting onder de kaart": "Taljochting ûnder de kaart",
+  "Titel": "Titel",
+  "maand": "moanne",
+  "Verwacht (plan)": "Ferwachte (plan)",
+  "niet gevonden.": "net fûn.",
+  "Entiteit": "Entiteit",
+  "Nog geen gegevens beschikbaar.": "Noch gjin gegevens beskikber.",
+  "Nog geen opbrengst beschikbaar.": "Noch gjin opbringst beskikber.",
+  "Nu": "No",
+  "aan": "oan",
+  "uit": "út",
+  "Aan": "Oan",
+  "Uit": "Út",
+  "Dat telt pas mee als het wordt gebruikt.": "Dat telt pas mei as it brûkt wurdt.",
+  "Er zit geen bijgeladen stroom meer in de accu.": "Der sit gjin byladen stroom mear yn de accu.",
+  "Tijdlijn en controles van het laadplan als stroomschema.": "Tiidline en kontrôles fan it laadplan as stroomskema.",
+  "Het stroomschema in een paar regels.": "It stroomskema yn in pear rigels.",
+  "Opbrengst van vandaag, deze week en het huidige plan.": "Opbringst fan hjoed, dizze wike en it hjoeddeistige plan.",
+  "De schakelaars voor bijladen, verkoop en negatieve prijs.": "De skeakelers foar bylade, ferkeap en negative priis.",
+  "Nog in de accu: {kwh} kWh bijgeladen stroom": "Noch yn de accu: {kwh} kWh byladen stroom",
+  " (kostprijs € {price} per kWh)": " (kostpriis € {price} per kWh)",
+  "Vandaag bijgeladen: {kwh} kWh voor € {cost}, waarvan {used} kWh gebruikt. ": "Hjoed byladen: {kwh} kWh foar € {cost}, wêrfan {used} kWh brûkt. ",
+  "Afschrijving van de accu is meegerekend: € {wear}. ": "Ôfskriuwing fan de accu is meirekkene: € {wear}. ",
+  "Afschrijving per kWh": "Ôfskriuwing per kWh",
+  "Bijgeladen voorraad, kostprijs, rendement en afschrijving.": "Byladen foarried, kostpriis, rendemint en ôfskriuwing.",
+  "Bijladen": "Bylade",
+  "Boven de kostprijs levert gebruiken of verkopen winst op, eronder verlies.": "Boppe de kostpriis jout brûke of ferkeapje winst, dêrûnder ferlies.",
+  "Capaciteit": "Kapasiteit",
+  "Geen plan": "Gjin plan",
+  "Geen prijzen beschikbaar.": "Gjin prizen beskikber.",
+  "Geen verlies": "Gjin ferlies",
+  "Gepland": "Pland",
+  "Hoogte (pixels)": "Hichte (piksels)",
+  "Klaar": "Klear",
+  "Kostprijs": "Kostpriis",
+  "Laadtoestand": "Laadnivo",
+  "Laadtoestand tonen": "Laadnivo sjen litte",
+  "Laden": "Lade",
+  "Marstek Goedkoop Laden (prijzen)": "Marstek Goedkeap Lade (prizen)",
+  "Marstek Goedkoop Laden (status)": "Marstek Goedkeap Lade (status)",
+  "Marstek Goedkoop Laden (voorraad)": "Marstek Goedkeap Lade (foarried)",
+  "Negatieve prijs": "Negative priis",
+  "Onbekend": "Ûnbekend",
+  "Onderdelen": "Ûnderdielen",
+  "Opbrengst tonen": "Opbringst sjen litte",
+  "Prijs nu": "Priis no",
+  "Prijs nu tonen": "Priis no sjen litte",
+  "Prijsgrafiek met de uren waarin wordt bijgeladen of verkocht.": "Priisgrafyk mei de oeren dêr't yn byladen of ferkocht wurdt.",
+  "Prijzen bij de staven tonen": "Prizen by de balken sjen litte",
+  "Prijzen per uur in € per kWh": "Prizen per oere yn € per kWh",
+  "Rendement": "Rendemint",
+  "Tijdlijn van vandaag tonen": "Tiidline fan hjoed sjen litte",
+  "Uren terug": "Oeren werom",
+  "Uren vooruit (0 = tot de laatste bekende prijs)": "Oeren foarút (0 = oant de lêste bekende priis)",
+  "Vasthouden": "Fêsthâlde",
+  "Verkoop": "Ferkeap",
+  "Vol": "Fol",
+  "Volgende stap": "Folgjende stap",
+  "Volgende stap tonen": "Folgjende stap sjen litte",
+  "Voorraad": "Foarried",
+  "Wat er nu gebeurt, de laadtoestand, de prijs en de volgende stap.": "Wat der no bart, it laadnivo, de priis en de folgjende stap."
+ }
+}

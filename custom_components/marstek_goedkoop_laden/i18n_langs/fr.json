@@ -1,0 +1,661 @@
+{
+ "phrases": [
+  [
+   "Geen laadmoment in de gepubliceerde prijzen (prijsverschil te klein, of morgen is nog niet bekend)",
+   "Aucun moment de charge dans les prix publiés (écart de prix trop faible, ou les prix de demain ne sont pas encore connus)"
+  ],
+  [
+   "Bijladen is klaar · de Marstek regelt weer zelf (anti-feed)",
+   "Charge terminée · la Marstek se régule de nouveau seule (anti-feed)"
+  ],
+  [
+   "Accu is vol · bijladen is niet nodig",
+   "Batterie pleine · charge inutile"
+  ],
+  [
+   " · het goedkope venster is te kort om vol te komen",
+   " · la fenêtre bon marché est trop courte pour remplir la batterie"
+  ],
+  [
+   "Prijsverschil te klein of morgen onbekend",
+   "Écart de prix trop faible ou prix de demain inconnus"
+  ],
+  [
+   "Geen prijzen of SoC beschikbaar",
+   "Prix ou SoC indisponibles"
+  ],
+  [
+   "Niet in de gepubliceerde prijzen",
+   "Absent des prix publiés"
+  ],
+  [
+   "Prijzen en SoC bekend",
+   "Prix et SoC connus"
+  ],
+  [
+   "Geen goedkoop venster",
+   "Pas de fenêtre bon marché"
+  ],
+  [
+   "Goedkoop venster",
+   "Fenêtre bon marché"
+  ],
+  [
+   "In dit goedkope venster",
+   "Dans cette fenêtre bon marché"
+  ],
+  [
+   "Bijladen is niet nodig",
+   "Charge inutile"
+  ],
+  [
+   "Wacht op gegevens",
+   "En attente de données"
+  ],
+  [
+   "Geen bijladen gepland",
+   "Aucune charge prévue"
+  ],
+  [
+   "Geen bijladen",
+   "Pas de charge"
+  ],
+  [
+   "Accu niet vol",
+   "Batterie pas pleine"
+  ],
+  [
+   "Accu is vol",
+   "Batterie pleine"
+  ],
+  [
+   "Laadbeurt gedaan",
+   "Charge effectuée"
+  ],
+  [
+   "Geen nieuwe start tot",
+   "Pas de nouveau départ avant"
+  ],
+  [
+   "Stopt bij deze stap",
+   "S'arrête à cette étape"
+  ],
+  [
+   "Klaar",
+   "Terminé"
+  ],
+  [
+   "Verkopen is niet ingesteld: kies de entiteit voor het ontlaadvermogen",
+   "La vente n'est pas configurée : choisissez l'entité de la puissance de décharge"
+  ],
+  [
+   "Geen verkoop: er is nog geen goedkoop laadvenster bekend",
+   "Pas de vente : aucune fenêtre de charge bon marché connue pour l'instant"
+  ],
+  [
+   "Geen verkoop: het goedkope laadvenster loopt",
+   "Pas de vente : la fenêtre de charge bon marché est en cours"
+  ],
+  [
+   "Geen verkoop: de opbrengst is te laag",
+   "Pas de vente : le revenu est trop faible"
+  ],
+  [
+   "Geen verkoop: geen overschot boven de reserve van",
+   "Pas de vente : pas de surplus au-dessus de la réserve de"
+  ],
+  [
+   "Nog geen goedkoop laadvenster",
+   "Pas encore de fenêtre de charge bon marché"
+  ],
+  [
+   "Wacht op laadvenster",
+   "En attente d'une fenêtre de charge"
+  ],
+  [
+   "Nog geen goedkoop laadvenster bekend",
+   "Aucune fenêtre de charge bon marché connue pour l'instant"
+  ],
+  [
+   "Zodra de prijzen van morgen bekend zijn",
+   "Dès que les prix de demain sont connus"
+  ],
+  [
+   "Na het laadvenster, als er overschot is",
+   "Après la fenêtre de charge, s'il y a un surplus"
+  ],
+  [
+   "Geen verkoop gepland",
+   "Aucune vente prévue"
+  ],
+  [
+   "Verkoopt vanaf",
+   "Vend à partir de"
+  ],
+  [
+   "Verkoopt zodra de SoC boven",
+   "Vend dès que le SoC dépasse"
+  ],
+  [
+   "vóór",
+   "avant"
+  ],
+  [
+   "Geen laadbeurt bekend",
+   "Aucune charge connue"
+  ],
+  [
+   "Laadvenster loopt nu",
+   "La fenêtre de charge est en cours"
+  ],
+  [
+   "Stroom is nu goedkoop",
+   "L'électricité est bon marché en ce moment"
+  ],
+  [
+   "Laadbeurt komt eraan",
+   "Une charge approche"
+  ],
+  [
+   "Opbrengst hoog genoeg",
+   "Revenu suffisant"
+  ],
+  [
+   "Opbrengst te laag",
+   "Revenu trop faible"
+  ],
+  [
+   "Overschot boven reserve",
+   "Surplus au-dessus de la réserve"
+  ],
+  [
+   "Geen overschot",
+   "Pas de surplus"
+  ],
+  [
+   "Geen verkoop",
+   "Pas de vente"
+  ],
+  [
+   "Geen uren",
+   "Aucune heure"
+  ],
+  [
+   "Reserve is",
+   "La réserve est"
+  ],
+  [
+   "Laden op vol vermogen (negatieve prijs)",
+   "Charge à pleine puissance (prix négatif)"
+  ],
+  [
+   "Negatieve prijs (",
+   "Prix négatif ("
+  ],
+  [
+   "dit uur wordt overgeslagen, andere uren leveren meer op",
+   "cette heure est ignorée, d'autres heures rapportent plus"
+  ],
+  [
+   "Beste uren eerst vol",
+   "Meilleures heures remplies d'abord"
+  ],
+  [
+   "Energie naar waarde per uur",
+   "Énergie répartie selon la valeur de chaque heure"
+  ],
+  [
+   "Een ander uur levert meer op",
+   "Une autre heure rapporte plus"
+  ],
+  [
+   "Negatief venster",
+   "Fenêtre négative"
+  ],
+  [
+   "Laden uitgesmeerd",
+   "Charge étalée"
+  ],
+  [
+   "Dit uur overslaan",
+   "Ignorer cette heure"
+  ],
+  [
+   "laden op ",
+   "charge à "
+  ],
+  [
+   "verwacht",
+   "attendu"
+  ],
+  [
+   "laden op vol vermogen",
+   "charge à pleine puissance"
+  ],
+  [
+   "Laden op vol vermogen",
+   "Charge à pleine puissance"
+  ],
+  [
+   "Bijladen uit het net",
+   "Charge depuis le réseau"
+  ],
+  [
+   "Verkopen aan het net",
+   "Vente au réseau"
+  ],
+  [
+   "Ontladen (handmatig)",
+   "Décharge (manuelle)"
+  ],
+  [
+   "Stilgezet (handmatig)",
+   "À l'arrêt (manuel)"
+  ],
+  [
+   "Marstek niet bereikbaar",
+   "Marstek injoignable"
+  ],
+  [
+   "Vasthouden: ontladen geblokkeerd",
+   "Maintien : décharge bloquée"
+  ],
+  [
+   "Zelf regelen (anti-feed)",
+   "Autorégulation (anti-feed)"
+  ],
+  [
+   "Wordt niet uitgevoerd: bijladen staat uit",
+   "Non exécuté : la charge est désactivée"
+  ],
+  [
+   "Wordt niet uitgevoerd: verkopen staat uit",
+   "Non exécuté : la vente est désactivée"
+  ],
+  [
+   "ontladen vrij",
+   "décharge autorisée"
+  ],
+  [
+   "Prijs komt boven de kostprijs van",
+   "Le prix repasse au-dessus du prix de revient de"
+  ],
+  [
+   "Geen acties gepland",
+   "Aucune action prévue"
+  ],
+  [
+   "De Marstek blijft zelf regelen",
+   "La Marstek continue de se réguler seule"
+  ],
+  [
+   "Weer zelf regelen (anti-feed)",
+   "Retour à l'autorégulation (anti-feed)"
+  ],
+  [
+   "Prijs onder de grens",
+   "Prix sous la limite"
+  ],
+  [
+   "Laden op vol vermogen",
+   "Charge à pleine puissance"
+  ],
+  [
+   "Niets te laden",
+   "Rien à charger"
+  ],
+  [
+   "Niet actief",
+   "Inactif"
+  ],
+  [
+   "Wacht op een negatief uur",
+   "En attente d'une heure négative"
+  ],
+  [
+   "Prijs niet onder",
+   "Prix non inférieur à"
+  ],
+  [
+   "Prijs onbekend",
+   "Prix inconnu"
+  ],
+  [
+   "Niet ingesteld",
+   "Non configuré"
+  ],
+  [
+   "Kies de entiteit voor het maximale ontlaadvermogen",
+   "Choisissez l'entité de la puissance de décharge maximale"
+  ],
+  [
+   "Kies de entiteit voor het ontlaadvermogen",
+   "Choisissez l'entité de la puissance de décharge"
+  ],
+  [
+   "Geen bijgeladen voorraad",
+   "Aucun stock chargé"
+  ],
+  [
+   "Niets om vast te houden",
+   "Rien à maintenir"
+  ],
+  [
+   "De Marstek regelt zelf",
+   "La Marstek se régule seule"
+  ],
+  [
+   "Bijgeladen voorraad",
+   "Stock chargé"
+  ],
+  [
+   "kostprijs €",
+   "prix de revient €"
+  ],
+  [
+   "Tot de prijs boven",
+   "Jusqu'à ce que le prix dépasse"
+  ],
+  [
+   " komt",
+   "."
+  ],
+  [
+   "Prijs onder kostprijs",
+   "Prix sous le prix de revient"
+  ],
+  [
+   "Prijs niet onder kostprijs",
+   "Prix non inférieur au prix de revient"
+  ],
+  [
+   "Ontladen geblokkeerd",
+   "Décharge bloquée"
+  ],
+  [
+   "Ontladen vrij",
+   "Décharge autorisée"
+  ],
+  [
+   "De voorraad wordt met winst gebruikt",
+   "Le stock est utilisé avec profit"
+  ],
+  [
+   "Voorraad bewaakt",
+   "Stock surveillé"
+  ],
+  [
+   "alleen boven",
+   "seulement au-dessus de"
+  ],
+  [
+   "Geen voorraad",
+   "Pas de stock"
+  ],
+  [
+   "Nu niets te bewaken",
+   "Rien à surveiller pour l'instant"
+  ],
+  [
+   "Ontladen boven kostprijs",
+   "Décharge au-dessus du prix de revient"
+  ],
+  [
+   "Vasthouden geldt altijd",
+   "Le maintien s'applique toujours"
+  ],
+  [
+   "Verkopen boven kostprijs",
+   "Vente au-dessus du prix de revient"
+  ],
+  [
+   "Nooit onder de kostprijs",
+   "Jamais sous le prix de revient"
+  ],
+  [
+   "Onder de kostprijs",
+   "Sous le prix de revient"
+  ],
+  [
+   "Voorraad kost",
+   "Le stock coûte"
+  ],
+  [
+   "Tegengehouden door geen verlies",
+   "Bloqué par Sans perte"
+  ],
+  [
+   "Verkopen ingesteld",
+   "Vente configurée"
+  ],
+  [
+   "Staat uit",
+   "Désactivé"
+  ],
+  [
+   "Bijladen",
+   "Charge"
+  ],
+  [
+   "Vasthouden",
+   "Maintien"
+  ],
+  [
+   "Negatieve prijs",
+   "Prix négatif"
+  ],
+  [
+   "Geen verlies",
+   "Sans perte"
+  ],
+  [
+   "verkopen voor",
+   "vendre pour"
+  ],
+  [
+   "terugladen kost",
+   "recharger coûte"
+  ],
+  [
+   "Terugladen vanaf",
+   "Recharge à partir de"
+  ],
+  [
+   "terugladen vanaf",
+   "recharge à partir de"
+  ],
+  [
+   "Nog ",
+   "Encore "
+  ],
+  [
+   "nodig",
+   "requis"
+  ],
+  [
+   "hoogste",
+   "plus haut"
+  ],
+  [
+   "gemiddeld",
+   "en moyenne"
+  ],
+  [
+   "gem.",
+   "moy."
+  ],
+  [
+   "voor ca.",
+   "pour env."
+  ],
+  [
+   "op ca.",
+   "à env."
+  ],
+  [
+   "Ca.",
+   "Env."
+  ],
+  [
+   "boven reserve",
+   "au-dessus de la réserve de"
+  ],
+  [
+   "boven",
+   "au-dessus de"
+  ],
+  [
+   "Verkoop",
+   "Vente"
+  ],
+  [
+   "Verkopen",
+   "Vente"
+  ],
+  [
+   "verkopen",
+   "vente"
+  ],
+  [
+   "bijladen",
+   "charge"
+  ],
+  [
+   "Laden",
+   "Charge"
+  ],
+  [
+   "klaar om",
+   "terminé à"
+  ],
+  [
+   "klaar",
+   "terminé"
+  ],
+  [
+   "morgen ",
+   "demain "
+  ],
+  [
+   "Tot ",
+   "Jusqu'à "
+  ],
+  [
+   "om ",
+   "à "
+  ],
+  [
+   " van ",
+   " sur "
+  ],
+  [
+   "Nu",
+   "Maintenant"
+  ],
+  [
+   "Geen",
+   "Pas de"
+  ]
+ ],
+ "pre": [
+  [
+   "Nog (\\S+) kWh nodig",
+   "Encore \\1 kWh nécessaires"
+  ],
+  [
+   "(\\S+) kWh in (\\d+) van (\\d+) negatieve uren",
+   "\\1 kWh dans \\2 des \\3 heures négatives"
+  ],
+  [
+   "inkopen voor (€ \\S+), later (€ \\S+) waard",
+   "achat pour \\1, vaut \\2 plus tard"
+  ]
+ ],
+ "post": [
+  [
+   "(\\d+) uur\\b",
+   "\\1 h"
+  ]
+ ],
+ "card": {
+  "Marstek Goedkoop Laden (opbrengst)": "Marstek Charge économique (gain)",
+  "Marstek Goedkoop Laden (schakelaars)": "Marstek Charge économique (interrupteurs)",
+  "Marstek Goedkoop Laden": "Marstek Charge économique",
+  "Marstek Goedkoop Laden (compact)": "Marstek Charge économique (compact)",
+  "Staat uit": "Désactivé",
+  "Zet de schakelaar aan om dit te gebruiken": "Activez l'interrupteur pour l'utiliser",
+  "Verwachte opbrengst van dit plan (schatting)": "Gain attendu de ce plan (estimation)",
+  "totaal": "total",
+  "Vandaag": "Aujourd'hui",
+  "week": "semaine",
+  "verwacht": "attendu",
+  "Deze week": "Cette semaine",
+  "Vorige week": "Semaine dernière",
+  "Opbrengst": "Gain",
+  "Deze maand": "Ce mois-ci",
+  "Dit jaar": "Cette année",
+  "Tegels": "Tuiles",
+  "Regels per onderdeel van het plan": "Lignes par partie du plan",
+  "Toelichting onder de kaart": "Note sous la carte",
+  "Titel": "Titre",
+  "maand": "mois",
+  "Verwacht (plan)": "Attendu (plan)",
+  "niet gevonden.": "introuvable.",
+  "Entiteit": "Entité",
+  "Nog geen gegevens beschikbaar.": "Aucune donnée disponible pour l'instant.",
+  "Nog geen opbrengst beschikbaar.": "Aucun gain disponible pour l'instant.",
+  "Nu": "Maintenant",
+  "aan": "activé",
+  "uit": "désactivé",
+  "Aan": "Activé",
+  "Uit": "Désactivé",
+  "Dat telt pas mee als het wordt gebruikt.": "Cela ne compte qu'une fois utilisé.",
+  "Er zit geen bijgeladen stroom meer in de accu.": "Il ne reste plus d'énergie chargée dans la batterie.",
+  "Tijdlijn en controles van het laadplan als stroomschema.": "Chronologie et contrôles du plan de charge sous forme de schéma de flux.",
+  "Het stroomschema in een paar regels.": "Le schéma de flux en quelques lignes.",
+  "Opbrengst van vandaag, deze week en het huidige plan.": "Gain d'aujourd'hui, de cette semaine et du plan actuel.",
+  "De schakelaars voor bijladen, verkoop en negatieve prijs.": "Les interrupteurs pour la charge, la vente et le prix négatif.",
+  "Nog in de accu: {kwh} kWh bijgeladen stroom": "Encore dans la batterie : {kwh} kWh d'énergie chargée",
+  " (kostprijs € {price} per kWh)": " (prix de revient € {price} par kWh)",
+  "Vandaag bijgeladen: {kwh} kWh voor € {cost}, waarvan {used} kWh gebruikt. ": "Chargé aujourd'hui : {kwh} kWh pour € {cost}, dont {used} kWh utilisés. ",
+  "Afschrijving van de accu is meegerekend: € {wear}. ": "L'amortissement de la batterie est inclus : € {wear}. ",
+  "Afschrijving per kWh": "Amortissement par kWh",
+  "Bijgeladen voorraad, kostprijs, rendement en afschrijving.": "Stock chargé, prix de revient, rendement et amortissement.",
+  "Bijladen": "Charge",
+  "Boven de kostprijs levert gebruiken of verkopen winst op, eronder verlies.": "Au-dessus du prix de revient, utiliser ou vendre rapporte ; en dessous, cela fait perdre de l'argent.",
+  "Capaciteit": "Capacité",
+  "Geen plan": "Pas de plan",
+  "Geen prijzen beschikbaar.": "Aucun prix disponible.",
+  "Geen verlies": "Sans perte",
+  "Gepland": "Planifié",
+  "Hoogte (pixels)": "Hauteur (pixels)",
+  "Klaar": "Terminé",
+  "Kostprijs": "Prix de revient",
+  "Laadtoestand": "Niveau de charge",
+  "Laadtoestand tonen": "Afficher le niveau de charge",
+  "Laden": "Charge",
+  "Marstek Goedkoop Laden (prijzen)": "Marstek Charge économique (prix)",
+  "Marstek Goedkoop Laden (status)": "Marstek Charge économique (état)",
+  "Marstek Goedkoop Laden (voorraad)": "Marstek Charge économique (stock)",
+  "Negatieve prijs": "Prix négatif",
+  "Onbekend": "Inconnu",
+  "Onderdelen": "Parties",
+  "Opbrengst tonen": "Afficher le gain",
+  "Prijs nu": "Prix actuel",
+  "Prijs nu tonen": "Afficher le prix actuel",
+  "Prijsgrafiek met de uren waarin wordt bijgeladen of verkocht.": "Graphique des prix avec les heures de charge ou de vente.",
+  "Prijzen bij de staven tonen": "Afficher les prix sur les barres",
+  "Prijzen per uur in € per kWh": "Prix par heure en € par kWh",
+  "Rendement": "Rendement",
+  "Tijdlijn van vandaag tonen": "Afficher la chronologie du jour",
+  "Uren terug": "Heures passées",
+  "Uren vooruit (0 = tot de laatste bekende prijs)": "Heures à venir (0 = jusqu'au dernier prix connu)",
+  "Vasthouden": "Maintien",
+  "Verkoop": "Vente",
+  "Vol": "Pleine",
+  "Volgende stap": "Étape suivante",
+  "Volgende stap tonen": "Afficher l'étape suivante",
+  "Voorraad": "Stock",
+  "Wat er nu gebeurt, de laadtoestand, de prijs en de volgende stap.": "Ce qui se passe maintenant, le niveau de charge, le prix et l'étape suivante."
+ }
+}

@@ -611,6 +611,17 @@ class SturingTest(unittest.TestCase):
         self.assertTrue(lanes["Bijladen"]["aan"])
         self.assertEqual(lanes["Bijladen"]["schakelaar"], "switch.prijssturing")
         self.assertEqual(lanes["Negatieve prijs"]["schakelaar"], "switch.negatieve_prijs")
+        self.assertEqual(
+            [lane["id"] for lane in flow["banen"]],
+            ["bijladen", "verkoop", "negatief", "vasthouden", "geen_verlies"],
+        )
+        overview = flow["overzicht"]
+        self.assertEqual(overview["status"], "gepland")
+        self.assertEqual(overview["soc"], 12)
+        self.assertIn("kostprijs", overview)
+        kinds = {row["soort"] for row in flow["prijzen"]}
+        self.assertIn("laden", kinds)
+        self.assertTrue(all(set(row) == {"start", "prijs", "soort"} for row in flow["prijzen"]))
         self.assertFalse(lanes["Verkoop"]["aan"])
         self.assertEqual(lanes["Verkoop"]["stappen"][-1]["soort"], "eind")
         self.assertEqual([s["soort"] for s in lanes["Negatieve prijs"]["stappen"]], ["stop", "eind"])

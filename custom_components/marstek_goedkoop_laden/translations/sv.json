@@ -1,0 +1,254 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Hur är din Marstek ansluten?",
+        "menu_options": {
+          "esphome": "LilyGO RS485 med ESPHome",
+          "modbus": "Modbus i Home Assistant (t.ex. Elfin EW11)",
+          "marstek_modbus": "Marstek Venus Modbus-integrationen (ViperRNMC)"
+        }
+      },
+      "esphome": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Välj prissensorn och Marsteks entiteter (LilyGO RS485). Det som känns igen är redan ifyllt.",
+        "data": {
+          "price_entity": "Prissensor",
+          "soc_entity": "Laddningsnivå (SoC)",
+          "control_mode_entity": "RS485 Control Mode",
+          "force_mode_entity": "Forcible charge/discharge",
+          "force_power_entity": "Forcible charge power",
+          "max_power_entity": "Maximal laddeffekt",
+          "capacity_entity": "Batterikapacitet (sensor)",
+          "charged_energy_entity": "Total laddad energi",
+          "discharged_energy_entity": "Total urladdad energi",
+          "force_discharge_power_entity": "Forcible discharge power",
+          "max_discharge_power_entity": "Maximal urladdningseffekt",
+          "min_soc_entity": "Urladdningsgräns (SoC)"
+        },
+        "data_description": {
+          "price_entity": "Sensor med de publicerade timpriserna i ett attribut, till exempel Zonneplans timprissensor.",
+          "control_mode_entity": "Huvudbrytare för tvångsstyrning: enable eller disable.",
+          "force_mode_entity": "Riktning vid tvångsstyrning: charge, discharge eller stop.",
+          "force_power_entity": "Sätts till den utjämnade effekten under laddningen.",
+          "max_power_entity": "Styr antalet laddtimmar och effektens övre gräns. Tomt = 2500 W.",
+          "capacity_entity": "Tomt = den fasta kapaciteten från inställningarna.",
+          "charged_energy_entity": "Tillsammans med den urladdade energin ger detta verkningsgraden. Tomt = fast verkningsgrad.",
+          "force_discharge_power_entity": "Behövs för försäljning. Tomt = försäljning är inte möjlig.",
+          "max_discharge_power_entity": "Övre gräns för säljeffekten. Tomt = 2500 W.",
+          "min_soc_entity": "Under denna SoC urladdar Marstek inte. Tomt = det fasta värdet från inställningarna."
+        }
+      },
+      "modbus": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Välj prissensorn och Marsteks Modbus-registersensorer (till exempel från MarstekVenus-ElfinEW11 eller, för en Venus E v3 via Ethernet, MarstekVenusV3-modbus-TCP-IP). Skrivning sker via den Modbus-hubb du anger här. Maximal effekt och kapacitet är valfria; med den maximala urladdningseffekten fungerar Spärr och Ingen förlust också.",
+        "data": {
+          "price_entity": "Prissensor",
+          "soc_entity": "Laddningsnivå (SoC)",
+          "control_mode_entity": "RS485-styrning (sensor, register 42000)",
+          "force_mode_entity": "Tvångsladda/urladda (sensor, register 42010)",
+          "force_power_entity": "Tvingad laddeffekt (sensor, register 42020)",
+          "max_power_entity": "Maximal laddeffekt",
+          "capacity_entity": "Batterikapacitet (sensor)",
+          "charged_energy_entity": "Total laddad energi",
+          "discharged_energy_entity": "Total urladdad energi",
+          "force_discharge_power_entity": "Tvingad urladdningseffekt (sensor, register 42021)",
+          "max_discharge_power_entity": "Maximal urladdningseffekt",
+          "min_soc_entity": "Urladdningsgräns (SoC)",
+          "modbus_hub": "Namn på Modbus-hubben",
+          "modbus_slave": "Modbus-slavadress"
+        },
+        "data_description": {
+          "price_entity": "Sensor med de publicerade timpriserna i ett attribut, till exempel Zonneplans timprissensor.",
+          "modbus_hub": "Namnet på hubben i din modbus:-konfiguration, till exempel MarstekVenus."
+        }
+      },
+      "marstek_modbus": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Välj prissensorn och entiteterna från integrationen Marstek Venus Modbus (ViperRNMC), som kan styra en Venus E v3 direkt via Ethernet. Aktivera först strömbrytaren för RS485-styrning och väljaren för tvångsläge i den integrationen: de är avstängda som standard.",
+        "data": {
+          "price_entity": "Prissensor",
+          "soc_entity": "Laddningsnivå (SoC)",
+          "control_mode_entity": "RS485-styrning (strömbrytare)",
+          "force_mode_entity": "Tvångsläge (väljare)",
+          "force_power_entity": "Tvingad laddeffekt",
+          "max_power_entity": "Maximal laddeffekt",
+          "capacity_entity": "Batterikapacitet (sensor)",
+          "charged_energy_entity": "Total laddad energi",
+          "discharged_energy_entity": "Total urladdad energi",
+          "force_discharge_power_entity": "Tvingad urladdningseffekt",
+          "max_discharge_power_entity": "Maximal urladdningseffekt"
+        },
+        "data_description": {
+          "price_entity": "Sensor med de publicerade timpriserna i ett attribut, till exempel Zonneplans timprissensor.",
+          "control_mode_entity": "Huvudbrytare för tvångsstyrning: enable eller disable.",
+          "force_mode_entity": "Riktning vid tvångsstyrning: charge, discharge eller stop.",
+          "force_power_entity": "Sätts till den utjämnade effekten under laddningen.",
+          "max_power_entity": "Styr antalet laddtimmar och effektens övre gräns. Tomt = 2500 W.",
+          "capacity_entity": "Tomt = den fasta kapaciteten från inställningarna.",
+          "charged_energy_entity": "Tillsammans med den urladdade energin ger detta verkningsgraden. Tomt = fast verkningsgrad.",
+          "force_discharge_power_entity": "Behövs för försäljning. Tomt = försäljning är inte möjlig.",
+          "max_discharge_power_entity": "Övre gräns för säljeffekten. Tomt = 2500 W."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Den här Marstek är redan konfigurerad."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Inställningar",
+        "description": "Ändra entiteterna eller beräkningsregeln. Integrationen laddas om efteråt.",
+        "data": {
+          "price_entity": "Prissensor",
+          "soc_entity": "Laddningsnivå (SoC)",
+          "control_mode_entity": "RS485 Control Mode",
+          "force_mode_entity": "Forcible charge/discharge",
+          "force_power_entity": "Forcible charge power",
+          "max_power_entity": "Maximal laddeffekt",
+          "capacity_entity": "Batterikapacitet (sensor)",
+          "charged_energy_entity": "Total laddad energi",
+          "discharged_energy_entity": "Total urladdad energi",
+          "price_attribute": "Attribut med priserna",
+          "capacity_kwh": "Batterikapacitet",
+          "default_efficiency": "Verkningsgrad när räknarna saknas",
+          "margin": "Minsta vinst per kWh",
+          "top_hours": "Antal dyraste timmar att jämföra med",
+          "lookahead_hours": "Antal timmar att se framåt",
+          "min_lookahead_hours": "Minsta antal kända timmar framåt",
+          "min_power": "Minsta laddeffekt",
+          "force_discharge_power_entity": "Forcible discharge power",
+          "max_discharge_power_entity": "Maximal urladdningseffekt",
+          "min_soc_entity": "Urladdningsgräns (SoC)",
+          "sell_margin": "Försäljning: minsta vinst per kWh",
+          "house_power": "Försäljning: genomsnittlig egen förbrukning",
+          "reserve_min_soc": "Försäljning: minsta reserv",
+          "min_soc": "Urladdningsgräns",
+          "sell_price_factor": "Försäljningspris: faktor",
+          "sell_price_offset": "Försäljningspris: avdrag",
+          "negative_price_limit": "Negativt pris: gräns",
+          "language": "Språk",
+          "battery_price": "Batteriets inköpspris",
+          "battery_cycles": "Batteriets livslängd (cykler)",
+          "modbus_hub": "Namn på Modbus-hubben",
+          "modbus_slave": "Modbus-slavadress",
+          "negative_strategy": "Negativt pris: fördelning av energin"
+        },
+        "data_description": {
+          "price_entity": "Sensor med de publicerade timpriserna i ett attribut, till exempel Zonneplans timprissensor.",
+          "control_mode_entity": "Huvudbrytare för tvångsstyrning: enable eller disable.",
+          "force_mode_entity": "Riktning vid tvångsstyrning: charge, discharge eller stop.",
+          "force_power_entity": "Sätts till den utjämnade effekten under laddningen.",
+          "max_power_entity": "Styr antalet laddtimmar och effektens övre gräns. Tomt = 2500 W.",
+          "capacity_entity": "Tomt = den fasta kapaciteten från inställningarna.",
+          "charged_energy_entity": "Tillsammans med den urladdade energin ger detta verkningsgraden. Tomt = fast verkningsgrad.",
+          "default_efficiency": "Verkningsgraden beräknas från Marsteks energiräknare (total urladdad delat med total laddad). Det fasta värdet gäller bara när räknarna inte är angivna eller saknar värde.",
+          "margin": "Efter avdrag för laddförlusten måste laddningen ge minst detta belopp.",
+          "top_hours": "En timme är billig nog när priset ligger under verkningsgraden gånger medelvärdet av dessa dyraste timmar efteråt, minus marginalen.",
+          "min_lookahead_hours": "Timmar med färre kända priser efter sig räknas inte med.",
+          "force_discharge_power_entity": "Behövs för försäljning. Tomt = försäljning är inte möjlig.",
+          "max_discharge_power_entity": "Övre gräns för säljeffekten. Tomt = 2500 W.",
+          "min_soc_entity": "Under denna SoC urladdar Marstek inte. Tomt = det fasta värdet från inställningarna.",
+          "sell_margin": "Försäljning sker bara när försäljningspriset överstiger kostnaden för att ladda om (laddpriset delat med verkningsgraden) plus detta belopp.",
+          "house_power": "Styr reserven: denna effekt gånger timmarna till nästa laddning blir kvar i batteriet.",
+          "reserve_min_soc": "Sälj aldrig under denna SoC.",
+          "min_soc": "Används bara när ingen entitet för urladdningsgränsen är angiven.",
+          "sell_price_factor": "Försäljningspris = timpris gånger denna faktor, minus avdraget. Med nettodebitering: 1 och 0. Utan, till exempel 0,826 och 0,108 för det rena marknadspriset.",
+          "negative_price_limit": "Under detta timpris laddar batteriet alltid med full effekt (när brytaren är på). Standard 0: bara vid ett verkligt negativt pris.",
+          "language": "Språk för plantext, flödesschema och kort. Automatiskt följer språket i Home Assistant.",
+          "battery_price": "Batteriets inköpspris i euro, för avskrivningen. 0 betyder att ingen avskrivning räknas med.",
+          "battery_cycles": "Antal fulla cykler som batteriet förväntas hålla. Avskrivning per kWh = pris ÷ (cykler × kapacitet).",
+          "negative_strategy": "Fördelat efter värde: mer under de mest negativa timmarna, lägre effekt. Maximal vinst: fyll de bästa timmarna först med full effekt."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "laadplan": {
+        "name": "Laddningsplan",
+        "state": {
+          "laden": "Laddar",
+          "gepland": "Planerad",
+          "klaar": "Klar",
+          "vol": "Batteriet fullt",
+          "geen": "Ingen laddtid",
+          "onbekend": "Okänd"
+        }
+      },
+      "laadvermogen": {
+        "name": "Planerad laddeffekt"
+      },
+      "bij_te_laden": {
+        "name": "Energi att ladda"
+      },
+      "start_bijladen": {
+        "name": "Laddstart"
+      },
+      "einde_bijladen": {
+        "name": "Laddslut"
+      },
+      "laadprijs": {
+        "name": "Genomsnittligt laddpris"
+      },
+      "verkoopplan": {
+        "name": "Säljplan",
+        "state": {
+          "verkopen": "Säljer",
+          "gepland": "Planerad",
+          "geen": "Ingen försäljning",
+          "onbekend": "Okänd"
+        }
+      },
+      "verwachte_opbrengst": {
+        "name": "Förväntad vinst"
+      },
+      "opbrengst_vandaag": {
+        "name": "Vinst idag"
+      },
+      "opbrengst_deze_week": {
+        "name": "Vinst denna vecka"
+      },
+      "rendement": {
+        "name": "Verkningsgrad"
+      },
+      "opbrengst_vorige_week": {
+        "name": "Vinst förra veckan"
+      },
+      "opbrengst_deze_maand": {
+        "name": "Vinst denna månad"
+      },
+      "opbrengst_dit_jaar": {
+        "name": "Vinst i år"
+      }
+    },
+    "switch": {
+      "prijssturing": {
+        "name": "Prisstyrning"
+      },
+      "verkoop": {
+        "name": "Försäljning"
+      },
+      "negatieve_prijs": {
+        "name": "Ladda vid negativt pris"
+      },
+      "vasthouden": {
+        "name": "Spärr under kostnadspris"
+      },
+      "geen_verlies": {
+        "name": "Ingen förlust"
+      }
+    }
+  },
+  "selector": {
+    "negative_strategy": {
+      "options": {
+        "value": "Fördela efter värde (lägre effekt)",
+        "max_gain": "Maximal vinst (bästa timmarna först)"
+      }
+    }
+  }
+}

@@ -1,0 +1,254 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Comment votre Marstek est-elle connectée ?",
+        "menu_options": {
+          "esphome": "LilyGO RS485 avec ESPHome",
+          "modbus": "Modbus dans Home Assistant (p. ex. Elfin EW11)",
+          "marstek_modbus": "Intégration Marstek Venus Modbus (ViperRNMC)"
+        }
+      },
+      "esphome": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Choisissez le capteur de prix et les entités de la Marstek (LilyGO RS485). Les entités reconnues sont déjà renseignées.",
+        "data": {
+          "price_entity": "Capteur de prix",
+          "soc_entity": "Niveau de charge (SoC)",
+          "control_mode_entity": "RS485 Control Mode",
+          "force_mode_entity": "Forcible charge/discharge",
+          "force_power_entity": "Forcible charge power",
+          "max_power_entity": "Puissance de charge maximale",
+          "capacity_entity": "Capacité de la batterie (capteur)",
+          "charged_energy_entity": "Énergie totale chargée",
+          "discharged_energy_entity": "Énergie totale déchargée",
+          "force_discharge_power_entity": "Forcible discharge power",
+          "max_discharge_power_entity": "Puissance de décharge maximale",
+          "min_soc_entity": "Seuil de décharge (SoC)"
+        },
+        "data_description": {
+          "price_entity": "Capteur dont un attribut contient les prix horaires publiés, par exemple le capteur de tarif horaire Zonneplan.",
+          "control_mode_entity": "Interrupteur principal du forçage : enable ou disable.",
+          "force_mode_entity": "Sens du forçage : charge, discharge ou stop.",
+          "force_power_entity": "Réglée sur la puissance étalée pendant la charge.",
+          "max_power_entity": "Détermine le nombre d'heures de charge et la limite haute de la puissance. Vide = 2500 W.",
+          "capacity_entity": "Vide = la capacité fixe des options.",
+          "charged_energy_entity": "Avec l'énergie déchargée, détermine le rendement. Vide = rendement fixe.",
+          "force_discharge_power_entity": "Nécessaire pour la vente. Vide = la vente est impossible.",
+          "max_discharge_power_entity": "Limite haute de la puissance de vente. Vide = 2500 W.",
+          "min_soc_entity": "La Marstek ne se décharge pas sous ce SoC. Vide = la valeur fixe des options."
+        }
+      },
+      "modbus": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Choisissez le capteur de prix et les capteurs de registres Modbus de la Marstek (par exemple ceux de MarstekVenus-ElfinEW11 ou, pour une Venus E v3 en Ethernet, de MarstekVenusV3-modbus-TCP-IP). L'écriture passe par le hub Modbus que vous indiquez ici. Puissance maximale et capacité sont facultatives ; avec la puissance de décharge maximale, Maintien et Sans perte fonctionnent aussi.",
+        "data": {
+          "price_entity": "Capteur de prix",
+          "soc_entity": "Niveau de charge (SoC)",
+          "control_mode_entity": "Pilotage RS485 (capteur, registre 42000)",
+          "force_mode_entity": "Mode de forçage charge/décharge (capteur, registre 42010)",
+          "force_power_entity": "Puissance de charge forcée (capteur, registre 42020)",
+          "max_power_entity": "Puissance de charge maximale",
+          "capacity_entity": "Capacité de la batterie (capteur)",
+          "charged_energy_entity": "Énergie totale chargée",
+          "discharged_energy_entity": "Énergie totale déchargée",
+          "force_discharge_power_entity": "Puissance de décharge forcée (capteur, registre 42021)",
+          "max_discharge_power_entity": "Puissance de décharge maximale",
+          "min_soc_entity": "Seuil de décharge (SoC)",
+          "modbus_hub": "Nom du hub Modbus",
+          "modbus_slave": "Adresse esclave Modbus"
+        },
+        "data_description": {
+          "price_entity": "Capteur dont un attribut contient les prix horaires publiés, par exemple le capteur de tarif horaire Zonneplan.",
+          "modbus_hub": "Le nom du hub dans votre configuration modbus:, par exemple MarstekVenus."
+        }
+      },
+      "marstek_modbus": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Choisissez le capteur de prix et les entités de l'intégration Marstek Venus Modbus (ViperRNMC), qui peut piloter une Venus E v3 directement en Ethernet. Dans cette intégration, activez d'abord l'interrupteur de pilotage RS485 et le select du mode de forçage : ils sont désactivés par défaut.",
+        "data": {
+          "price_entity": "Capteur de prix",
+          "soc_entity": "Niveau de charge (SoC)",
+          "control_mode_entity": "Pilotage RS485 (interrupteur)",
+          "force_mode_entity": "Mode de forçage (select)",
+          "force_power_entity": "Forcible charge power",
+          "max_power_entity": "Puissance de charge maximale",
+          "capacity_entity": "Capacité de la batterie (capteur)",
+          "charged_energy_entity": "Énergie totale chargée",
+          "discharged_energy_entity": "Énergie totale déchargée",
+          "force_discharge_power_entity": "Forcible discharge power",
+          "max_discharge_power_entity": "Puissance de décharge maximale"
+        },
+        "data_description": {
+          "price_entity": "Capteur dont un attribut contient les prix horaires publiés, par exemple le capteur de tarif horaire Zonneplan.",
+          "control_mode_entity": "Interrupteur principal du forçage : enable ou disable.",
+          "force_mode_entity": "Sens du forçage : charge, discharge ou stop.",
+          "force_power_entity": "Réglée sur la puissance étalée pendant la charge.",
+          "max_power_entity": "Détermine le nombre d'heures de charge et la limite haute de la puissance. Vide = 2500 W.",
+          "capacity_entity": "Vide = la capacité fixe des options.",
+          "charged_energy_entity": "Avec l'énergie déchargée, détermine le rendement. Vide = rendement fixe.",
+          "force_discharge_power_entity": "Nécessaire pour la vente. Vide = la vente est impossible.",
+          "max_discharge_power_entity": "Limite haute de la puissance de vente. Vide = 2500 W."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Cette Marstek est déjà configurée."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "description": "Modifiez les entités ou la règle de planification. L'intégration se recharge ensuite.",
+        "data": {
+          "price_entity": "Capteur de prix",
+          "soc_entity": "Niveau de charge (SoC)",
+          "control_mode_entity": "RS485 Control Mode",
+          "force_mode_entity": "Forcible charge/discharge",
+          "force_power_entity": "Forcible charge power",
+          "max_power_entity": "Puissance de charge maximale",
+          "capacity_entity": "Capacité de la batterie (capteur)",
+          "charged_energy_entity": "Énergie totale chargée",
+          "discharged_energy_entity": "Énergie totale déchargée",
+          "price_attribute": "Attribut contenant les prix",
+          "capacity_kwh": "Capacité de la batterie",
+          "default_efficiency": "Rendement en l'absence de compteurs",
+          "margin": "Gain minimal par kWh",
+          "top_hours": "Nombre d'heures les plus chères à comparer",
+          "lookahead_hours": "Heures à anticiper",
+          "min_lookahead_hours": "Minimum d'heures connues à l'avance",
+          "min_power": "Puissance de charge minimale",
+          "force_discharge_power_entity": "Forcible discharge power",
+          "max_discharge_power_entity": "Puissance de décharge maximale",
+          "min_soc_entity": "Seuil de décharge (SoC)",
+          "sell_margin": "Vente : gain minimal par kWh",
+          "house_power": "Vente : consommation propre moyenne",
+          "reserve_min_soc": "Vente : réserve minimale",
+          "min_soc": "Seuil de décharge",
+          "sell_price_factor": "Prix de vente : facteur",
+          "sell_price_offset": "Prix de vente : déduction",
+          "negative_price_limit": "Prix négatif : limite",
+          "language": "Langue",
+          "battery_price": "Prix d'achat de la batterie",
+          "battery_cycles": "Durée de vie de la batterie (cycles)",
+          "modbus_hub": "Nom du hub Modbus",
+          "modbus_slave": "Adresse esclave Modbus",
+          "negative_strategy": "Prix négatif : répartition de l'énergie"
+        },
+        "data_description": {
+          "price_entity": "Capteur dont un attribut contient les prix horaires publiés, par exemple le capteur de tarif horaire Zonneplan.",
+          "control_mode_entity": "Interrupteur principal du forçage : enable ou disable.",
+          "force_mode_entity": "Sens du forçage : charge, discharge ou stop.",
+          "force_power_entity": "Réglée sur la puissance étalée pendant la charge.",
+          "max_power_entity": "Détermine le nombre d'heures de charge et la limite haute de la puissance. Vide = 2500 W.",
+          "capacity_entity": "Vide = la capacité fixe des options.",
+          "charged_energy_entity": "Avec l'énergie déchargée, détermine le rendement. Vide = rendement fixe.",
+          "default_efficiency": "Le rendement est calculé à partir des compteurs d'énergie de la Marstek (total déchargé divisé par total chargé). Cette valeur fixe ne s'applique que si ces compteurs ne sont pas définis ou n'ont pas de valeur.",
+          "margin": "Après la perte de charge, la charge doit rapporter au moins ce montant.",
+          "top_hours": "Une heure est assez bon marché si son prix est inférieur au rendement multiplié par la moyenne de ces heures les plus chères qui suivent, moins la marge.",
+          "min_lookahead_hours": "Les heures ayant moins de prix connus après elles sont ignorées.",
+          "force_discharge_power_entity": "Nécessaire pour la vente. Vide = la vente est impossible.",
+          "max_discharge_power_entity": "Limite haute de la puissance de vente. Vide = 2500 W.",
+          "min_soc_entity": "La Marstek ne se décharge pas sous ce SoC. Vide = la valeur fixe des options.",
+          "sell_margin": "La vente n'a lieu que si le prix de vente dépasse le coût de la recharge (prix de charge divisé par le rendement) plus ce montant.",
+          "house_power": "Détermine la réserve : cette puissance multipliée par les heures jusqu'à la recharge reste dans la batterie.",
+          "reserve_min_soc": "Ne jamais vendre sous ce SoC.",
+          "min_soc": "Utilisé uniquement si aucune entité de seuil de décharge n'est définie.",
+          "sell_price_factor": "Prix de vente = prix horaire multiplié par ce facteur, moins la déduction. Avec compensation : 1 et 0. Sans, par exemple 0,826 et 0,108 pour le prix de marché brut.",
+          "negative_price_limit": "Sous ce prix horaire, la batterie charge toujours à pleine puissance (si l'interrupteur est activé). Par défaut 0 : seulement à un prix réellement négatif.",
+          "language": "Langue du texte du plan, du schéma de flux et des cartes. Automatique suit la langue de Home Assistant.",
+          "battery_price": "Prix d'achat de la batterie en euros, pour l'amortissement. 0 = aucun amortissement n'est compté.",
+          "battery_cycles": "Nombre de cycles complets que la batterie devrait durer. Amortissement par kWh = prix ÷ (cycles × capacité).",
+          "negative_strategy": "Répartie selon la valeur : plus dans les heures les plus négatives, puissance plus faible. Gain maximal : remplir d'abord les meilleures heures à pleine puissance."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "laadplan": {
+        "name": "Plan de charge",
+        "state": {
+          "laden": "En charge",
+          "gepland": "Planifié",
+          "klaar": "Terminé",
+          "vol": "Batterie pleine",
+          "geen": "Aucun moment de charge",
+          "onbekend": "Inconnu"
+        }
+      },
+      "laadvermogen": {
+        "name": "Puissance de charge prévue"
+      },
+      "bij_te_laden": {
+        "name": "Énergie à charger"
+      },
+      "start_bijladen": {
+        "name": "Début de charge"
+      },
+      "einde_bijladen": {
+        "name": "Fin de charge"
+      },
+      "laadprijs": {
+        "name": "Prix de charge moyen"
+      },
+      "verkoopplan": {
+        "name": "Plan de vente",
+        "state": {
+          "verkopen": "En vente",
+          "gepland": "Planifié",
+          "geen": "Pas de vente",
+          "onbekend": "Inconnu"
+        }
+      },
+      "verwachte_opbrengst": {
+        "name": "Gain attendu"
+      },
+      "opbrengst_vandaag": {
+        "name": "Gain aujourd'hui"
+      },
+      "opbrengst_deze_week": {
+        "name": "Gain cette semaine"
+      },
+      "rendement": {
+        "name": "Rendement"
+      },
+      "opbrengst_vorige_week": {
+        "name": "Gain la semaine dernière"
+      },
+      "opbrengst_deze_maand": {
+        "name": "Gain ce mois-ci"
+      },
+      "opbrengst_dit_jaar": {
+        "name": "Gain cette année"
+      }
+    },
+    "switch": {
+      "prijssturing": {
+        "name": "Pilotage par les prix"
+      },
+      "verkoop": {
+        "name": "Vente"
+      },
+      "negatieve_prijs": {
+        "name": "Charge à prix négatif"
+      },
+      "vasthouden": {
+        "name": "Maintien sous le prix de revient"
+      },
+      "geen_verlies": {
+        "name": "Sans perte"
+      }
+    }
+  },
+  "selector": {
+    "negative_strategy": {
+      "options": {
+        "value": "Répartie selon la valeur (puissance plus faible)",
+        "max_gain": "Gain maximal (meilleures heures d'abord)"
+      }
+    }
+  }
+}

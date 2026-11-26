@@ -4,6 +4,20 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.22.0 (2026-11-26)
+- **New: six more languages** besides Dutch and English: Frysk, Deutsch, Français, Español, Svenska and
+  Norsk (Bokmål). They cover the plan text, the flow chart, the cards, the Home Assistant screens and
+  entity names, and there is a README per language. The *Language* option lists them. The translations
+  were made with AI and have not been checked by native speakers: corrections are welcome.
+- **Behaviour change:** with *Language* on Automatic, Home Assistant in one of these languages now gets
+  texts in that language (before, anything but Dutch showed English). Other languages still get English.
+- **Cards:** three new optional cards, *status* (what is happening now, SoC, price, next step), *prices*
+  (price chart with the charge, sell and negative hours, no apexcharts needed) and *stock* (charged
+  stock, cost price, efficiency, depreciation). All seven cards can be set up in the card editor, find the
+  charge plan sensor themselves when `entity` is left out, and have options such as `lanes` and
+  `show_timeline`. The `stroomschema` attribute got `id` per part plus `overzicht` and `prijzen`; nothing
+  was removed.
+
 ## 1.21.0 (2026-11-26)
 - New option *Negative price: how to divide the energy*: *Spread by value* (default, unchanged) or
   *Maximum gain*, which fills the best negative hours first at full power. Nothing changes unless you
