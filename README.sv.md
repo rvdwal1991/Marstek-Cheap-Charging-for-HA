@@ -1,6 +1,6 @@
 <img src="custom_components/marstek_goedkoop_laden/brand/icon.png" width="96" align="right" alt="">
 
-# Marstek Goedkoop Laden för Home Assistant
+# Marstek Billig Laddning för Home Assistant
 
 [🇬🇧 English](README.md) · [🇳🇱 Nederlands](README.nl.md) · [🏳️ Frysk](README.fy.md) · [🇩🇪 Deutsch](README.de.md) · [🇫🇷 Français](README.fr.md) · [🇪🇸 Español](README.es.md) · 🇸🇪 Svenska · [🇳🇴 Norsk](README.nb.md)
 
