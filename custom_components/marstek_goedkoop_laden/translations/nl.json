@@ -156,11 +156,13 @@
             "name": "Zon",
             "data": {
               "use_solar_forecast": "Zonneverwachting gebruiken",
+              "solar_learn": "Betrouwbaarheid leren van de werkelijke opbrengst",
               "solar_reliability": "Betrouwbaarheid zonneverwachting",
               "house_power_entity": "Huisverbruiksensor"
             },
             "data_description": {
               "use_solar_forecast": "Houdt bij het bijladen 's nachts rekening met de verwachte zonne-opbrengst uit het Energie-dashboard, zodat er ruimte is voor de zon.",
+              "solar_learn": "Vergelijkt per dag de zonneverwachting met wat de panelen echt leverden (uit het Energie-dashboard) en gebruikt de mediaan van de laatste dagen als betrouwbaarheid zodra er minstens 3 dagen zijn. Tot dan geldt de betrouwbaarheid hieronder.",
               "solar_reliability": "Het deel van de verwachting waarop je rekent. Lager is voorzichtiger.",
               "house_power_entity": "Optioneel. Een vermogenssensor (W of kW) met het totale vermogen dat het huis verbruikt, zonder de accu. De integratie leert je gemiddelde verbruik per uur van de dag (werkdagen en weekend apart) en gebruikt dat voor het zonne-overschot in plaats van het vaste eigen verbruik."
             }

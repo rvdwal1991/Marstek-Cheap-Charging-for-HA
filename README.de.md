@@ -107,8 +107,13 @@ den erwarteten Solarertrag:
 1. Sie liest die Prognose aus dem **Energie-Dashboard** (*Einstellungen → Dashboards → Energie → Solarmodule →
    Solarproduktionsprognose*). Forecast.Solar, Solcast, Open-Meteo und andere Prognose-Integrationen
    funktionieren, ohne dass etwas Zusätzliches einzurichten ist. Ohne Prognose dort ändert sich nichts.
-2. Sie berechnet den erwarteten Überschuss: je Stunde die Prognose, multipliziert mit der Einstellung
-   für die Zuverlässigkeit (Standard 70 %), minus deinen Eigenverbrauch in dieser Stunde. Mit einem *Hausleistungssensor*
+2. Sie berechnet den erwarteten Überschuss: je Stunde die Prognose, multipliziert mit der Zuverlässigkeit,
+   minus deinen Eigenverbrauch in dieser Stunde. Prognosen sind oft zu optimistisch, besonders im Winter.
+   Ist *Zuverlässigkeit aus der tatsächlichen Erzeugung lernen* an, vergleicht die Integration die Prognose
+   jedes Tages mit dem, was die Module tatsächlich erzeugt haben (der Erzeugungszähler aus dem Energie-Dashboard),
+   und nutzt ab mindestens 3 Tagen den Median der letzten Tage als Zuverlässigkeit.
+   Bis dahin und bei ausgeschaltetem Lernen gilt die Einstellung *Zuverlässigkeit der Solarprognose* (Standard 70 %).
+   Dein Eigenverbrauch in dieser Stunde: Mit einem *Hausleistungssensor*
    lernt die Integration deinen durchschnittlichen Verbrauch je Stunde des Tages (Werktage und Wochenenden
    getrennt) und nutzt ihn, sodass ein Mittag, den das Haus selbst aufzehrt, keinen Überschuss lässt.
    Ohne den Sensor gilt der feste *Verkauf: durchschnittlicher Eigenverbrauch*.
@@ -247,6 +252,7 @@ Die Integration liest die Preise aus einem Attribut eines Sensors (Standard `for
 | Negativer Preis | Negativer Preis: Grenze | € 0,00 | Unter diesem Stundenpreis lädt der Akku. |
 | Negativer Preis | Negativer Preis: Aufteilung der Energie | Nach Wert | Nach Wert verteilen (geringere Leistung) oder Maximaler Ertrag (beste Stunden zuerst). |
 | Solar | Solarprognose verwenden | An | Berücksichtigt beim nächtlichen Laden den erwarteten Solarertrag aus dem Energie-Dashboard. |
+| Solar | Zuverlässigkeit aus der tatsächlichen Erzeugung lernen | An | Vergleicht die Solarprognose jedes Tages mit dem, was die Module tatsächlich erzeugt haben, und nutzt den Median der letzten Tage als Zuverlässigkeit (ab 3 Tagen). |
 | Solar | Zuverlässigkeit der Solarprognose | 70 % | Der Teil der Prognose, auf den gezählt wird. Niedriger ist vorsichtiger. |
 | Solar | Hausleistungssensor | keiner | Optionaler Sensor mit der Leistung, die das ganze Haus verbraucht (W oder kW), ohne den Akku. Eine Wallbox verfälscht den Durchschnitt, lass sie daher nach Möglichkeit weg. |
 | Verkauf | Verkauf: Mindestgewinn pro kWh | € 0,10 | Was das Verkaufen nach dem Wiederaufladen mindestens einbringen muss. |

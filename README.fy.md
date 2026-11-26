@@ -105,8 +105,13 @@ mear útmakket no't de salderingsregeling (*salderingsregeling*) ophâldt. Dus s
 de ferwachte sinne-opbringst:
 
 1. Hy lêst de prognose út it **Enerzjydashboerd** (*Ynstellingen → Dashboerden → Enerzjy → Sinnepanielen → Prognose sinneproduksje*). Forecast.Solar, Solcast, Open-Meteo en oare prognoseyntegraasjes wurkje, sûnder dat der wat ekstra ynsteld hoecht te wurden. Sûnder in prognose dêr feroaret der neat.
-2. Hy rekkenet it ferwachte oerskot út: per oere de prognose, kear de ynstelling foar
-   betrouberens (standert 70 %), minus dyn eigen ferbrûk yn dat oere. Mei in *Sensor foar húsfermogen*
+2. Hy rekkenet it ferwachte oerskot út: per oere de prognose, kear de betrouberens,
+   minus dyn eigen ferbrûk yn dat oere. Prognoses binne faak te rooskleurich, benammen yn de winter.
+   Mei *Betrouberens leare fan de werklike produksje* oan fergeliket de yntegraasje de prognose fan elke dei
+   mei wat de panielen werklik produsearre hawwe (de produksjeteller út it Enerzjydashboerd) en
+   brûkt de mediaan fan de lêste dagen as betrouberens, sadree't er teminsten 3 dagen hat.
+   Oant dan, en as it leare út stiet, jildt de ynstelling *Betrouberens fan de sinneprognose* (standert 70 %).
+   Dyn eigen ferbrûk yn dat oere: mei in *Sensor foar húsfermogen*
    leart de yntegraasje dyn gemiddelde ferbrûk per oere fan de dei (wurkdagen en wykein
    apart) en brûkt dat, sadat in middei dat it hûs sels opfrettet gjin oerskot oerlit.
    Sûnder de sensor wurdt it fêste *Ferkeapje: gemiddeld eigen ferbrûk* brûkt.
@@ -246,6 +251,7 @@ De yntegraasje lêst de prizen út in attribút fan ien sensor (standert `foreca
 | Negative priis | Negative priis: grins | € 0,00 | Ûnder dizze oerepriis laadt de batterij. |
 | Negative priis | Negative priis: ferdieling fan de enerzjy | Nei wearde | Nei wearde (leger fermogen) of maksimale opbringst (bêste oeren earst). |
 | Sinne | Sinneprognose brûke | Oan | Hâldt by it laden yn de nacht rekken mei de ferwachte sinne-opbringst út it Enerzjydashboerd. |
+| Sinne | Betrouberens leare fan de werklike produksje | Oan | Fergelykje de sinneprognose fan elke dei mei wat de panielen werklik produsearre hawwe en brûk de mediaan fan de lêste dagen as betrouberens (fan 3 dagen ôf). |
 | Sinne | Betrouberens fan de sinneprognose | 70 % | It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger. |
 | Sinne | Sensor foar húsfermogen | gjin | Opsjonele sensor mei it fermogen dat it hiele hûs brûkt (W of kW), sûnder de batterij. In laadpeal ferfoarmet it gemiddelde, lit dy dus fuort as it kin. |
 | Ferkeap | Ferkeapje: minimale winst per kWh | € 0,10 | Wat ferkeapje nei weromlade minstens opbringe moat. |

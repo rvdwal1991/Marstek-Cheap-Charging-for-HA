@@ -109,11 +109,16 @@ mira el rendimiento solar esperado:
 1. Lee la previsión del **panel de Energía** (*Ajustes → Paneles → Energía → Paneles solares →
    Previsión de producción solar*). Funcionan Forecast.Solar, Solcast, Open-Meteo y otras
    integraciones de previsión, sin nada más que configurar. Sin previsión allí, no cambia nada.
-2. Calcula el excedente esperado: por hora la previsión, multiplicada por el ajuste de
-   fiabilidad (por defecto 70 %), menos tu consumo propio en esa hora. Con un *Sensor de
-   potencia de la casa* la integración aprende tu consumo medio por hora del día (días
-   laborables y fines de semana por separado) y usa ese valor, de modo que un mediodía que la
-   propia casa se come no deja excedente. Sin el sensor se usa el valor fijo de *Venta:
+2. Calcula el excedente esperado: por hora la previsión, multiplicada por la fiabilidad, menos
+   tu consumo propio en esa hora. Las previsiones suelen ser demasiado optimistas, sobre todo en
+   invierno. Con *Aprender la fiabilidad a partir de la producción real* activado, la
+   integración compara la previsión de cada día con lo que los paneles produjeron realmente (el
+   contador de producción del panel de Energía) y usa la mediana de los últimos días como
+   fiabilidad, a partir de 3 días. Hasta entonces, y con el aprendizaje desactivado, se aplica el
+   ajuste *Fiabilidad de la previsión solar* (por defecto 70 %). Tu consumo propio en esa hora:
+   con un *Sensor de potencia de la casa* la integración aprende tu consumo medio por hora del
+   día (días laborables y fines de semana por separado) y usa ese valor, de modo que un mediodía
+   que la propia casa se come no deja excedente. Sin el sensor se usa el valor fijo de *Venta:
    consumo propio medio*.
 3. Por la noche carga solo lo justo para que quede espacio para ese excedente cuando salga el
    sol: lo que gasta tu consumo propio hasta entonces, más lo que aún hace falta. En un día
@@ -256,6 +261,7 @@ La integración lee los precios de un atributo de un sensor (por defecto `foreca
 | Precio negativo | Precio negativo: límite | € 0,00 | Por debajo de este precio horario la batería carga. |
 | Precio negativo | Precio negativo: cómo repartir la energía | Por valor | Repartir por valor (menor potencia) o beneficio máximo (mejores horas primero). |
 | Solar | Usar la previsión solar | Activado | Tener en cuenta el rendimiento solar esperado del panel de Energía al cargar por la noche. |
+| Solar | Aprender la fiabilidad a partir de la producción real | Activado | Compara la previsión solar de cada día con lo que los paneles produjeron realmente y usa la mediana de los últimos días como fiabilidad (a partir de 3 días). |
 | Solar | Fiabilidad de la previsión solar | 70 % | La parte de la previsión con la que contar. Más baja es más prudente. |
 | Solar | Sensor de potencia de la casa | ninguno | Sensor opcional con la potencia que consume toda la casa (W o kW), sin la batería. Un cargador de coche distorsiona la media, así que déjalo fuera si puedes. |
 | Venta | Venta: beneficio mínimo por kWh | € 0,10 | Lo mínimo que debe rendir vender tras recargar. |

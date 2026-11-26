@@ -156,11 +156,13 @@
             "name": "Solaire",
             "data": {
               "use_solar_forecast": "Utiliser la prévision solaire",
+              "solar_learn": "Apprendre la fiabilité à partir de la production réelle",
               "solar_reliability": "Fiabilité de la prévision solaire",
               "house_power_entity": "Capteur de puissance de la maison"
             },
             "data_description": {
               "use_solar_forecast": "Prend en compte la production solaire attendue du tableau de bord Énergie lors de la charge de nuit, afin de laisser de la place au soleil.",
+              "solar_learn": "Compare la prévision solaire de chaque jour à ce que les panneaux ont réellement produit (d'après le tableau de bord Énergie) et utilise la médiane des derniers jours comme fiabilité dès qu'il y a au moins 3 jours. D'ici là, la fiabilité ci-dessous est utilisée.",
               "solar_reliability": "La part de la prévision sur laquelle compter. Plus bas = plus prudent.",
               "house_power_entity": "Facultatif. Un capteur de puissance (W ou kW) avec la puissance totale utilisée par la maison, sans la batterie. L'intégration apprend votre consommation moyenne par heure de la journée (jours de semaine et week-ends séparément) et l'utilise pour le surplus solaire à la place de la consommation propre fixe."
             }

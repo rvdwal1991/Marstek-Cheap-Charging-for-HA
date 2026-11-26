@@ -352,7 +352,7 @@ class ZonneverwachtingTest(unittest.TestCase):
         async def get_manager(hass):
             calls["n"] += 1
             return types.SimpleNamespace(data={"energy_sources": [
-                {"type": "solar", "config_entry_solar_forecast": ["entry1"]},
+                {"type": "solar", "config_entry_solar_forecast": ["entry1"], "stat_energy_from": "sensor.zon_totaal"},
                 {"type": "grid"},
             ]})
 
@@ -416,6 +416,27 @@ class ZonneverwachtingTest(unittest.TestCase):
         # Zonder sensor geen profiel: dan geldt het vaste eigen verbruik.
         hass2, plain = make(12)
         self.assertEqual(plain.params.house_profile, ())
+
+    def test_betrouwbaarheid_wordt_geleerd_en_valt_terug_op_de_instelling(self):
+        hass, coordinator = make(12, dict(CONF, solar_reliability=70))
+        self.assertAlmostEqual(coordinator.solar_factor, 0.7)  # nog niets geleerd
+        coordinator.calibration.ratios = [0.4, 0.5, 0.3]
+        self.assertAlmostEqual(coordinator.solar_factor, 0.4)  # mediaan
+        self.assertAlmostEqual(coordinator.params.solar_factor, 0.4)
+        hass2, off = make(12, dict(CONF, solar_reliability=70, solar_learn=False))
+        off.calibration.ratios = [0.4, 0.5, 0.3]
+        self.assertAlmostEqual(off.solar_factor, 0.7)  # leren staat uit
+
+    def test_productieteller_wordt_gelezen(self):
+        hass, coordinator = make(12)
+        coordinator._solar_counters = ("sensor.zon_totaal",)
+        hass.values["sensor.zon_totaal"] = _State("5983691", {"unit_of_measurement": "Wh"})
+        at("2026-11-12T00:30:00")
+        coordinator._sample_production()
+        self.assertEqual(coordinator.calibration._start, 5983.691)  # Wh omgerekend naar kWh
+        hass.values["sensor.zon_totaal"] = _State("unavailable")
+        coordinator._sample_production()  # ontbrekende teller: niets doen
+        self.assertEqual(coordinator.calibration._last, 5983.691)
 
     def test_lege_verwachting_wordt_snel_opnieuw_geprobeerd(self):
         at("2026-11-10T19:40:00")

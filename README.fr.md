@@ -113,12 +113,17 @@ presque rien, ce qui compte davantage maintenant que la compensation (*saldering
    Énergie → Panneaux solaires → Prévision de production solaire*). Forecast.Solar, Solcast,
    Open-Meteo et d'autres intégrations de prévision fonctionnent, sans rien de plus à configurer.
    Sans prévision à cet endroit, rien ne change.
-2. Elle calcule le surplus attendu : par heure, la prévision multipliée par le réglage de
-   fiabilité (par défaut 70 %), moins votre propre consommation pendant cette heure. Avec un
-   *Capteur de puissance de la maison*, l'intégration apprend votre consommation moyenne par heure
-   de la journée (jours de semaine et week-ends séparément) et l'utilise, de sorte qu'un midi que
-   la maison consomme elle-même ne laisse aucun surplus. Sans le capteur, la
-   *Vente : consommation propre moyenne* fixe est utilisée.
+2. Elle calcule le surplus attendu : par heure, la prévision multipliée par la fiabilité, moins
+   votre propre consommation pendant cette heure. Les prévisions sont souvent trop optimistes,
+   surtout en hiver. Avec *Apprendre la fiabilité à partir de la production réelle* activé,
+   l'intégration compare la prévision de chaque jour à ce que les panneaux ont réellement produit
+   (le compteur de production du tableau de bord Énergie) et utilise la médiane des derniers jours
+   comme fiabilité, dès qu'elle dispose d'au moins 3 jours. D'ici là, et quand l'apprentissage est
+   désactivé, le réglage *Fiabilité de la prévision solaire* (par défaut 70 %) s'applique. Pour la
+   consommation propre pendant cette heure : avec un *Capteur de puissance de la maison*,
+   l'intégration apprend votre consommation moyenne par heure de la journée (jours de semaine et
+   week-ends séparément) et l'utilise, de sorte qu'un midi que la maison consomme elle-même ne
+   laisse aucun surplus. Sans le capteur, la *Vente : consommation propre moyenne* fixe est utilisée.
 3. Elle ne charge la nuit que ce qu'il faut pour qu'il reste de la place pour ce surplus au lever
    du soleil : ce que votre propre consommation aura utilisé d'ici là, plus ce qui est encore
    nécessaire. Par une journée ensoleillée, cela peut représenter quelques kWh au lieu d'une
@@ -260,6 +265,7 @@ L'intégration lit les prix dans un attribut d'un capteur (par défaut `forecast
 | Prix négatif | Prix négatif : limite | € 0,00 | Sous ce prix horaire, la batterie charge. |
 | Prix négatif | Prix négatif : répartition de l'énergie | Selon la valeur | Selon la valeur (puissance plus faible) ou gain maximal (meilleures heures d'abord). |
 | Solaire | Utiliser la prévision solaire | Activé | Tient compte de la production solaire attendue du tableau de bord Énergie lors de la charge de nuit. |
+| Solaire | Apprendre la fiabilité à partir de la production réelle | Activé | Compare la prévision solaire de chaque jour à ce que les panneaux ont réellement produit et utilise la médiane des derniers jours comme fiabilité (à partir de 3 jours). |
 | Solaire | Fiabilité de la prévision solaire | 70 % | La part de la prévision sur laquelle compter. Plus bas = plus prudent. |
 | Solaire | Capteur de puissance de la maison | aucun | Capteur facultatif de la puissance utilisée par toute la maison (W ou kW), sans la batterie. Une borne de recharge de véhicule fausse la moyenne, laissez-la donc de côté si possible. |
 | Vente | Vente : gain minimal par kWh | € 0,10 | Ce que la vente doit rapporter au minimum après la recharge. |

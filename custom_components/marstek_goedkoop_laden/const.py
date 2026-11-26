@@ -66,6 +66,7 @@ CONF_BATTERY_PRICE = "battery_price"
 CONF_USE_SOLAR = "use_solar_forecast"
 CONF_HOUSE_ENTITY = "house_power_entity"
 CONF_SOLAR_RELIABILITY = "solar_reliability"
+CONF_SOLAR_LEARN = "solar_learn"
 CONF_BATTERY_CYCLES = "battery_cycles"
 
 DEFAULT_PRICE_ATTRIBUTE = "forecast"
@@ -88,6 +89,7 @@ DEFAULT_NEGATIVE_STRATEGY = "value"
 DEFAULT_LANGUAGE = "auto"
 DEFAULT_BATTERY_PRICE = 0.0
 DEFAULT_USE_SOLAR = True
+DEFAULT_SOLAR_LEARN = True
 DEFAULT_SOLAR_RELIABILITY = 70  # procent van de verwachting waarop we rekenen
 DEFAULT_BATTERY_CYCLES = 6000
 

@@ -109,7 +109,12 @@ zonne-opbrengst:
    verwachtingsintegraties werken, zonder iets extra in te stellen. Staat daar geen verwachting,
    dan verandert er niets.
 2. Hij rekent het verwachte overschot uit: per uur de verwachting, vermenigvuldigd met de
-   betrouwbaarheid (standaard 70 %), min je eigen verbruik in dat uur. Met een *Huisverbruiksensor*
+   betrouwbaarheid, min je eigen verbruik in dat uur. Verwachtingen zijn vaak te rooskleurig,
+   zeker in de winter. Staat *Betrouwbaarheid leren van de werkelijke opbrengst* aan, dan vergelijkt
+   de integratie per dag de verwachting met wat de panelen echt leverden (de opbrengstteller uit het
+   Energie-dashboard) en gebruikt de mediaan van de laatste dagen als betrouwbaarheid, zodra er
+   minstens 3 dagen zijn. Tot dan, en als leren uit staat, geldt de instelling *Betrouwbaarheid
+   zonneverwachting* (standaard 70 %). Je eigen verbruik in dat uur: Met een *Huisverbruiksensor*
    leert de integratie je gemiddelde verbruik per uur van de dag (werkdagen en weekend apart) en
    gebruikt dat, zodat een middag die het huis zelf opmaakt geen overschot oplevert. Zonder de
    sensor geldt het vaste *Verkoop: gemiddeld eigen verbruik*.
@@ -249,6 +254,7 @@ De integratie leest de prijzen uit een attribuut van één sensor (standaard `fo
 | Negatieve prijs | Negatieve prijs: grens | € 0,00 | Onder deze uurprijs laadt de accu. |
 | Negatieve prijs | Negatieve prijs: verdeling van de energie | Naar waarde | Naar waarde (lager vermogen) of maximale opbrengst (beste uren eerst). |
 | Zon | Zonneverwachting gebruiken | Aan | Houd bij het bijladen 's nachts rekening met de verwachte zonne-opbrengst uit het Energie-dashboard. |
+| Zon | Betrouwbaarheid leren van de werkelijke opbrengst | Aan | Vergelijk per dag de zonneverwachting met wat de panelen echt leverden en gebruik de mediaan van de laatste dagen als betrouwbaarheid (vanaf 3 dagen). |
 | Zon | Betrouwbaarheid zonneverwachting | 70 % | Het deel van de verwachting waarop je rekent. Lager is voorzichtiger. |
 | Zon | Huisverbruiksensor | geen | Optionele sensor met het vermogen dat het hele huis verbruikt (W of kW), zonder de accu. Een laadpaal vertekent het gemiddelde, laat die er dus zo mogelijk buiten. |
 | Verkoop | Verkoop: minimale winst per kWh | € 0,10 | Wat verkopen na terugladen minstens moet opleveren. |

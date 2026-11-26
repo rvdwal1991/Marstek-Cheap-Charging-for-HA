@@ -42,6 +42,11 @@ async def async_get_config_entry_diagnostics(
             "uren": len(coordinator._solar_hours),
             "totaal_kwh": round(sum(wh for _, wh in coordinator._solar_hours) / 1000.0, 1),
             "gebruikt_overschot_kwh": plan.solar_kwh,
+            "betrouwbaarheid": coordinator.solar_factor,
+            "geleerd": coordinator.calibration.factor(),
+            "dagen_geleerd": len(coordinator.calibration.ratios),
+            "verhoudingen": coordinator.calibration.ratios,
+            "teller": list(coordinator._solar_counters),
         },
         "huisverbruik": {
             "sensor": coordinator.conf.get("house_power_entity"),

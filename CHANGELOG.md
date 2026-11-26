@@ -4,6 +4,19 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.26.0 (2026-11-26)
+- **New: the solar forecast reliability is learned.** Forecasts are often too rosy, especially in winter
+  (on one roof the panels delivered about 40 % of the forecast). The integration now compares each
+  day's forecast with what the panels really produced (the production counter of the solar source in
+  the Energy dashboard) and uses the median of the last days as the reliability, from 3 completed days
+  on. Until then, and when you turn *Learn the reliability from the actual production* off, the
+  *Solar forecast reliability* setting applies. It needs Home Assistant to run through midnight, so a
+  day with a restart in the early morning does not count. The result is in the diagnostics under
+  `zonneverwachting`.
+- **Behaviour change** (only with a solar forecast in the Energy dashboard): the night charge can
+  differ from before once enough days are learned, usually charging more because the learned
+  reliability is lower than the 70 % default.
+
 ## 1.25.1 (2026-11-26)
 - **Prices card for phones and touch:** tap or drag over the chart to pick an hour, the price, the time
   and what happens in that hour appear above the chart (it shows the current hour by default). The

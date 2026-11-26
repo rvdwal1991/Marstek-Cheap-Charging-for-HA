@@ -108,7 +108,12 @@ det förväntade solutbytet:
    Solpaneler → Prognos för solproduktion*). Forecast.Solar, Solcast, Open-Meteo och andra
    prognosintegrationer fungerar, utan något extra att ställa in. Utan en prognos där ändras ingenting.
 2. Den räknar ut det förväntade överskottet: per timme prognosen, multiplicerad med
-   tillförlitlighetsinställningen (standard 70 %), minus din egen förbrukning under den timmen. Med en
+   tillförlitligheten, minus din egen förbrukning under den timmen. Prognoser är ofta för
+   rosiga, särskilt på vintern. Med *Lär in tillförlitligheten från den faktiska produktionen* på
+   jämför integrationen varje dags prognos med vad panelerna verkligen producerade (produktionsräknaren
+   från Energipanelen) och använder medianen av de senaste dagarna som tillförlitlighet, när det finns
+   minst 3 dagar. Tills dess, och när inlärningen är avstängd, gäller inställningen
+   *Solprognosens tillförlitlighet* (standard 70 %). Din egen förbrukning under den timmen: Med en
    *Huseffektsensor* lär sig integrationen din genomsnittliga förbrukning per timme på dygnet (vardagar
    och helger separat) och använder den, så en middag som huset äter upp själv lämnar inget överskott.
    Utan sensorn används den fasta *Försäljning: genomsnittlig egen förbrukning*.
@@ -247,6 +252,7 @@ Integrationen läser priserna från ett attribut på en sensor (standard `foreca
 | Negativt pris | Negativt pris: gräns | € 0,00 | Under detta timpris laddar batteriet. |
 | Negativt pris | Negativt pris: fördelning av energin | Efter värde | Efter värde (lägre effekt) eller maximal vinst (bästa timmarna först). |
 | Sol | Använd solprognosen | På | Ta hänsyn till det förväntade solutbytet från Energipanelen vid nattladdning. |
+| Sol | Lär in tillförlitligheten från den faktiska produktionen | På | Jämför varje dags solprognos med vad panelerna verkligen producerade och använd medianen av de senaste dagarna som tillförlitlighet (från 3 dagar). |
 | Sol | Solprognosens tillförlitlighet | 70 % | Den del av prognosen som man räknar med. Lägre är försiktigare. |
 | Sol | Huseffektsensor | ingen | Valfri sensor med den effekt som hela huset använder (W eller kW), utan batteriet. En elbilsladdare snedvrider genomsnittet, så lämna den utanför om du kan. |
 | Försäljning | Försäljning: minsta vinst per kWh | € 0,10 | Vad försäljningen minst måste ge efter omladdning. |

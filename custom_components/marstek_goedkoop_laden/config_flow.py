@@ -41,8 +41,10 @@ from .const import (
     CONF_BATTERY_CYCLES,
     CONF_BATTERY_PRICE,
     CONF_HOUSE_ENTITY,
+    CONF_SOLAR_LEARN,
     CONF_SOLAR_RELIABILITY,
     CONF_USE_SOLAR,
+    DEFAULT_SOLAR_LEARN,
     DEFAULT_SOLAR_RELIABILITY,
     DEFAULT_USE_SOLAR,
     CONF_LANGUAGE,
@@ -207,6 +209,7 @@ def _param_schema(current: dict[str, Any]) -> dict[Any, Any]:
             selector.EntitySelectorConfig(domain="sensor", device_class="power")
         ),
         vol.Required(CONF_USE_SOLAR, default=default(CONF_USE_SOLAR, DEFAULT_USE_SOLAR)): selector.BooleanSelector(),
+        vol.Required(CONF_SOLAR_LEARN, default=default(CONF_SOLAR_LEARN, DEFAULT_SOLAR_LEARN)): selector.BooleanSelector(),
         vol.Required(CONF_SOLAR_RELIABILITY, default=default(CONF_SOLAR_RELIABILITY, DEFAULT_SOLAR_RELIABILITY)): _number(10, 100, 5, "%"),
         vol.Required(CONF_MARGIN, default=default(CONF_MARGIN, DEFAULT_MARGIN)): _number(0, 0.5, 0.005, "€/kWh"),
         vol.Required(CONF_TOP_HOURS, default=default(CONF_TOP_HOURS, DEFAULT_TOP_HOURS)): _number(1, 24, 1),
@@ -236,7 +239,7 @@ SECTIONS: tuple[tuple[str, tuple[str, ...], bool], ...] = (
     ("battery", (CONF_CAPACITY_KWH, CONF_DEFAULT_EFFICIENCY, CONF_BATTERY_PRICE, CONF_BATTERY_CYCLES, CONF_MIN_SOC), False),
     ("charging", (CONF_MARGIN, CONF_MIN_POWER, CONF_PRICE_ATTRIBUTE, CONF_TOP_HOURS, CONF_LOOKAHEAD_HOURS, CONF_MIN_LOOKAHEAD_HOURS), False),
     ("negative", (CONF_NEGATIVE_PRICE_LIMIT, CONF_NEGATIVE_STRATEGY), False),
-    ("solar", (CONF_USE_SOLAR, CONF_SOLAR_RELIABILITY, CONF_HOUSE_ENTITY), False),
+    ("solar", (CONF_USE_SOLAR, CONF_SOLAR_LEARN, CONF_SOLAR_RELIABILITY, CONF_HOUSE_ENTITY), False),
     ("selling", (CONF_SELL_MARGIN, CONF_HOUSE_POWER, CONF_RESERVE_MIN_SOC, CONF_SELL_PRICE_FACTOR, CONF_SELL_PRICE_OFFSET), True),
 )
 

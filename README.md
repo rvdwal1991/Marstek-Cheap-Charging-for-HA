@@ -107,8 +107,13 @@ the expected solar yield:
 1. It reads the forecast from the **Energy dashboard** (*Settings → Dashboards → Energy → Solar
    panels → Solar production forecast*). Forecast.Solar, Solcast, Open-Meteo and other forecast
    integrations work, with nothing extra to set up. Without a forecast there, nothing changes.
-2. It works out the expected surplus: per hour the forecast, multiplied by the reliability
-   setting (default 70 %), minus your own consumption in that hour. With a *House power sensor*
+2. It works out the expected surplus: per hour the forecast, multiplied by the reliability,
+   minus your own consumption in that hour. Forecasts are often too rosy, especially in winter.
+   With *Learn the reliability from the actual production* on, the integration compares each day's
+   forecast with what the panels really produced (the production counter from the Energy
+   dashboard) and uses the median of the last days as the reliability, once it has at least 3 days.
+   Until then, and when learning is off, the *Solar forecast reliability* setting (default 70 %)
+   applies. Your own consumption in that hour: With a *House power sensor*
    the integration learns your average consumption per hour of the day (weekdays and weekends
    separately) and uses that, so a midday that the house eats up itself leaves no surplus.
    Without the sensor the fixed *Selling: average own consumption* is used.
@@ -248,6 +253,7 @@ The integration reads the prices from an attribute of one sensor (default `forec
 | Negative price | Negative price: limit | €0.00 | Below this hourly price the battery charges. |
 | Negative price | Negative price: how to divide the energy | By value | By value (lower power) or maximum gain (best hours first). |
 | Solar | Use the solar forecast | On | Take the expected solar yield from the Energy dashboard into account when charging at night. |
+| Solar | Learn the reliability from the actual production | On | Compare each day's solar forecast with what the panels really produced and use the median of the last days as the reliability (from 3 days on). |
 | Solar | Solar forecast reliability | 70 % | The part of the forecast to count on. Lower is more careful. |
 | Solar | House power sensor | none | Optional sensor with the power the whole house uses (W or kW), without the battery. A car charger skews the average, so leave it out if you can. |
 | Selling | Selling: minimum gain per kWh | €0.10 | What selling must earn at least after recharging. |

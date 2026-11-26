@@ -156,11 +156,13 @@
             "name": "Sol",
             "data": {
               "use_solar_forecast": "Använd solprognosen",
+              "solar_learn": "Lär in tillförlitligheten från den faktiska produktionen",
               "solar_reliability": "Solprognosens tillförlitlighet",
               "house_power_entity": "Huseffektsensor"
             },
             "data_description": {
               "use_solar_forecast": "Tar hänsyn till det förväntade solutbytet från Energipanelen vid nattladdning, så att det finns plats för solen.",
+              "solar_learn": "Jämför varje dags solprognos med vad panelerna verkligen producerade (från Energipanelen) och använder medianen av de senaste dagarna som tillförlitlighet när det finns minst 3 dagar. Tills dess används tillförlitligheten nedan.",
               "solar_reliability": "Den del av prognosen som man räknar med. Lägre är försiktigare.",
               "house_power_entity": "Valfri. En effektsensor (W eller kW) med den totala effekt som huset använder, utan batteriet. Integrationen lär sig din genomsnittliga förbrukning per timme på dygnet (vardagar och helger separat) och använder den för solöverskottet i stället för den fasta egna förbrukningen."
             }

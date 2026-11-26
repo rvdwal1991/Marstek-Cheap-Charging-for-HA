@@ -156,11 +156,13 @@
             "name": "Solar",
             "data": {
               "use_solar_forecast": "Solarprognose verwenden",
+              "solar_learn": "Zuverlässigkeit aus der tatsächlichen Erzeugung lernen",
               "solar_reliability": "Zuverlässigkeit der Solarprognose",
               "house_power_entity": "Hausleistungssensor"
             },
             "data_description": {
               "use_solar_forecast": "Berücksichtigt beim nächtlichen Laden den erwarteten Solarertrag aus dem Energie-Dashboard, damit Platz für die Sonne bleibt.",
+              "solar_learn": "Vergleicht die Solarprognose jedes Tages mit dem, was die Module tatsächlich erzeugt haben (aus dem Energie-Dashboard), und nutzt ab mindestens 3 Tagen den Median der letzten Tage als Zuverlässigkeit. Bis dahin gilt die Zuverlässigkeit darunter.",
               "solar_reliability": "Der Teil der Prognose, auf den gezählt wird. Niedriger ist vorsichtiger.",
               "house_power_entity": "Optional. Ein Leistungssensor (W oder kW) mit der gesamten Leistung, die das Haus verbraucht, ohne den Akku. Die Integration lernt deinen durchschnittlichen Verbrauch je Tageszeit-Stunde (Werktage und Wochenenden getrennt) und nutzt ihn für den Solarüberschuss anstelle des festen Eigenverbrauchs."
             }

@@ -156,11 +156,13 @@
             "name": "Sol",
             "data": {
               "use_solar_forecast": "Bruk solprognosen",
+              "solar_learn": "Lær påliteligheten fra faktisk produksjon",
               "solar_reliability": "Pålitelighet for solprognosen",
               "house_power_entity": "Husforbruk-sensor"
             },
             "data_description": {
               "use_solar_forecast": "Tar hensyn til forventet solproduksjon fra Energi-dashbordet ved lading om natten, slik at det er plass til solen.",
+              "solar_learn": "Sammenligner hver dags solprognose med det panelene faktisk produserte (fra Energi-dashbordet) og bruker medianen av de siste dagene som pålitelighet når det finnes minst 3 dager. Fram til da brukes påliteligheten under.",
               "solar_reliability": "Den delen av prognosen det skal regnes med. Lavere er mer forsiktig.",
               "house_power_entity": "Valgfritt. En effektsensor (W eller kW) med den totale effekten huset bruker, uten batteriet. Integrasjonen lærer ditt gjennomsnittlige forbruk per time på døgnet (hverdager og helger hver for seg) og bruker det til solcelleoverskuddet i stedet for det faste egne forbruket."
             }

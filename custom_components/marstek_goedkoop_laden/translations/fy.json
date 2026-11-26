@@ -156,11 +156,13 @@
             "name": "Sinne",
             "data": {
               "use_solar_forecast": "Sinneprognose brûke",
+              "solar_learn": "Betrouberens leare fan de werklike produksje",
               "solar_reliability": "Betrouberens fan de sinneprognose",
               "house_power_entity": "Sensor foar húsfermogen"
             },
             "data_description": {
               "use_solar_forecast": "Hâldt by it laden yn de nacht rekken mei de ferwachte sinne-opbringst út it Enerzjydashboerd, sadat der romte is foar de sinne.",
+              "solar_learn": "Fergeliket de sinneprognose fan elke dei mei wat de panielen werklik produsearre hawwe (út it Enerzjydashboerd) en brûkt de mediaan fan de lêste dagen as betrouberens as der teminsten 3 dagen binne. Oant dan wurdt de betrouberens hjirûnder brûkt.",
               "solar_reliability": "It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger.",
               "house_power_entity": "Opsjoneel. In fermogenssensor (W of kW) mei it totale fermogen dat it hûs brûkt, sûnder de batterij. De yntegraasje leart dyn gemiddelde ferbrûk per oere fan de dei (wurkdagen en wykein apart) en brûkt dat foar it sinne-oerskot yn plak fan it fêste eigen ferbrûk."
             }

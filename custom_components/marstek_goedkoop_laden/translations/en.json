@@ -156,11 +156,13 @@
             "name": "Solar",
             "data": {
               "use_solar_forecast": "Use the solar forecast",
+              "solar_learn": "Learn the reliability from the actual production",
               "solar_reliability": "Solar forecast reliability",
               "house_power_entity": "House power sensor"
             },
             "data_description": {
               "use_solar_forecast": "Takes the expected solar yield from the Energy dashboard into account when charging at night, so there is room for the sun.",
+              "solar_learn": "Compares each day's solar forecast with what the panels really produced (from the Energy dashboard) and uses the median of the last days as the reliability once there are at least 3 days. Until then the reliability below is used.",
               "solar_reliability": "The part of the forecast to count on. Lower is more careful.",
               "house_power_entity": "Optional. A power sensor (W or kW) with the total power the house uses, without the battery. The integration learns your average consumption per hour of the day (weekdays and weekends separately) and uses it for the solar surplus instead of the fixed own consumption."
             }

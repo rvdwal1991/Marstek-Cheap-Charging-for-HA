@@ -107,8 +107,13 @@ forventet solproduksjon:
 1. Den leser prognosen fra **Energi-dashbordet** (*Innstillinger → Dashbord → Energi → Solcellepaneler →
    Prognose for solproduksjon*). Forecast.Solar, Solcast, Open-Meteo og andre prognoseintegrasjoner
    fungerer, uten at noe ekstra må settes opp. Uten en prognose der endrer ingenting seg.
-2. Den regner ut forventet overskudd: per time prognosen, multiplisert med innstillingen for
-   pålitelighet (standard 70 %), minus ditt eget forbruk i den timen. Med en *Husforbruk-sensor*
+2. Den regner ut forventet overskudd: per time prognosen, multiplisert med påliteligheten,
+   minus ditt eget forbruk i den timen. Prognoser er ofte for rosenrøde, særlig om vinteren.
+   Med *Lær påliteligheten fra faktisk produksjon* på sammenligner integrasjonen hver dags
+   prognose med det panelene faktisk produserte (produksjonstelleren fra Energi-dashbordet)
+   og bruker medianen av de siste dagene som pålitelighet, så snart den har minst 3 dager.
+   Fram til da, og når læring er av, gjelder innstillingen *Pålitelighet for solprognosen*
+   (standard 70 %). Ditt eget forbruk i den timen: med en *Husforbruk-sensor*
    lærer integrasjonen ditt gjennomsnittlige forbruk per time på døgnet (hverdager og helger
    hver for seg) og bruker det, slik at en middag som huset selv spiser opp ikke gir noe overskudd.
    Uten sensoren brukes det faste *Salg: gjennomsnittlig eget forbruk*.
@@ -247,6 +252,7 @@ Integrasjonen leser prisene fra et attributt på én sensor (standard `forecast`
 | Negativ pris | Negativ pris: grense | € 0,00 | Under denne timeprisen lader batteriet. |
 | Negativ pris | Negativ pris: hvordan energien fordeles | Etter verdi | Etter verdi (lavere effekt) eller maksimal gevinst (beste timer først). |
 | Sol | Bruk solprognosen | På | Ta hensyn til forventet solproduksjon fra Energi-dashbordet ved lading om natten. |
+| Sol | Lær påliteligheten fra faktisk produksjon | På | Sammenlign hver dags solprognose med det panelene faktisk produserte og bruk medianen av de siste dagene som pålitelighet (fra 3 dager). |
 | Sol | Pålitelighet for solprognosen | 70 % | Den delen av prognosen det skal regnes med. Lavere er mer forsiktig. |
 | Sol | Husforbruk-sensor | ingen | Valgfri sensor med effekten hele huset bruker (W eller kW), uten batteriet. En billader skjever gjennomsnittet, så utelat den hvis du kan. |
 | Salg | Salg: minste gevinst per kWh | € 0,10 | Hva salg minst må gi etter gjenlading. |
