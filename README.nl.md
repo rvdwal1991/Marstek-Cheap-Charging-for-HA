@@ -95,10 +95,26 @@ Voorbeeld (10 november 2026, accu op 12 %): goedkoop venster 23:00–07:00, bijl
 
 ## Laden bij een negatieve prijs
 
-Is de uurprijs negatief, dan laadt de accu altijd op vol vermogen tot hij vol is, los van het
-laadplan en ook als de prijssturing uit staat. Dit heeft een eigen schakelaar die **standaard
-aan** staat. Zodra de prijs weer positief is of de accu vol is, gaat de Marstek terug naar
-anti-feed.
+Is de uurprijs negatief, dan laadt de accu uit het net, los van het laadplan en ook als de
+prijssturing uit staat. Dit heeft een eigen schakelaar die **standaard aan** staat.
+
+Er wordt gekeken naar het hele **venster** met opeenvolgende negatieve uren, niet alleen naar het
+huidige uur, en daar wordt het meeste uit gehaald:
+
+1. Hij rekent uit hoeveel de accu nog kan opnemen (SoC tot 100 %).
+2. Hij kiest de uren met de **laagste prijs**, zo weinig als nodig om die energie op het maximale
+   vermogen kwijt te kunnen. Voorbeeld: drie negatieve uren van −€ 0,03, −€ 0,20 en −€ 0,12 en nog
+   3 kWh te laden: het uur van −€ 0,03 wordt overgeslagen en de andere twee worden gebruikt, omdat
+   die het meeste opleveren.
+3. In de gekozen uren wordt de energie **gelijkmatig uitgesmeerd**, zodat het vermogen zo laag
+   mogelijk blijft in plaats van kort op vol vermogen te laden. Kan de accu meer opnemen dan het
+   venster biedt, dan worden alle negatieve uren gebruikt.
+4. De planregel en het stroomschema tonen het venster, de gekozen uren, het vermogen en de
+   verwachte opbrengst (wat je krijgt om te laden).
+
+Zodra de prijs weer positief is of de accu vol is, gaat de Marstek terug naar anti-feed. Het plan
+wordt elke minuut opnieuw berekend; een gekozen uur blijft gekozen als een ander uur maar een
+fractie van een cent beter is.
 
 De grens is instelbaar (*Negatieve prijs: grens*, standaard € 0,00). Er wordt gekeken naar de
 prijs uit de prijssensor, bij Zonneplan dus de prijs inclusief belastingen.

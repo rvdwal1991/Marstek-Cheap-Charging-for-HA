@@ -527,6 +527,39 @@ class SturingTest(unittest.TestCase):
         self.assertFalse(coordinator.negative_active)
         self.assertEqual(hass.get("select.rs485"), "disable")
 
+    def test_negatief_venster_slaat_duurste_uur_over_en_smeert_uit(self):
+        # 13:00 -0,03, 14:00 -0,20, 15:00 -0,12; accu op 40 %.
+        hass, coordinator = make(40)
+        forecast = [dict(row) for row in FORECAST]
+        for row in forecast:
+            for hour, euro in (("13", -0.03), ("14", -0.20), ("15", -0.12)):
+                if row["start_date"].startswith(f"2026-11-11T{hour}:00"):
+                    row["price_tax_included"] = {"amount": round(euro * 1e7)}
+        hass.values["sensor.prijs"] = _State("0", {"forecast": forecast})
+        hass.set("number.laadvermogen", 1200)
+
+        # Eerste uur levert het minst op: niet laden.
+        at("2026-11-11T13:10:00")
+        run(coordinator.async_refresh())
+        self.assertFalse(coordinator.negative_active)
+        self.assertEqual(hass.calls, [])
+        self.assertEqual(hass.get("select.rs485"), "disable")
+
+        # Tweede uur: laden, uitgesmeerd over dit en het volgende uur.
+        at("2026-11-11T14:00:30")
+        run(coordinator.async_refresh())
+        self.assertTrue(coordinator.negative_active)
+        power = hass.calls[0][1]
+        self.assertEqual(hass.calls[0][0], "number.laadvermogen")
+        self.assertTrue(1500 <= power < 2500)
+        self.assertEqual(hass.get("select.rs485"), "enable")
+        self.assertIn("2 van 2 negatieve uren", coordinator.data.text)
+
+        # Voorbij het venster: vrijgeven.
+        at("2026-11-11T16:00:30")
+        run(coordinator.async_refresh())
+        self.assertEqual(hass.get("select.rs485"), "disable")
+
     def test_negatieve_prijs_voorbij_geeft_vrij(self):
         at("2026-11-11T13:10:00")
         hass, coordinator = make(40)

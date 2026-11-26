@@ -96,10 +96,25 @@ Example (10 November 2026, battery at 12 %): cheap window 23:00–07:00, chargin
 
 ## Charging at a negative price
 
-If the hourly price is negative, the battery always charges at full power until it is full,
-regardless of the charge plan and even when price control is off. This has its own switch,
-**on by default**. As soon as the price turns positive again or the battery is full, the
-Marstek goes back to anti-feed.
+If the hourly price is negative, the battery charges from the grid, regardless of the charge plan
+and even when price control is off. This has its own switch, **on by default**.
+
+It looks at the whole **window** of consecutive negative hours, not just the current hour, and
+makes the most of it:
+
+1. It works out how much the battery can still take (SoC to 100 %).
+2. It picks the hours with the **lowest price**, as few as needed to fit that energy at the
+   maximum power. Example: three negative hours at −€0.03, −€0.20 and −€0.12 and 3 kWh still to
+   charge: the −€0.03 hour is skipped and the other two are used, because they earn the most.
+3. In the chosen hours the energy is **spread out evenly**, so the power stays as low as possible
+   instead of charging at full power for a short while. If the battery can take more than the
+   window offers, all negative hours are used.
+4. The plan text and the flow chart show the window, the chosen hours, the power and the expected
+   gain (what you are paid to charge).
+
+As soon as the price turns positive again or the battery is full, the Marstek goes back to
+anti-feed. The plan is recalculated every minute; an hour that was chosen stays chosen when another
+hour is only a fraction of a cent better.
 
 The limit is adjustable (*Negative price: limit*, default €0.00). The price is taken from the
 price sensor, so with Zonneplan that is the price including taxes.

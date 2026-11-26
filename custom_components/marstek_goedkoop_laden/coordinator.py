@@ -95,10 +95,13 @@ from .i18n import tr
 from .ledger import Ledger
 from .planner import (
     FULL_SOC,
+    NEGATIVE_CHARGING,
+    NEGATIVE_WAITING,
     SELL_SELLING,
     STATUS_CHARGING,
     Plan,
     PlanMemory,
+    NegativePlan,
     PlanParams,
     PriceSlot,
     SellParams,
@@ -107,6 +110,7 @@ from .planner import (
     compute_plan,
     compute_sell_plan,
     negative_price_slot,
+    plan_negative,
     step,
 )
 
@@ -188,6 +192,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         # Laden op vol vermogen bij een negatieve prijs: staat standaard aan.
         self.negative_enabled = True
         self.negative_active = False
+        self.negative_plan: NegativePlan | None = None
+        self._negative_hours: tuple[datetime, ...] = ()
         # Waar als de integratie zelf zo'n laadbeurt heeft gestart.
         self._negative_charging = False
         # Waar als de integratie zelf een verkoop (forceer-ontladen) heeft gestart.
@@ -427,8 +433,21 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         limit = float(self.conf.get(CONF_NEGATIVE_PRICE_LIMIT, DEFAULT_NEGATIVE_PRICE_LIMIT))
         slot = negative_price_slot(plan.prices, now, limit)
         soc = inputs["soc"]
+        self.negative_plan = None
+        if self.negative_enabled and slot is not None:
+            self.negative_plan = plan_negative(
+                plan.prices,
+                now,
+                soc,
+                inputs["capacity_kwh"],
+                inputs["max_power_w"],
+                float(self.conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
+                limit,
+                self._negative_hours,
+            )
+        self._negative_hours = self.negative_plan.hours if self.negative_plan else ()
         self.negative_active = bool(
-            self.negative_enabled and slot is not None and soc is not None and soc < FULL_SOC
+            self.negative_plan and self.negative_plan.status == NEGATIVE_CHARGING
         )
 
         # Gerealiseerde opbrengst bijwerken aan de hand van de energietellers.
@@ -514,17 +533,15 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self.flow = tr(self.language, self._build_flow(plan, sell, inputs, now, limit, slot))
         self.flow["taal"] = self.language
 
-        if self.negative_active and slot is not None:
+        if self.negative_active and self.negative_plan is not None:
             # Alleen de weergave: het bewaarde plan blijft het echte laadplan.
-            power = int(inputs["max_power_w"])
-            price = f"{slot.price:.2f}".replace(".", ",")
-            hours = tuple(sorted({slot.start, *plan.charge_hours}))
+            hours = tuple(sorted({*self.negative_plan.hours, *plan.charge_hours}))
             return replace(
                 plan,
                 status=STATUS_CHARGING,
                 charge_hours=hours,
-                power_w=power,
-                text=f"Negatieve prijs (€ {price}): laden op vol vermogen ({power} W)",
+                power_w=self.negative_plan.power_w,
+                text=self.negative_plan.text,
             )
         return plan
 
@@ -649,12 +666,19 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         if negative_slot is not None:
             price_step = step("Prijs onder de grens", f"Nu € {euro(negative_slot.price)}", "ok")
             soc = inputs["soc"]
-            if soc is not None and soc < FULL_SOC:
+            neg = self.negative_plan
+            if neg is not None and neg.status in (NEGATIVE_CHARGING, NEGATIVE_WAITING):
+                window_text = f"{clock(neg.window[0].start)} – {clock(neg.window[-1].end)} · {len(neg.window)} uur"
+                picked = ", ".join(f"{clock(a)} – {clock(b)}" for a, b in ranges(neg.hours))
                 negative_steps = [
                     price_step,
-                    step("Accu niet vol", f"SoC {round(soc)} %", "ok"),
-                    step("Laden op vol vermogen", f"{int(inputs['max_power_w'])} W", "actie"),
+                    step("Negatief venster", window_text, "ok"),
+                    step("Uren met de meeste opbrengst", picked, "ok"),
                 ]
+                if neg.status == NEGATIVE_CHARGING:
+                    negative_steps.append(step("Laden uitgesmeerd", f"{neg.power_w} W · {euro(neg.energy_kwh, 1)} kWh · verwacht € {euro(neg.gain)}", "actie"))
+                else:
+                    negative_steps.append(step("Dit uur overslaan", "Een ander uur levert meer op", "wacht"))
             else:
                 negative_steps = [
                     price_step,
@@ -961,16 +985,16 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
 
         try:
             if want_negative:
-                power = int(inputs["max_power_w"])
+                power = int(self.negative_plan.power_w or inputs["max_power_w"])
                 current = inputs["force_power_w"]
-                if current is None or abs(current - power) >= 50:
+                if self._power_differs(current, power, inputs["charging"]):
                     await self._async_set_number(CONF_FORCE_POWER_ENTITY, power)
                     self._settle(f"laadvermogen {power} W (negatieve prijs)")
                 if not inputs["charging"]:
                     await self._async_select(CONF_FORCE_MODE_ENTITY, FORCE_CHARGE)
                     await self._async_select(CONF_CONTROL_MODE_ENTITY, MODE_ENABLE)
                     self._set_selling(False)
-                    self._settle(f"negatieve prijs: laden op vol vermogen ({power} W)")
+                    self._settle(f"negatieve prijs: laden op {power} W")
                 self._set_negative_charging(True)
             elif want_charge:
                 self._set_negative_charging(False)

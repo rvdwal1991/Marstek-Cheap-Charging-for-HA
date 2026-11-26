@@ -351,5 +351,56 @@ class GatTussenLaaduren(unittest.TestCase):
         self.assertEqual(result.status, planner.STATUS_DONE)
 
 
+class NegatiefVensterTest(unittest.TestCase):
+    """Laden in een venster met negatieve prijzen: de beste uren, uitgesmeerd."""
+
+    @staticmethod
+    def slots(prices, start="2026-11-12T12:00:00"):
+        first = at(start)
+        return [planner.PriceSlot(first + timedelta(hours=i), p) for i, p in enumerate(prices)]
+
+    def run_plan(self, prices, now, soc, previous=()):
+        return planner.plan_negative(
+            self.slots(prices), at(now), soc, capacity_kwh=5.12, max_power_w=2500,
+            min_power_w=400, limit=0.0, previous=previous,
+        )
+
+    def test_geen_negatief_uur_geen_plan(self):
+        self.assertIsNone(self.run_plan([0.2, 0.1, 0.3], "2026-11-12T12:10:00", 40))
+
+    def test_voorbeeld_overslaan_van_het_minst_negatieve_uur(self):
+        # -0,03, -0,20, -0,12 en accu op 40 %: 3,1 kWh past in twee uur.
+        prices = [0.30, -0.03, -0.20, -0.12, 0.25]
+        result = self.run_plan(prices, "2026-11-12T13:00:05", 40)
+        self.assertEqual(result.status, planner.NEGATIVE_WAITING)  # uur 1 wordt overgeslagen
+        self.assertEqual(result.hours, (at("2026-11-12T14:00:00"), at("2026-11-12T15:00:00")))
+        self.assertIsNone(result.power_w)
+        result = self.run_plan(prices, "2026-11-12T14:00:05", 40)
+        self.assertEqual(result.status, planner.NEGATIVE_CHARGING)
+        self.assertEqual(len(result.window), 3)
+        # 3,07 kWh uitgesmeerd over twee uur, niet op vol vermogen.
+        self.assertTrue(1500 <= result.power_w < 2500)
+        self.assertAlmostEqual(result.gain, 3.07 * 0.16, delta=0.02)
+        self.assertIn("in 2 van 2 negatieve uren", result.text)  # van wat er nog komt
+
+    def test_lege_accu_gebruikt_alle_uren(self):
+        prices = [-0.03, -0.20, -0.12]
+        result = self.run_plan(prices, "2026-11-12T12:00:05", 5)
+        self.assertEqual(len(result.hours), 3)
+        self.assertEqual(result.status, planner.NEGATIVE_CHARGING)
+
+    def test_volle_accu(self):
+        result = self.run_plan([-0.1, -0.2], "2026-11-12T12:10:00", 99)
+        self.assertEqual(result.status, planner.NEGATIVE_FULL)
+
+    def test_eerder_gekozen_uur_blijft_bij_bijna_gelijke_prijs(self):
+        prices = [-0.100, -0.101]
+        first = at("2026-11-12T12:00:00")
+        result = self.run_plan(prices, "2026-11-12T12:10:00", 70, previous=(first,))
+        self.assertEqual(result.hours, (first,))
+        result = self.run_plan(prices, "2026-11-12T12:10:00", 70)
+        self.assertEqual(result.hours, (first + timedelta(hours=1),))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -4,6 +4,14 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.19.0 (2026-11-26)
+- **Behaviour change:** *Charging at a negative price* now looks at the whole window of consecutive
+  negative hours. It picks the hours with the lowest price (as few as needed to fill the battery),
+  skips hours that earn less, and spreads the energy evenly over the chosen hours instead of always
+  charging at full power. Plan text and flow chart show the window, chosen hours, power and expected
+  gain. With a single negative hour and a battery that needs more than that hour can give, it still
+  charges at full power, as before.
+
 ## 1.18.0 (2026-11-26)
 - **New:** Marstek Venus E v3 over Modbus TCP. Two ways: the *Modbus in Home Assistant* option now also
   accepts the register sensors of

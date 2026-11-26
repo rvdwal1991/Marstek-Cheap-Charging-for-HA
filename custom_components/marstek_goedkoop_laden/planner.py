@@ -621,3 +621,106 @@ def negative_price_slot(prices: list[PriceSlot] | tuple[PriceSlot, ...], now: da
             return slot if slot.price < limit else None
     return None
 
+
+
+# Bij een kleine prijsafstand houdt een eerder gekozen uur de voorkeur, zodat de
+# keuze niet elke minuut wisselt (euro per kWh).
+NEGATIVE_STICKY = 0.002
+NEGATIVE_CHARGING = "laden"
+NEGATIVE_WAITING = "wachten"
+NEGATIVE_FULL = "vol"
+
+
+@dataclass(frozen=True)
+class NegativePlan:
+    """Wat er in een venster met negatieve prijzen geladen wordt."""
+
+    status: str
+    window: tuple[PriceSlot, ...] = ()  # het hele negatieve venster
+    hours: tuple[datetime, ...] = ()  # de uren waarin geladen wordt
+    power_w: int | None = None
+    energy_kwh: float = 0.0
+    gain: float = 0.0  # verdiend doordat er voor het laden betaald wordt
+    text: str = ""
+
+
+def plan_negative(
+    prices: list[PriceSlot] | tuple[PriceSlot, ...],
+    now: datetime,
+    soc: float | None,
+    capacity_kwh: float,
+    max_power_w: float,
+    min_power_w: float = 0.0,
+    limit: float = 0.0,
+    previous: tuple[datetime, ...] = (),
+) -> NegativePlan | None:
+    """Verdeel het laden over het negatieve venster waar we nu in zitten.
+
+    Het venster is de aaneengesloten reeks uren met een prijs onder de grens.
+    Gekozen worden de uren met de laagste prijs, zoveel als nodig om de accu vol
+    te krijgen. Binnen die uren wordt de energie gelijk uitgesmeerd, zodat het
+    vermogen laag blijft. None als het huidige uur niet negatief is.
+    """
+    ordered = sorted(prices, key=lambda slot: slot.start)
+    index = next((i for i, slot in enumerate(ordered) if slot.start <= now < slot.end), None)
+    if index is None or not ordered[index].price < limit:
+        return None
+    first = last = index
+    while first > 0 and ordered[first - 1].price < limit and ordered[first - 1].end == ordered[first].start:
+        first -= 1
+    while (
+        last + 1 < len(ordered)
+        and ordered[last + 1].price < limit
+        and ordered[last + 1].start == ordered[last].end
+    ):
+        last += 1
+    window = tuple(ordered[first : last + 1])
+    ahead = ordered[index : last + 1]
+
+    if soc is None:
+        return None
+    need = max(0.0, 100.0 - soc) / 100.0 * capacity_kwh
+    if soc >= FULL_SOC or need < 0.05:
+        return NegativePlan(status=NEGATIVE_FULL, window=window)
+
+    def duration(slot: PriceSlot) -> float:
+        return max((slot.end - max(slot.start, now)).total_seconds() / 3600.0, 0.0)
+
+    def room(slot: PriceSlot) -> float:
+        return max_power_w * POWER_DERATE / 1000.0 * duration(slot)
+
+    ranked = sorted(
+        ahead,
+        key=lambda slot: slot.price - (NEGATIVE_STICKY if slot.start in previous else 0.0),
+    )
+    chosen: list[PriceSlot] = []
+    covered = 0.0
+    for slot in ranked:
+        chosen.append(slot)
+        covered += room(slot)
+        if covered >= need:
+            break
+    chosen.sort(key=lambda slot: slot.start)
+    hours = tuple(slot.start for slot in chosen)
+    energy = min(need, covered)
+    remaining = sum(duration(slot) for slot in chosen)
+    gain = sum(-slot.price * energy * duration(slot) / remaining for slot in chosen) if remaining else 0.0
+
+    current = ordered[index]
+    if current.start not in hours:
+        return NegativePlan(
+            status=NEGATIVE_WAITING, window=window, hours=hours, energy_kwh=energy, gain=gain,
+            text=f"Negatieve prijs (€ {current.price:.2f}): dit uur wordt overgeslagen, andere uren leveren meer op".replace(".", ","),
+        )
+    raw = energy / max(remaining * TIME_DERATE, MIN_REMAINING_HOURS) * 1000.0
+    power = int(math.ceil(raw / POWER_STEP_W) * POWER_STEP_W)
+    power = int(min(max(power, min_power_w), max_power_w))
+    text = (
+        f"Negatieve prijs (€ {current.price:.2f}): laden op {power} W · "
+        f"{energy:.1f} kWh in {len(chosen)} van {len(ahead)} negatieve uren · "
+        f"verwacht € {gain:.2f}"
+    ).replace(".", ",")
+    return NegativePlan(
+        status=NEGATIVE_CHARGING, window=window, hours=hours, power_w=power,
+        energy_kwh=energy, gain=gain, text=text,
+    )

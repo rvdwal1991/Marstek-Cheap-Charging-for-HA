@@ -66,6 +66,14 @@ _PHRASES: list[tuple[str, str]] = [
     # --- stroomschema (coordinator)
     ("Laden op vol vermogen (negatieve prijs)", "Charging at full power (negative price)"),
     ("Negatieve prijs (", "Negative price ("),
+    ("dit uur wordt overgeslagen, andere uren leveren meer op", "this hour is skipped, other hours earn more"),
+    ("Uren met de meeste opbrengst", "Hours with the highest gain"),
+    ("Een ander uur levert meer op", "Another hour earns more"),
+    ("Negatief venster", "Negative window"),
+    ("Laden uitgesmeerd", "Charging spread out"),
+    ("Dit uur overslaan", "Skip this hour"),
+    ("laden op ", "charging at "),
+    ("verwacht", "expected"),
     ("laden op vol vermogen", "charging at full power"),
     ("Laden op vol vermogen", "Charging at full power"),
     ("Bijladen uit het net", "Charging from the grid"),
@@ -154,6 +162,7 @@ _PHRASES: list[tuple[str, str]] = [
 # Zinsdelen met een getal ervoor of erna.
 _REGEX: list[tuple[str, str]] = [
     (r"Nog (\S+) kWh nodig", r"\1 kWh still needed"),
+    (r"(\S+) kWh in (\d+) van (\d+) negatieve uren", r"\1 kWh in \2 of \3 negative hours"),
     (r"inkopen voor (€ \S+), later (€ \S+) waard", r"buy for \1, worth \2 later"),
     (r"(\d+) uur\b", r"\1 h"),
     (r"(\d),(\d)", r"\1.\2"),
@@ -168,7 +177,7 @@ def _translate(text: str) -> str:
     if cached is not None:
         return cached
     result = text
-    for pattern, repl in _REGEX[:2]:
+    for pattern, repl in _REGEX[:3]:
         result = re.sub(pattern, repl, result)
     # Vervang de zinsdelen via één doorloop zodat een vertaling niet opnieuw wordt vertaald.
     marker = "\x00"
@@ -185,7 +194,7 @@ def _translate(text: str) -> str:
             pieces.append(lowered[index])
             index += 1
     result = "".join(pieces).replace(marker, "")
-    for pattern, repl in _REGEX[2:]:
+    for pattern, repl in _REGEX[3:]:
         result = re.sub(pattern, repl, result)
     if len(_CACHE) < 2000:
         _CACHE[text] = result
