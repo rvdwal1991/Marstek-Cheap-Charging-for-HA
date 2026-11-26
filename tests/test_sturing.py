@@ -402,6 +402,21 @@ class ZonneverwachtingTest(unittest.TestCase):
         self.assertEqual(coordinator._solar_hours, ())
         self.assertEqual(coordinator.params.solar, ())
 
+    def test_huisverbruik_wordt_geleerd_en_doorgegeven(self):
+        conf = dict(CONF, house_power_entity="sensor.huis")
+        hass, coordinator = make(12, conf)
+        hass.values["sensor.huis"] = _State("0.8", {"unit_of_measurement": "kW"})
+        for minute in range(60):
+            at(f"2026-11-12T12:{minute:02d}:00")
+            coordinator._sample_house()
+        at("2026-11-12T13:00:00")
+        coordinator._sample_house()
+        self.assertEqual(coordinator.house.table()[12], 800)  # donderdag 12:00, kW omgerekend
+        self.assertEqual(coordinator.params.house_profile[12], 800)
+        # Zonder sensor geen profiel: dan geldt het vaste eigen verbruik.
+        hass2, plain = make(12)
+        self.assertEqual(plain.params.house_profile, ())
+
     def test_lege_verwachting_wordt_snel_opnieuw_geprobeerd(self):
         at("2026-11-10T19:40:00")
         hass, coordinator = make(12)

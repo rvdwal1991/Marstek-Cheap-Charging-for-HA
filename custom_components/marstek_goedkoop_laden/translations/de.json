@@ -137,7 +137,8 @@
           "modbus_slave": "Modbus-Slave-Adresse",
           "negative_strategy": "Negativer Preis: Aufteilung der Energie",
           "use_solar_forecast": "Solarprognose verwenden",
-          "solar_reliability": "Zuverlässigkeit der Solarprognose"
+          "solar_reliability": "Zuverlässigkeit der Solarprognose",
+          "house_power_entity": "Hausleistungssensor"
         },
         "data_description": {
           "price_entity": "Sensor, der die veröffentlichten Stundenpreise in einem Attribut enthält, z. B. der Zonneplan-Stundenpreissensor.",
@@ -165,7 +166,8 @@
           "battery_cycles": "Anzahl der vollen Zyklen, die der Akku voraussichtlich hält. Abschreibung pro kWh = Preis ÷ (Zyklen × Kapazität).",
           "negative_strategy": "Nach Wert verteilen: mehr in den stärker negativen Stunden, geringere Leistung. Maximaler Ertrag: die besten Stunden zuerst mit voller Leistung füllen.",
           "use_solar_forecast": "Berücksichtigt beim nächtlichen Laden den erwarteten Solarertrag aus dem Energie-Dashboard, damit Platz für die Sonne bleibt.",
-          "solar_reliability": "Der Teil der Prognose, auf den gezählt wird. Niedriger ist vorsichtiger."
+          "solar_reliability": "Der Teil der Prognose, auf den gezählt wird. Niedriger ist vorsichtiger.",
+          "house_power_entity": "Optional. Ein Leistungssensor (W oder kW) mit der gesamten Leistung, die das Haus verbraucht, ohne den Akku. Die Integration lernt deinen durchschnittlichen Verbrauch je Tageszeit-Stunde (Werktage und Wochenenden getrennt) und nutzt ihn für den Solarüberschuss anstelle des festen Eigenverbrauchs."
         }
       }
     }

@@ -141,8 +141,10 @@ hensyn til forventet solproduksjon:
    andre prognoseintegrasjoner fungerer, og ingenting ekstra må settes opp. Uten en prognose
    der endrer ingenting seg.
 2. Den regner ut forventet overskudd: per time prognosen, multiplisert med innstillingen for
-   pålitelighet (standard 70 %), minus ditt eget forbruk (innstillingen *Salg: gjennomsnittlig
-   eget forbruk*).
+   pålitelighet (standard 70 %), minus ditt eget forbruk i den timen. Med en *Husforbruk-sensor*
+   lærer integrasjonen ditt gjennomsnittlige forbruk per time på døgnet (hverdager og helger
+   hver for seg) og bruker det, slik at en middag som huset selv spiser opp ikke gir noe
+   overskudd; uten sensoren brukes det faste *Salg: gjennomsnittlig eget forbruk*.
 3. Den lader om natten bare så mye at det er plass til dette overskuddet når solen
    står opp: energien det egne forbruket bruker fram til da, pluss det som fortsatt trengs. På en
    solrik dag kan det være noen få kWh i stedet for et fullt batteri, eller ingenting
@@ -294,6 +296,7 @@ Under *Konfigurer* på integrasjonen:
 | Batteriets levetid (sykluser) | 6000 | Forventet antall fulle sykluser. Avskrivning per kWh = pris ÷ (sykluser × kapasitet); for eksempel er € 1500 over 6000 sykluser på 5,12 kWh omtrent € 0,049 per kWh. |
 | Bruk solprognosen | På | Ta hensyn til forventet solproduksjon fra Energi-dashbordet ved lading om natten. |
 | Pålitelighet for solprognosen | 70 % | Den delen av prognosen det skal regnes med. Lavere er mer forsiktig. |
+| Husforbruk-sensor | ingen | Valgfri sensor med effekten hele huset bruker (W eller kW), uten batteriet. Integrasjonen lærer gjennomsnittet per time på døgnet, for hverdager og helger, og bruker det til solcelleoverskuddet i stedet for det faste egne forbruket. En billader skjever gjennomsnittet, så utelat den hvis du kan. |
 | Minste gevinst per kWh | € 0,02 | Hva lading minst må gi, etter ladetap. Timer som ligger mindre enn en halv cent over grensen teller likevel med, så en nesten flat natt ikke deles opp for en brøkdel av en cent. |
 | Antall dyreste timer | 6 | Hvor mange dyre timer senere en time sammenlignes med. |
 | Timer å se fremover | 18 | Hvor langt etter en time det letes etter dyre timer. |
@@ -427,6 +430,15 @@ python3 -m unittest discover -s tests -v
 ## Endringslogg
 
 Se [CHANGELOG.md](CHANGELOG.md), inkludert de brytende endringene.
+
+## Takk
+
+Denne integrasjonen bygger på arbeidet til Marstek Venus-miljøet:
+
+- [Tweakers-forumtråden](https://gathering.tweakers.net/forum/list_messages/2282240/0) der dette fellesskapsarbeidet diskuteres, en hederlig omtale til alle der som deler funn og konfigurasjoner.
+- [Superduper1969](https://github.com/Superduper1969) for LilyGO RS485- og Elfin EW11-konfigurasjonene denne integrasjonen er bygget rundt, og scruysberghs, som det takkes i disse konfigurasjonene.
+- [fonske](https://github.com/fonske) for Modbus TCP-konfigurasjonen til Venus E v3.
+- [ViperRNMC](https://github.com/ViperRNMC) for integrasjonen Marstek Venus Modbus.
 
 ## Lisens
 

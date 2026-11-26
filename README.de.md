@@ -141,7 +141,10 @@ berücksichtigt die Integration den erwarteten Solarertrag:
    andere Prognose-Integrationen funktionieren, und es ist nichts Zusätzliches einzurichten. Ohne Prognose
    dort ändert sich nichts.
 2. Sie berechnet den erwarteten Überschuss: je Stunde die Prognose, multipliziert mit der Einstellung
-   für die Zuverlässigkeit (Standard 70 %), minus deinen Eigenverbrauch (die Einstellung *Verkauf: durchschnittlicher Eigenverbrauch*).
+   für die Zuverlässigkeit (Standard 70 %), minus deinen Eigenverbrauch in dieser Stunde. Mit einem *Hausleistungssensor*
+   lernt die Integration deinen durchschnittlichen Verbrauch je Stunde des Tages (Werktage und Wochenenden
+   getrennt) und nutzt ihn, sodass ein Mittag, den das Haus selbst aufzehrt, keinen Überschuss lässt;
+   ohne den Sensor gilt der feste *Verkauf: durchschnittlicher Eigenverbrauch*.
 3. Sie lädt nachts nur so viel, dass bis zum Sonnenaufgang Platz für diesen Überschuss bleibt: die Energie, die dein
    Eigenverbrauch bis dahin aufzehrt, plus das, was noch gebraucht wird. An einem
    sonnigen Tag können das ein paar kWh statt eines vollen Akkus sein oder gar nichts (der Plantext
@@ -292,6 +295,7 @@ Unter *Konfigurieren* bei der Integration:
 | Lebensdauer des Akkus (Zyklen) | 6000 | Erwartete Anzahl voller Zyklen. Abschreibung pro kWh = Preis ÷ (Zyklen × Kapazität); zum Beispiel sind € 1.500 über 6.000 Zyklen à 5,12 kWh etwa € 0,049 pro kWh. |
 | Solarprognose verwenden | An | Berücksichtigt beim nächtlichen Laden den erwarteten Solarertrag aus dem Energie-Dashboard. |
 | Zuverlässigkeit der Solarprognose | 70 % | Der Teil der Prognose, auf den gezählt wird. Niedriger ist vorsichtiger. |
+| Hausleistungssensor | keiner | Optionaler Sensor mit der Leistung, die das ganze Haus verbraucht (W oder kW), ohne den Akku. Die Integration lernt den Durchschnitt je Stunde des Tages, für Werktage und Wochenenden, und nutzt ihn für den Solarüberschuss anstelle des festen Eigenverbrauchs. Eine Wallbox verfälscht den Durchschnitt, lass sie daher nach Möglichkeit weg. |
 | Mindestgewinn pro kWh | € 0,02 | Was das Laden nach Abzug der Ladeverluste mindestens einbringen muss. Stunden, die weniger als einen halben Cent über der Grenze liegen, zählen trotzdem, damit eine fast flache Nacht nicht wegen eines Bruchteils eines Cents zerstückelt wird. |
 | Anzahl der teuersten Stunden | 6 | Mit wie vielen späteren teuren Stunden eine Stunde verglichen wird. |
 | Stunden Vorausschau | 18 | Wie weit hinter einer Stunde nach teuren Stunden gesucht wird. |
@@ -424,6 +428,15 @@ python3 -m unittest discover -s tests -v
 ## Changelog
 
 Siehe [CHANGELOG.md](CHANGELOG.md), einschließlich der Breaking Changes.
+
+## Danksagung
+
+Diese Integration baut auf der Arbeit der Marstek-Venus-Community auf:
+
+- Der [Tweakers-Forenthread](https://gathering.tweakers.net/forum/list_messages/2282240/0), in dem diese Community-Arbeit besprochen wird, eine lobende Erwähnung für alle dort, die Erkenntnisse und Konfigurationen teilen.
+- [Superduper1969](https://github.com/Superduper1969) für die Konfigurationen für LilyGO RS485 und Elfin EW11, um die diese Integration herum gebaut ist, und scruysberghs, dem in diesen Konfigurationen gedankt wird.
+- [fonske](https://github.com/fonske) für die Modbus-TCP-Konfiguration der Venus E v3.
+- [ViperRNMC](https://github.com/ViperRNMC) für die Integration Marstek Venus Modbus.
 
 ## Lizenz
 

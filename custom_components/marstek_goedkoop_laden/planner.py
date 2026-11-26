@@ -79,6 +79,9 @@ class PlanParams:
     solar: tuple[tuple[datetime, float], ...] = ()
     solar_factor: float = 0.7  # hoeveel van de verwachting we vertrouwen
     house_power_w: float = 400.0  # gemiddeld eigen verbruik overdag
+    # Geleerd verbruik per uur (48 waarden in W: werkdag 0-23, weekend 0-23); 0 = onbekend,
+    # dan geldt `house_power_w`. Leeg = overal `house_power_w`.
+    house_profile: tuple[float, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -204,6 +207,16 @@ def step(title: str, detail: str, kind: str) -> dict:
 MIN_SOLAR_CHARGE_KWH = 0.2
 
 
+def _house_kw(params: PlanParams, moment: datetime, tz: tzinfo | None) -> float:
+    """Het verwachte verbruik van het huis (kW) in het uur van dit moment."""
+    if len(params.house_profile) == 48:
+        local = moment.astimezone(tz) if tz else moment
+        watts = params.house_profile[(24 if local.weekday() >= 5 else 0) + local.hour]
+        if watts > 0:
+            return watts / 1000.0
+    return params.house_power_w / 1000.0
+
+
 def _solar_energy(
     params: PlanParams,
     soc: float,
@@ -211,6 +224,7 @@ def _solar_energy(
     efficiency: float,
     window_end: datetime,
     energy: float,
+    tz: tzinfo | None = None,
 ) -> tuple[float, float | None, float]:
     """Hoeveel er nog uit het net moet worden bijgeladen als de zon de rest bijvult.
 
@@ -223,18 +237,24 @@ def _solar_energy(
     Is er geen bruikbare verwachting, dan (0, None, energie).
     """
     eta = one_way_efficiency(efficiency)
-    house_kw = params.house_power_w / 1000.0
     horizon = window_end + timedelta(hours=params.lookahead_hours)
     hours = sorted(
         (start, wh * params.solar_factor / 1000.0)
         for start, wh in params.solar
         if window_end <= start < horizon
     )
-    surplus = sum(max(0.0, kwh - house_kw) for _, kwh in hours)
-    first = next((start for start, kwh in hours if kwh > house_kw), None)
+    # Per uur: wat de zon levert min wat het huis zelf verbruikt.
+    surplus = sum(max(0.0, kwh - _house_kw(params, start, tz)) for start, kwh in hours)
+    first = next((start for start, kwh in hours if kwh > _house_kw(params, start, tz)), None)
     if first is None or surplus < 0.2:
         return 0.0, None, energy
-    drain = house_kw * max(0.0, (first - window_end).total_seconds() / 3600.0) / eta
+    # Het verbruik tot de zon opkomt maakt ruimte in de accu, uur voor uur geteld.
+    drain, moment = 0.0, window_end
+    while moment < first:
+        step_end = min(first, moment.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1))
+        drain += _house_kw(params, moment, tz) * (step_end - moment).total_seconds() / 3600.0
+        moment = step_end
+    drain /= eta
     room_needed = min(capacity_kwh, surplus * eta)
     target = min(capacity_kwh, max(drain, capacity_kwh - room_needed + drain))
     now_kwh = soc / 100.0 * capacity_kwh
@@ -300,7 +320,7 @@ def compute_plan(
     solar_full = False
     if energy > 0 and window_end is not None and params.solar:
         solar_kwh, solar_target, energy_solar = _solar_energy(
-            params, soc, capacity_kwh, efficiency, window_end, energy
+            params, soc, capacity_kwh, efficiency, window_end, energy, tz
         )
         if solar_kwh > 0:
             solar_full = energy_solar < MIN_SOLAR_CHARGE_KWH

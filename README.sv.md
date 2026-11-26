@@ -143,8 +143,10 @@ tar integrationen hänsyn till det förväntade solutbytet:
    andra prognosintegrationer fungerar, och inget extra behöver ställas in. Utan en prognos
    där ändras ingenting.
 2. Den räknar ut det förväntade överskottet: per timme prognosen, multiplicerad med
-   tillförlitlighetsinställningen (standard 70 %), minus din egen förbrukning (inställningen
-   *Försäljning: genomsnittlig egen förbrukning*).
+   tillförlitlighetsinställningen (standard 70 %), minus din egen förbrukning under den timmen. Med en
+   *Huseffektsensor* lär sig integrationen din genomsnittliga förbrukning per timme på dygnet (vardagar
+   och helger separat) och använder den, så en middag som huset äter upp själv lämnar inget
+   överskott; utan sensorn används den fasta *Försäljning: genomsnittlig egen förbrukning*.
 3. Den laddar på natten bara så mycket att det finns plats för det överskottet när solen
    går upp: den energi som din egen förbrukning drar fram till dess, plus det som fortfarande behövs. En
    solig dag kan det vara några kWh i stället för ett fullt batteri, eller ingenting alls (plantexten
@@ -296,6 +298,7 @@ Under *Konfigurera* på integrationen:
 | Batteriets livslängd (cykler) | 6000 | Förväntat antal fulla cykler. Avskrivning per kWh = pris ÷ (cykler × kapacitet); till exempel € 1 500 över 6 000 cykler på 5,12 kWh blir cirka € 0,049 per kWh. |
 | Använd solprognosen | På | Ta hänsyn till det förväntade solutbytet från Energipanelen vid nattladdning. |
 | Solprognosens tillförlitlighet | 70 % | Den del av prognosen som man räknar med. Lägre är försiktigare. |
+| Huseffektsensor | ingen | Valfri sensor med den effekt som hela huset använder (W eller kW), utan batteriet. Integrationen lär sig genomsnittet per timme på dygnet, för vardagar och helger, och använder det för solöverskottet i stället för den fasta egna förbrukningen. En elbilsladdare snedvrider genomsnittet, så lämna den utanför om du kan. |
 | Minsta vinst per kWh | € 0,02 | Vad laddningen minst måste ge, efter laddförluster. Timmar som ligger mindre än en halv cent över gränsen räknas ändå, så en nästan platt natt delas inte upp på grund av en bråkdel av en cent. |
 | Antal dyraste timmar att jämföra med | 6 | Hur många dyra timmar senare på dagen en timme jämförs med. |
 | Antal timmar att se framåt | 18 | Hur långt efter en timme som man letar efter dyra timmar. |
@@ -428,6 +431,15 @@ python3 -m unittest discover -s tests -v
 ## Ändringslogg
 
 Se [CHANGELOG.md](CHANGELOG.md) (engelska), inklusive de brytande ändringarna.
+
+## Tack
+
+Den här integrationen bygger på arbetet från Marstek Venus-communityn:
+
+- [Tweakers-forumtråden](https://gathering.tweakers.net/forum/list_messages/2282240/0) där det här community-arbetet diskuteras, ett hedersomnämnande till alla där som delar resultat och konfigurationer.
+- [Superduper1969](https://github.com/Superduper1969) för LilyGO RS485- och Elfin EW11-konfigurationerna som den här integrationen är byggd kring, och scruysberghs, som tackas i de konfigurationerna.
+- [fonske](https://github.com/fonske) för Modbus TCP-konfigurationen för Venus E v3.
+- [ViperRNMC](https://github.com/ViperRNMC) för integrationen Marstek Venus Modbus.
 
 ## Licens
 

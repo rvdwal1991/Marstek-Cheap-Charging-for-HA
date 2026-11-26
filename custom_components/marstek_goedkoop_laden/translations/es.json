@@ -137,7 +137,8 @@
           "modbus_slave": "Dirección esclava Modbus",
           "negative_strategy": "Precio negativo: cómo repartir la energía",
           "use_solar_forecast": "Usar la previsión solar",
-          "solar_reliability": "Fiabilidad de la previsión solar"
+          "solar_reliability": "Fiabilidad de la previsión solar",
+          "house_power_entity": "Sensor de potencia de la casa"
         },
         "data_description": {
           "price_entity": "Sensor que guarda los precios horarios publicados en un atributo, por ejemplo el sensor de tarifa horaria de Zonneplan.",
@@ -165,7 +166,8 @@
           "battery_cycles": "Número de ciclos completos que se espera que dure la batería. Amortización por kWh = precio ÷ (ciclos × capacidad).",
           "negative_strategy": "Repartir por valor: más en las horas más negativas, menor potencia. Beneficio máximo: llenar primero las mejores horas a plena potencia.",
           "use_solar_forecast": "Tiene en cuenta el rendimiento solar esperado del panel de Energía al cargar por la noche, para que quede espacio para el sol.",
-          "solar_reliability": "La parte de la previsión con la que contar. Más baja es más prudente."
+          "solar_reliability": "La parte de la previsión con la que contar. Más baja es más prudente.",
+          "house_power_entity": "Opcional. Un sensor de potencia (W o kW) con la potencia total que consume la casa, sin la batería. La integración aprende tu consumo medio por hora del día (días laborables y fines de semana por separado) y lo usa para el excedente solar en lugar del consumo propio fijo."
         }
       }
     }

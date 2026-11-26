@@ -43,6 +43,11 @@ async def async_get_config_entry_diagnostics(
             "totaal_kwh": round(sum(wh for _, wh in coordinator._solar_hours) / 1000.0, 1),
             "gebruikt_overschot_kwh": plan.solar_kwh,
         },
+        "huisverbruik": {
+            "sensor": coordinator.conf.get("house_power_entity"),
+            "uren_geleerd": coordinator.house.learned(),
+            "profiel_w": coordinator.house.to_dict()["watts"],
+        },
         "laatste_opdracht": coordinator.last_command,
         "invoer": inputs,
         "prijzen": [

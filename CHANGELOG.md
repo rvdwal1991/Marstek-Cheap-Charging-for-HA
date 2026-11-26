@@ -4,6 +4,16 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.24.0 (2026-11-26)
+- **New: house power sensor** (optional). Choose a sensor with the power the whole house uses (W or kW,
+  without the battery) and the integration learns your average consumption per hour of the day, for
+  weekdays and weekends separately. The solar surplus is then the forecast minus that learned
+  consumption per hour, so a midday that the house eats up itself leaves no surplus and the battery is
+  charged full as before. Without the sensor the fixed *Selling: average own consumption* is used, as
+  before. A car charger skews the average (one reading is capped at 3500 W), so leave it out if you can.
+- Acknowledgements section in the READMEs: the Tweakers forum thread and the authors of the
+  configurations and the integration this one builds on.
+
 ## 1.23.1 (2026-11-26)
 - **Fix:** right after a restart the solar forecast could still be empty and then stayed empty for 30
   minutes. An empty forecast is now retried after 5 minutes.

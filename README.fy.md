@@ -139,8 +139,10 @@ hâldt de yntegraasje rekken mei de ferwachte sinne-opbringst:
    oare prognoseyntegraasjes wurkje, en der hoecht neat ekstra ynsteld te wurden. Sûnder in prognose
    dêr feroaret der neat.
 2. Hy rekkenet it ferwachte oerskot út: per oere de prognose, kear de ynstelling foar
-   betrouberens (standert 70 %), minus dyn eigen ferbrûk (de ynstelling *Ferkeapje: gemiddeld eigen
-   ferbrûk*).
+   betrouberens (standert 70 %), minus dyn eigen ferbrûk yn dat oere. Mei in *Sensor foar húsfermogen*
+   leart de yntegraasje dyn gemiddelde ferbrûk per oere fan de dei (wurkdagen en wykein
+   apart) en brûkt dat, sadat in middei dat it hûs sels opfrettet gjin oerskot oerlit;
+   sûnder de sensor wurdt it fêste *Ferkeapje: gemiddeld eigen ferbrûk* brûkt.
 3. Hy laadt yn de nacht mar safolle dat der romte is foar dat oerskot as de sinne
    opkomt: de enerzjy dy't dyn eigen ferbrûk oant dan opmakket, plus wat der noch nedich is. Op in
    sinnige dei kin dat in pear kWh wêze yn plak fan in folle batterij, of hielendal neat (de planrigel
@@ -292,6 +294,7 @@ De yntegraasje lêst de prizen út in attribút fan ien sensor (standert `foreca
 | Libbensdoer accu (syklussen) | 6000 | Ferwachte oantal folsleine syklussen. Ôfskriuwing per kWh = priis ÷ (syklussen × kapasiteit); bygelyks € 1.500 oer 6.000 syklussen fan 5,12 kWh is sa'n € 0,049 per kWh. |
 | Sinneprognose brûke | Oan | Hâld by it laden yn de nacht rekken mei de ferwachte sinne-opbringst út it Enerzjydashboerd. |
 | Betrouberens fan de sinneprognose | 70 % | It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger. |
+| Sensor foar húsfermogen | gjin | Opsjonele sensor mei it fermogen dat it hiele hûs brûkt (W of kW), sûnder de batterij. De yntegraasje leart it gemiddelde per oere fan de dei, foar wurkdagen en wykein, en brûkt dat foar it sinne-oerskot yn plak fan it fêste eigen ferbrûk. In laadpeal ferfoarmet it gemiddelde, lit dy dus fuort as it kin. |
 | Minimale winst per kWh | € 0,02 | Wat laden nei ôftrek fan it laadferlies minstens opbringe moat. Oeren dy't minder as in heale sint boppe de grins lizze telle ek mei, sadat in hast platte nacht net om in fraksje fan in sint opsnipele wurdt. |
 | Oantal djoerste oeren om mei te fergelykjen | 6 | Mei hoefolle djoere oeren letter op de dei in oere fergelike wurdt. |
 | Oantal oeren foarút sjen | 18 | Hoe fier foarby in oere sjoen wurdt nei djoere oeren. |
@@ -424,6 +427,15 @@ python3 -m unittest discover -s tests -v
 ## Wizigingen
 
 Sjoch [CHANGELOG.md](CHANGELOG.md), ynklusyf de brekkende wizigingen.
+
+## Tankwurd
+
+Dizze yntegraasje stiet op it wurk fan de Marstek Venus-mienskip:
+
+- De [Tweakers-forumtried](https://gathering.tweakers.net/forum/list_messages/2282240/0) dêr't dit mienskipswurk besprutsen wurdt, in earefermelding foar elkenien dy't befinings en konfiguraasjes dielt.
+- [Superduper1969](https://github.com/Superduper1969) foar de LilyGO RS485- en Elfin EW11-konfiguraasjes dêr't dizze yntegraasje om hinne boud is, en scruysberghs, dy't yn dy konfiguraasjes betanke wurdt.
+- [fonske](https://github.com/fonske) foar de Modbus TCP-konfiguraasje fan de Venus E v3.
+- [ViperRNMC](https://github.com/ViperRNMC) foar de Marstek Venus Modbus-yntegraasje.
 
 ## Lisinsje
 

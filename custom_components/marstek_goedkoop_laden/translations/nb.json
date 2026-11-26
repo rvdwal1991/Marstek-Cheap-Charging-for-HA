@@ -137,7 +137,8 @@
           "modbus_slave": "Modbus-slaveadresse",
           "negative_strategy": "Negativ pris: hvordan energien fordeles",
           "use_solar_forecast": "Bruk solprognosen",
-          "solar_reliability": "Pålitelighet for solprognosen"
+          "solar_reliability": "Pålitelighet for solprognosen",
+          "house_power_entity": "Husforbruk-sensor"
         },
         "data_description": {
           "price_entity": "Sensor med de publiserte timeprisene i et attributt, for eksempel Zonneplan-timeprissensoren.",
@@ -165,7 +166,8 @@
           "battery_cycles": "Antall fulle sykluser batteriet forventes å vare. Avskrivning per kWh = pris ÷ (sykluser × kapasitet).",
           "negative_strategy": "Fordel etter verdi: mer i de mest negative timene, lavere effekt. Maksimal gevinst: fyll de beste timene først med full effekt.",
           "use_solar_forecast": "Tar hensyn til forventet solproduksjon fra Energi-dashbordet ved lading om natten, slik at det er plass til solen.",
-          "solar_reliability": "Den delen av prognosen det skal regnes med. Lavere er mer forsiktig."
+          "solar_reliability": "Den delen av prognosen det skal regnes med. Lavere er mer forsiktig.",
+          "house_power_entity": "Valgfritt. En effektsensor (W eller kW) med den totale effekten huset bruker, uten batteriet. Integrasjonen lærer ditt gjennomsnittlige forbruk per time på døgnet (hverdager og helger hver for seg) og bruker det til solcelleoverskuddet i stedet for det faste egne forbruket."
         }
       }
     }

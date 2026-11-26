@@ -64,6 +64,7 @@ NEGATIVE_STRATEGY_MAX_GAIN = "max_gain"  # beste uren eerst vol: hoogste opbreng
 CONF_LANGUAGE = "language"
 CONF_BATTERY_PRICE = "battery_price"
 CONF_USE_SOLAR = "use_solar_forecast"
+CONF_HOUSE_ENTITY = "house_power_entity"
 CONF_SOLAR_RELIABILITY = "solar_reliability"
 CONF_BATTERY_CYCLES = "battery_cycles"
 

@@ -141,8 +141,10 @@ verwachte zonne-opbrengst:
    Open-Meteo en andere verwachtingsintegraties werken, en er hoeft niets extra te worden
    ingesteld. Staat daar geen verwachting, dan verandert er niets.
 2. Hij rekent het verwachte overschot uit: per uur de verwachting, vermenigvuldigd met de
-   betrouwbaarheid (standaard 70 %), min je eigen verbruik (de instelling *Verkoop: gemiddeld
-   eigen verbruik*).
+   betrouwbaarheid (standaard 70 %), min je eigen verbruik in dat uur. Met een
+   *Huisverbruiksensor* leert de integratie je gemiddelde verbruik per uur van de dag (werkdagen en
+   weekend apart) en gebruikt dat, zodat een middag die het huis zelf opmaakt geen overschot
+   oplevert; zonder de sensor geldt het vaste *Verkoop: gemiddeld eigen verbruik*.
 3. Hij laadt 's nachts alleen zoveel bij dat er bij zonsopkomst ruimte is voor dat overschot: de
    energie die je eigen verbruik tot dan opmaakt, plus wat er nog bij moet. Op een zonnige dag is
    dat een paar kWh in plaats van een volle accu, of niets (de planregel zegt dan dat de zon de
@@ -294,6 +296,7 @@ Via *Configureren* op de integratie:
 | Levensduur accu (cycli) | 6000 | Verwacht aantal volledige cycli. Afschrijving per kWh = prijs ÷ (cycli × capaciteit); bijvoorbeeld € 1.500 over 6.000 cycli van 5,12 kWh is ongeveer € 0,049 per kWh. |
 | Zonneverwachting gebruiken | Aan | Houd bij het bijladen 's nachts rekening met de verwachte zonne-opbrengst uit het Energie-dashboard. |
 | Betrouwbaarheid zonneverwachting | 70 % | Het deel van de verwachting waarop je rekent. Lager is voorzichtiger. |
+| Huisverbruiksensor | geen | Optionele sensor met het vermogen dat het hele huis verbruikt (W of kW), zonder de accu. De integratie leert het gemiddelde per uur van de dag, voor werkdagen en weekend, en gebruikt dat voor het zonne-overschot in plaats van het vaste eigen verbruik. Een laadpaal vertekent het gemiddelde, laat die er dus zo mogelijk buiten. |
 | Minimale winst per kWh | € 0,02 | Wat bijladen na aftrek van het laadverlies minstens moet opleveren. Uren die minder dan een halve cent boven de grens liggen tellen ook mee, zodat een bijna vlakke nacht niet om een fractie van een cent wordt versnipperd. |
 | Aantal duurste uren | 6 | Met hoeveel dure uren erna een uur wordt vergeleken. |
 | Uren vooruit kijken | 18 | Hoe ver na een uur naar dure uren wordt gezocht. |
@@ -425,6 +428,15 @@ python3 -m unittest discover -s tests -v
 ## Wijzigingen
 
 Zie [CHANGELOG.md](CHANGELOG.md) (Engels), inclusief de breaking changes.
+
+## Dankwoord
+
+Deze integratie staat op het werk van de Marstek Venus-community:
+
+- Het [Tweakers-forumtopic](https://gathering.tweakers.net/forum/list_messages/2282240/0) waar dit werk uit de community wordt besproken, een eervolle vermelding voor iedereen daar die bevindingen en configuraties deelt.
+- [Superduper1969](https://github.com/Superduper1969) voor de configuraties voor de LilyGO RS485 en Elfin EW11 waaromheen deze integratie is gebouwd, en scruysberghs, die in die configuraties wordt bedankt.
+- [fonske](https://github.com/fonske) voor de Modbus TCP-configuratie van de Venus E v3.
+- [ViperRNMC](https://github.com/ViperRNMC) voor de integratie Marstek Venus Modbus.
 
 ## Licentie
 

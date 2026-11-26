@@ -137,7 +137,8 @@
           "modbus_slave": "Modbus slave address",
           "negative_strategy": "Negative price: how to divide the energy",
           "use_solar_forecast": "Use the solar forecast",
-          "solar_reliability": "Solar forecast reliability"
+          "solar_reliability": "Solar forecast reliability",
+          "house_power_entity": "House power sensor"
         },
         "data_description": {
           "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
@@ -165,7 +166,8 @@
           "battery_cycles": "Number of full cycles the battery is expected to last. Depreciation per kWh = price ÷ (cycles × capacity).",
           "negative_strategy": "Spread by value: more in the more negative hours, lower power. Maximum gain: fill the best hours first at full power.",
           "use_solar_forecast": "Takes the expected solar yield from the Energy dashboard into account when charging at night, so there is room for the sun.",
-          "solar_reliability": "The part of the forecast to count on. Lower is more careful."
+          "solar_reliability": "The part of the forecast to count on. Lower is more careful.",
+          "house_power_entity": "Optional. A power sensor (W or kW) with the total power the house uses, without the battery. The integration learns your average consumption per hour of the day (weekdays and weekends separately) and uses it for the solar surplus instead of the fixed own consumption."
         }
       }
     }

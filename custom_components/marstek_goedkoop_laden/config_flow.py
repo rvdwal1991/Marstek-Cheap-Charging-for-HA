@@ -39,6 +39,7 @@ from .const import (
     CONF_MIN_SOC_ENTITY,
     CONF_BATTERY_CYCLES,
     CONF_BATTERY_PRICE,
+    CONF_HOUSE_ENTITY,
     CONF_SOLAR_RELIABILITY,
     CONF_USE_SOLAR,
     DEFAULT_SOLAR_RELIABILITY,
@@ -199,6 +200,9 @@ def _param_schema(current: dict[str, Any]) -> dict[Any, Any]:
         vol.Required(CONF_DEFAULT_EFFICIENCY, default=default(CONF_DEFAULT_EFFICIENCY, DEFAULT_EFFICIENCY)): _number(0.5, 1, 0.01),
         vol.Required(CONF_BATTERY_PRICE, default=default(CONF_BATTERY_PRICE, DEFAULT_BATTERY_PRICE)): _number(0, 20000, 10, "€"),
         vol.Required(CONF_BATTERY_CYCLES, default=default(CONF_BATTERY_CYCLES, DEFAULT_BATTERY_CYCLES)): _number(500, 20000, 100),
+        vol.Optional(CONF_HOUSE_ENTITY, description={"suggested_value": current.get(CONF_HOUSE_ENTITY)}): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain="sensor", device_class="power")
+        ),
         vol.Required(CONF_USE_SOLAR, default=default(CONF_USE_SOLAR, DEFAULT_USE_SOLAR)): selector.BooleanSelector(),
         vol.Required(CONF_SOLAR_RELIABILITY, default=default(CONF_SOLAR_RELIABILITY, DEFAULT_SOLAR_RELIABILITY)): _number(10, 100, 5, "%"),
         vol.Required(CONF_MARGIN, default=default(CONF_MARGIN, DEFAULT_MARGIN)): _number(0, 0.5, 0.005, "€/kWh"),

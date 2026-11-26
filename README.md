@@ -141,8 +141,10 @@ takes the expected solar yield into account:
    other forecast integrations work, and there is nothing extra to set up. Without a forecast
    there, nothing changes.
 2. It works out the expected surplus: per hour the forecast, multiplied by the reliability
-   setting (default 70 %), minus your own consumption (the *Selling: average own consumption*
-   setting).
+   setting (default 70 %), minus your own consumption in that hour. With a *House power sensor*
+   the integration learns your average consumption per hour of the day (weekdays and weekends
+   separately) and uses that, so a midday that the house eats up itself leaves no surplus;
+   without the sensor the fixed *Selling: average own consumption* is used.
 3. It charges at night only so much that there is room for that surplus by the time the sun
    comes up: the energy your own consumption uses up until then, plus what is still needed. On a
    sunny day that can be a few kWh instead of a full battery, or nothing at all (the plan text
@@ -294,6 +296,7 @@ Under *Configure* on the integration:
 | Battery lifetime (cycles) | 6000 | Expected number of full cycles. Depreciation per kWh = price ÷ (cycles × capacity); for example €1,500 over 6,000 cycles of 5.12 kWh is about €0.049 per kWh. |
 | Use the solar forecast | On | Take the expected solar yield from the Energy dashboard into account when charging at night. |
 | Solar forecast reliability | 70 % | The part of the forecast to count on. Lower is more careful. |
+| House power sensor | none | Optional sensor with the power the whole house uses (W or kW), without the battery. The integration learns the average per hour of the day, for weekdays and weekends, and uses it for the solar surplus instead of the fixed own consumption. A car charger skews the average, so leave it out if you can. |
 | Minimum gain per kWh | €0.02 | What charging must earn at least, after charge losses. Hours less than half a cent above the limit still count, so a nearly flat night is not cut up over a fraction of a cent. |
 | Number of most expensive hours | 6 | How many expensive hours later on an hour is compared with. |
 | Hours to look ahead | 18 | How far past an hour to look for expensive hours. |
@@ -426,6 +429,15 @@ python3 -m unittest discover -s tests -v
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md), including the breaking changes.
+
+## Acknowledgements
+
+This integration stands on the work of the Marstek Venus community:
+
+- The [Tweakers forum thread](https://gathering.tweakers.net/forum/list_messages/2282240/0) where this community work is discussed, an honorable mention for everyone there who shares findings and configurations.
+- [Superduper1969](https://github.com/Superduper1969) for the LilyGO RS485 and Elfin EW11 configurations this integration is built around, and scruysberghs, who is thanked in those configurations.
+- [fonske](https://github.com/fonske) for the Modbus TCP configuration of the Venus E v3.
+- [ViperRNMC](https://github.com/ViperRNMC) for the Marstek Venus Modbus integration.
 
 ## License
 

@@ -56,6 +56,7 @@ from .const import (
     CONF_BATTERY_PRICE,
     CONF_LANGUAGE,
     CONF_NEGATIVE_PRICE_LIMIT,
+    CONF_HOUSE_ENTITY,
     CONF_NEGATIVE_STRATEGY,
     CONF_SOLAR_RELIABILITY,
     CONF_USE_SOLAR,
@@ -97,6 +98,7 @@ from .const import (
     MODE_ENABLE,
     UPDATE_INTERVAL_SECONDS,
 )
+from .house import HouseProfile
 from .i18n import resolve as resolve_language, tr
 from .ledger import Ledger
 from .planner import (
@@ -210,6 +212,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self.inputs: dict[str, Any] = {}
         # Verwachte zonne-opbrengst uit het Energie-dashboard: (uurbegin, Wh).
         self._solar_hours: tuple[tuple[datetime, float], ...] = ()
+        # Geleerd verbruik van het huis per uur van de dag (uit de optionele vermogenssensor).
+        self.house = HouseProfile()
         self._solar_checked: datetime | None = None
         # Tijdlijn en controles voor de dashboardkaart.
         self.flow: dict[str, Any] = {"tijdlijn": [], "banen": []}
@@ -249,6 +253,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self._selling = bool(data.get("selling", False))
         self._discharge_power_before = data.get("discharge_power_before")
         self.ledger = Ledger.from_dict(data.get("ledger"))
+        self.house = HouseProfile.from_dict(data.get("house_profile"))
         self.hold_enabled = bool(data.get("hold_enabled", True))
         self.no_loss_enabled = bool(data.get("no_loss_enabled", False))
         self._holding = bool(data.get("holding", False))
@@ -279,6 +284,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
                 "selling": self._selling,
                 "discharge_power_before": self._discharge_power_before,
                 "ledger": self.ledger.to_dict(),
+                "house_profile": self.house.to_dict(),
                 "hold_enabled": self.hold_enabled,
                 "no_loss_enabled": self.no_loss_enabled,
                 "holding": self._holding,
@@ -367,6 +373,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             solar=self._solar_hours if conf.get(CONF_USE_SOLAR, DEFAULT_USE_SOLAR) else (),
             solar_factor=float(conf.get(CONF_SOLAR_RELIABILITY, DEFAULT_SOLAR_RELIABILITY)) / 100.0,
             house_power_w=float(conf.get(CONF_HOUSE_POWER, DEFAULT_HOUSE_POWER)),
+            house_profile=self.house.table() if conf.get(CONF_HOUSE_ENTITY) else (),
         )
 
     @property
@@ -443,7 +450,25 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             # Na een herstart zijn de verwachtingen er soms nog niet: over 5 minuten opnieuw.
             self._solar_checked = now - timedelta(minutes=25)
 
+    def _sample_house(self) -> None:
+        """Leer het verbruik van het huis per uur van de dag (optionele sensor)."""
+        entity_id = self.conf.get(CONF_HOUSE_ENTITY)
+        if not entity_id:
+            return
+        state = self.hass.states.get(entity_id)
+        watts: float | None = None
+        if state is not None and state.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN, ""):
+            try:
+                watts = float(state.state)
+            except ValueError:
+                watts = None
+            if watts is not None and getattr(state, "attributes", {}).get("unit_of_measurement") == "kW":
+                watts *= 1000.0
+        if self.house.sample(dt_util.now(), watts):
+            self._save()
+
     async def _async_update_data(self) -> Plan:
+        self._sample_house()
         await self._async_refresh_solar()
         inputs = self._read_inputs()
         self.inputs = inputs
@@ -875,6 +900,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             "kostprijs": None if stock_cost is None else round(stock_cost, 4),
             "grens_negatief": limit,
             "capaciteit_kwh": inputs["capacity_kwh"],
+            "zon_overschot_kwh": plan.solar_kwh,
         }
 
         return {

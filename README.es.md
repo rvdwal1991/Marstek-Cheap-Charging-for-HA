@@ -143,8 +143,11 @@ tiene en cuenta el rendimiento solar esperado:
    Solcast, Open-Meteo y otras integraciones de previsión, y no hay que configurar nada más. Sin
    previsión allí, no cambia nada.
 2. Calcula el excedente esperado: por hora la previsión, multiplicada por el ajuste de
-   fiabilidad (por defecto 70 %), menos tu consumo propio (el ajuste *Venta: consumo propio
-   medio*).
+   fiabilidad (por defecto 70 %), menos tu consumo propio en esa hora. Con un *Sensor de
+   potencia de la casa* la integración aprende tu consumo medio por hora del día (días
+   laborables y fines de semana por separado) y usa ese valor, de modo que un mediodía que la
+   propia casa se come no deja excedente; sin el sensor se usa el valor fijo de *Venta: consumo
+   propio medio*.
 3. Por la noche carga solo lo justo para que quede espacio para ese excedente cuando salga el
    sol: la energía que gasta tu consumo propio hasta entonces, más lo que aún hace falta. En un
    día soleado pueden ser unos pocos kWh en lugar de una batería llena, o nada en absoluto (el
@@ -297,6 +300,7 @@ En *Configurar* dentro de la integración:
 | Vida útil de la batería (ciclos) | 6000 | Número esperado de ciclos completos. Amortización por kWh = precio ÷ (ciclos × capacidad); por ejemplo € 1500 en 6000 ciclos de 5,12 kWh son unos € 0,049 por kWh. |
 | Usar la previsión solar | Activado | Tener en cuenta el rendimiento solar esperado del panel de Energía al cargar por la noche. |
 | Fiabilidad de la previsión solar | 70 % | La parte de la previsión con la que contar. Más baja es más prudente. |
+| Sensor de potencia de la casa | ninguno | Sensor opcional con la potencia que consume toda la casa (W o kW), sin la batería. La integración aprende la media por hora del día, para días laborables y fines de semana, y la usa para el excedente solar en lugar del consumo propio fijo. Un cargador de coche distorsiona la media, así que déjalo fuera si puedes. |
 | Beneficio mínimo por kWh | € 0,02 | Lo mínimo que debe rendir cargar, tras las pérdidas de carga. Las horas que están menos de medio céntimo por encima del límite también cuentan, para que una noche casi plana no se trocee por una fracción de céntimo. |
 | Número de horas más caras con las que comparar | 6 | Con cuántas horas caras posteriores se compara una hora. |
 | Horas a mirar hacia delante | 18 | Hasta dónde mirar después de una hora para buscar horas caras. |
@@ -431,6 +435,15 @@ python3 -m unittest discover -s tests -v
 ## Registro de cambios
 
 Véase [CHANGELOG.md](CHANGELOG.md), incluidos los cambios incompatibles.
+
+## Agradecimientos
+
+Esta integración se apoya en el trabajo de la comunidad de Marstek Venus:
+
+- El [hilo del foro de Tweakers](https://gathering.tweakers.net/forum/list_messages/2282240/0) donde se comenta este trabajo comunitario, una mención de honor para todos los que comparten allí hallazgos y configuraciones.
+- [Superduper1969](https://github.com/Superduper1969) por las configuraciones de LilyGO RS485 y Elfin EW11 en torno a las que se ha construido esta integración, y scruysberghs, a quien se agradece en esas configuraciones.
+- [fonske](https://github.com/fonske) por la configuración Modbus TCP de la Venus E v3.
+- [ViperRNMC](https://github.com/ViperRNMC) por la integración Marstek Venus Modbus.
 
 ## Licencia
 

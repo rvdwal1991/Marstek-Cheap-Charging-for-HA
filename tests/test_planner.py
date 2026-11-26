@@ -474,6 +474,21 @@ class ZonneverwachtingTest(unittest.TestCase):
         careful = self.run_plan(12, self.sun("2026-11-11", 1200), factor=0.5)
         self.assertLess(sunny.energy_kwh, careful.energy_kwh)
 
+    def test_verbruik_per_uur_telt_mee(self):
+        sun = self.sun("2026-11-11", 1000)  # 1000 Wh per uur, 09:00 - 16:00
+        flat = self.run_plan(12, sun)  # vast verbruik van 400 W: ruim overschot
+        profile = [400.0] * 48
+        for hour in range(9, 17):
+            profile[hour] = 1100.0  # overdag verbruikt het huis meer dan de zon levert
+        params = planner.PlanParams(solar=sun, solar_factor=1.0, house_power_w=400, house_profile=tuple(profile))
+        busy = planner.compute_plan(
+            prices=PRICES, now=at("2026-11-10T19:40:00"), soc=12, capacity_kwh=5.12,
+            max_power_w=2500, efficiency=ETA, charging=False, active=True, params=params, tz=TZ,
+        )
+        self.assertGreater(flat.solar_kwh, 3)
+        self.assertEqual(busy.solar_kwh, 0)  # niets over: gewoon vol bijladen
+        self.assertGreater(busy.energy_kwh, flat.energy_kwh + 1.5)
+
     def test_accu_al_genoeg_gevuld_voor_het_zonne_overschot(self):
         # Accu op 60 % en veel zon: niets bijladen, de zon doet het.
         result = self.run_plan(60, self.sun("2026-11-11", 3000))

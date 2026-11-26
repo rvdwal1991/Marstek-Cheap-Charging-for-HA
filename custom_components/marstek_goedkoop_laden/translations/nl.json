@@ -137,7 +137,8 @@
           "modbus_slave": "Modbus-slaveadres",
           "negative_strategy": "Negatieve prijs: verdeling van de energie",
           "use_solar_forecast": "Zonneverwachting gebruiken",
-          "solar_reliability": "Betrouwbaarheid zonneverwachting"
+          "solar_reliability": "Betrouwbaarheid zonneverwachting",
+          "house_power_entity": "Huisverbruiksensor"
         },
         "data_description": {
           "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
@@ -165,7 +166,8 @@
           "battery_cycles": "Aantal volledige cycli dat de accu naar verwachting meegaat. Afschrijving per kWh = prijs ÷ (cycli × capaciteit).",
           "negative_strategy": "Naar waarde verdeeld: meer in de negatievere uren, lager vermogen. Maximale opbrengst: de beste uren eerst vol op vol vermogen.",
           "use_solar_forecast": "Houdt bij het bijladen 's nachts rekening met de verwachte zonne-opbrengst uit het Energie-dashboard, zodat er ruimte is voor de zon.",
-          "solar_reliability": "Het deel van de verwachting waarop je rekent. Lager is voorzichtiger."
+          "solar_reliability": "Het deel van de verwachting waarop je rekent. Lager is voorzichtiger.",
+          "house_power_entity": "Optioneel. Een vermogenssensor (W of kW) met het totale vermogen dat het huis verbruikt, zonder de accu. De integratie leert je gemiddelde verbruik per uur van de dag (werkdagen en weekend apart) en gebruikt dat voor het zonne-overschot in plaats van het vaste eigen verbruik."
         }
       }
     }

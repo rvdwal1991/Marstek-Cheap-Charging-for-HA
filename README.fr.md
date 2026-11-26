@@ -147,8 +147,11 @@ presque rien, ce qui compte davantage maintenant que la compensation (*saldering
    Forecast.Solar, Solcast, Open-Meteo et d'autres intégrations de prévision fonctionnent, et
    il n'y a rien de plus à configurer. Sans prévision à cet endroit, rien ne change.
 2. Elle calcule le surplus attendu : par heure, la prévision multipliée par le réglage de
-   fiabilité (par défaut 70 %), moins votre propre consommation (le réglage *Vente : consommation
-   propre moyenne*).
+   fiabilité (par défaut 70 %), moins votre propre consommation pendant cette heure. Avec un
+   *Capteur de puissance de la maison*, l'intégration apprend votre consommation moyenne par heure
+   de la journée (jours de semaine et week-ends séparément) et l'utilise, de sorte qu'un midi que
+   la maison consomme elle-même ne laisse aucun surplus ; sans le capteur, la
+   *Vente : consommation propre moyenne* fixe est utilisée.
 3. Elle ne charge la nuit que ce qu'il faut pour qu'il reste de la place pour ce surplus au lever
    du soleil : l'énergie que votre propre consommation aura utilisée d'ici là, plus ce qui est encore
    nécessaire. Par une journée ensoleillée, cela peut représenter quelques kWh au lieu d'une
@@ -305,6 +308,7 @@ Sous *Configurer* dans l'intégration :
 | Durée de vie de la batterie (cycles) | 6000 | Nombre attendu de cycles complets. Amortissement par kWh = prix ÷ (cycles × capacité) ; par exemple € 1 500 sur 6 000 cycles de 5,12 kWh font environ € 0,049 par kWh. |
 | Utiliser la prévision solaire | Activé | Tient compte de la production solaire attendue du tableau de bord Énergie lors de la charge de nuit. |
 | Fiabilité de la prévision solaire | 70 % | La part de la prévision sur laquelle compter. Plus bas = plus prudent. |
+| Capteur de puissance de la maison | aucun | Capteur facultatif de la puissance utilisée par toute la maison (W ou kW), sans la batterie. L'intégration apprend la moyenne par heure de la journée, pour les jours de semaine et les week-ends, et l'utilise pour le surplus solaire à la place de la consommation propre fixe. Une borne de recharge de véhicule fausse la moyenne, laissez-la donc de côté si possible. |
 | Gain minimal par kWh | € 0,02 | Ce que la charge doit rapporter au minimum, après les pertes de charge. Les heures qui dépassent la limite de moins d'un demi-centime comptent quand même, afin qu'une nuit presque plate ne soit pas découpée pour une fraction de centime. |
 | Nombre d'heures les plus chères | 6 | Avec combien d'heures chères ultérieures une heure est comparée. |
 | Heures à anticiper | 18 | Jusqu'où regarder après une heure pour trouver les heures chères. |
@@ -440,6 +444,15 @@ python3 -m unittest discover -s tests -v
 ## Journal des modifications
 
 Voir [CHANGELOG.md](CHANGELOG.md), y compris les changements incompatibles.
+
+## Remerciements
+
+Cette intégration s'appuie sur le travail de la communauté Marstek Venus :
+
+- Le [fil du forum Tweakers](https://gathering.tweakers.net/forum/list_messages/2282240/0) où ce travail communautaire est discuté, avec une mention d'honneur pour tous ceux qui y partagent leurs découvertes et leurs configurations.
+- [Superduper1969](https://github.com/Superduper1969) pour les configurations LilyGO RS485 et Elfin EW11 autour desquelles cette intégration est construite, et scruysberghs, remercié dans ces configurations.
+- [fonske](https://github.com/fonske) pour la configuration Modbus TCP de la Venus E v3.
+- [ViperRNMC](https://github.com/ViperRNMC) pour l'intégration Marstek Venus Modbus.
 
 ## Licence
 

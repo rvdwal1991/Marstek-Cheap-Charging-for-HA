@@ -137,7 +137,8 @@
           "modbus_slave": "Modbus-slaveadres",
           "negative_strategy": "Negative priis: ferdieling fan de enerzjy",
           "use_solar_forecast": "Sinneprognose brûke",
-          "solar_reliability": "Betrouberens fan de sinneprognose"
+          "solar_reliability": "Betrouberens fan de sinneprognose",
+          "house_power_entity": "Sensor foar húsfermogen"
         },
         "data_description": {
           "price_entity": "Sensor mei de publisearre oerenprizen yn in attribút, bygelyks de Zonneplan-oerenpriissensor.",
@@ -165,7 +166,8 @@
           "battery_cycles": "Oantal folsleine syklussen dat de accu nei ferwachting meigiet. Ôfskriuwing per kWh = priis ÷ (syklussen × kapasiteit).",
           "negative_strategy": "Nei wearde ferdield: mear yn de negativere oeren, leger fermogen. Maksimale opbringst: de bêste oeren earst fol op fol fermogen.",
           "use_solar_forecast": "Hâldt by it laden yn de nacht rekken mei de ferwachte sinne-opbringst út it Enerzjydashboerd, sadat der romte is foar de sinne.",
-          "solar_reliability": "It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger."
+          "solar_reliability": "It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger.",
+          "house_power_entity": "Opsjoneel. In fermogenssensor (W of kW) mei it totale fermogen dat it hûs brûkt, sûnder de batterij. De yntegraasje leart dyn gemiddelde ferbrûk per oere fan de dei (wurkdagen en wykein apart) en brûkt dat foar it sinne-oerskot yn plak fan it fêste eigen ferbrûk."
         }
       }
     }
