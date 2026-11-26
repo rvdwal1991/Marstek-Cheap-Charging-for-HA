@@ -4,10 +4,10 @@
   "codeowners": ["@rvdwal1991"],
   "config_flow": true,
   "dependencies": ["frontend", "http"],
-  "documentation": "https://github.com/rvdwal1991/marstek-goedkoop-laden-ha",
+  "documentation": "https://github.com/rvdwal1991/Marstek-Cheap-Charging-for-HA",
   "integration_type": "service",
   "iot_class": "calculated",
-  "issue_tracker": "https://github.com/rvdwal1991/marstek-goedkoop-laden-ha/issues",
+  "issue_tracker": "https://github.com/rvdwal1991/Marstek-Cheap-Charging-for-HA/issues",
   "requirements": [],
   "version": "1.16.1"
 }
