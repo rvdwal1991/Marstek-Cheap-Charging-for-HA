@@ -4,6 +4,9 @@
 
 [🇳🇱 Nederlands](README.nl.md) · 🇬🇧 English
 
+[![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rvdwal1991&repository=Marstek-Cheap-Charging-for-HA&category=integration)
+[![Open your Home Assistant instance and start setting up the integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=marstek_goedkoop_laden)
+
 Tops up a Marstek Venus home battery from the grid during the cheapest hours of a dynamic
 electricity contract, so it is full before prices go up.
 
@@ -12,6 +15,15 @@ zero on the meter). This integration adds one thing: charging from the grid in t
 hours. There is also a separate option, off by default, to **sell surplus** in the most
 expensive hours.
 
+> **Hardware: only tested with the LilyGO RS485 setup.** This integration is built on, and has
+> only been tested with, a Marstek Venus (5.12 kWh) that is controlled over RS485 by a
+> **LilyGO T-CAN485 running ESPHome**. It uses the entities that this setup exposes:
+> *RS485 Control Mode*, *Forcible Charge/Discharge*, *Forcible Charge Power* (required) and, optionally,
+> *Max. Charge Power*, *Max. Discharge Power*, *Forcible Discharge Power*, *Discharging Cutoff Capacity*
+> and the total charged/discharged energy counters. Other ways of connecting the battery (cloud,
+> Modbus TCP, other integrations) are untested and most likely do not work, because they do not
+> offer these RS485 control entities.
+>
 > The integration was built around the Dutch market and Zonneplan prices (hourly prices,
 > published for the next day between 13:00 and 15:00). Any price sensor with an hourly price
 > list as an attribute will do, see [Price sensor](#price-sensor).
@@ -167,8 +179,9 @@ same in both languages.
 
 ## Installation
 
-1. Copy `custom_components/marstek_goedkoop_laden` to `/config/custom_components/`
-   (or add this repository as a custom repository in HACS) and restart Home Assistant.
+1. Install with HACS (button above, or add this repository as a custom repository, category
+   *Integration*), or copy `custom_components/marstek_goedkoop_laden` to
+   `/config/custom_components/`. Restart Home Assistant.
 2. Go to *Settings → Devices & services → Add integration → Marstek Goedkoop Laden*.
 3. Choose the price sensor and the Marstek entities. Whatever is detected is pre-filled.
 

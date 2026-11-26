@@ -4,8 +4,20 @@
 
 🇳🇱 Nederlands · [🇬🇧 English](README.md)
 
+[![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rvdwal1991&repository=Marstek-Cheap-Charging-for-HA&category=integration)
+[![Open your Home Assistant instance and start setting up the integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=marstek_goedkoop_laden)
+
 Laadt een Marstek Venus-thuisbatterij bij in de goedkoopste uren van een dynamisch
 stroomcontract, zodat hij vol is voordat de stroom duur wordt.
+
+**Hardware: alleen getest met de LilyGO RS485.** Deze integratie is gebouwd op, en alleen getest
+met, een Marstek Venus (5,12 kWh) die via RS485 wordt aangestuurd door een **LilyGO T-CAN485 met
+ESPHome**. Hij gebruikt de entiteiten die deze opzet levert: *RS485 Control Mode*, *Forcible
+Charge/Discharge*, *Forcible Charge Power* (verplicht) en, optioneel, *Max. Charge Power*,
+*Max. Discharge Power*, *Forcible Discharge Power*, *Discharging Cutoff Capacity* en de
+totaaltellers van geladen en ontladen energie. Andere manieren om de accu te koppelen (cloud,
+Modbus TCP, andere integraties) zijn niet getest en werken vermoedelijk niet, omdat ze deze
+RS485-besturing niet bieden.
 
 Planregel, stroomschema en kaarten volgen de optie *Taal* (Automatisch, Nederlands of English;
 automatisch volgt Home Assistant: Nederlands bij Nederlands, anders Engels). Entiteitsnamen volgen
@@ -162,8 +174,9 @@ planregel, het stroomschema en de kaarten Engels.
 
 ## Installatie
 
-1. Kopieer `custom_components/marstek_goedkoop_laden` naar `/config/custom_components/`
-   (of voeg deze repo toe als aangepaste repository in HACS) en herstart Home Assistant.
+1. Installeer met HACS (knop bovenaan, of voeg deze repo toe als aangepaste repository, categorie
+   *Integratie*), of kopieer `custom_components/marstek_goedkoop_laden` naar
+   `/config/custom_components/`. Herstart Home Assistant.
 2. Ga naar *Instellingen → Apparaten en diensten → Integratie toevoegen → Marstek Goedkoop Laden*.
 3. Kies de prijssensor en de entiteiten van de Marstek. Wat herkend wordt, staat al ingevuld.
 
