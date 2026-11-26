@@ -315,5 +315,41 @@ class AfschrijvingTest(unittest.TestCase):
         self.assertEqual(veel.charge_hours, ())
 
 
+PRICES_25 = [
+    planner.PriceSlot(datetime.fromisoformat(row["start"]), row["price"])
+    for row in json.loads((ROOT / "prijzen_2026_11_25.json").read_text())
+]
+
+
+class GatTussenLaaduren(unittest.TestCase):
+    """25 november 2026: laden om 22:00, 01:00 en 02:00; na 22:00 ging de status op 'klaar'."""
+
+    def plan(self, now, soc, charging, memory):
+        return planner.compute_plan(
+            prices=PRICES_25, now=at(now), soc=soc, capacity_kwh=5.12, max_power_w=2500,
+            efficiency=0.77, charging=charging, active=True, memory=memory,
+            params=planner.PlanParams(margin=0.03), tz=TZ,
+        )
+
+    def test_na_een_gat_gaat_de_laadbeurt_door(self):
+        first = self.plan("2026-11-25T22:05:00", 13, False, planner.PlanMemory())
+        self.assertEqual(hours(first), ["25 22:00", "26 01:00", "26 02:00"])
+        memory = planner.PlanMemory(
+            status=first.status, charge_hours=first.charge_hours, window_end=first.window_end
+        )
+        second = self.plan("2026-11-25T23:00:05", 46, False, memory)
+        self.assertNotEqual(second.status, planner.STATUS_DONE)
+        self.assertTrue(second.charge_hours)
+        self.assertTrue(all(h > at("2026-11-25T23:00:05") for h in second.charge_hours))
+
+    def test_na_het_laatste_uur_is_het_klaar(self):
+        memory = planner.PlanMemory(
+            status=planner.STATUS_CHARGING, charge_hours=(at("2026-11-26T02:00:00"),),
+            window_end=at("2026-11-26T06:00:00"),
+        )
+        result = self.plan("2026-11-26T03:00:05", 97, False, memory)
+        self.assertEqual(result.status, planner.STATUS_DONE)
+
+
 if __name__ == "__main__":
     unittest.main()

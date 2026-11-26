@@ -281,6 +281,9 @@ def compute_plan(
         active
         and memory.status == STATUS_CHARGING
         and (0 not in chosen or prices[0].start not in previous)
+        # Staan er in het vorige plan nog laaduren te wachten (na een gat tussen de
+        # uren), dan is de laadbeurt niet klaar.
+        and not any(hour > now for hour in previous)
     ):
         if memory.window_end is not None and memory.window_end > now:
             done_until = memory.window_end
