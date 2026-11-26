@@ -4,6 +4,12 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.25.1 (2026-11-26)
+- **Prices card for phones and touch:** tap or drag over the chart to pick an hour, the price, the time
+  and what happens in that hour appear above the chart (it shows the current hour by default). The
+  whole column is touchable, the chart is drawn at the real card width so the text stays readable, and
+  price labels on the bars switch off by themselves when the bars get too narrow.
+
 ## 1.25.0 (2026-11-26)
 - **Cleanup, no change in behaviour:** the flow chart and the solar forecast moved out of
   `coordinator.py` into `flow.py` and `solar.py`, the long update routine is split into steps, and

@@ -151,13 +151,20 @@ const STYLE = `
   .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-top: 14px; }
   .fact { font-size: 12px; color: var(--secondary-text-color); min-width: 0; }
   .fact b { display: block; font-size: 15px; font-weight: 500; color: var(--primary-text-color); overflow-wrap: anywhere; }
-  .chart svg { display: block; width: 100%; height: auto; }
+  .chart svg { display: block; width: 100%; height: auto; touch-action: pan-y; user-select: none;
+               -webkit-user-select: none; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+  .chart .hit { fill: transparent; }
+  .chart .sel { fill: none; stroke: var(--primary-text-color); stroke-width: 2; rx: 3; }
+  .chart .detail { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-height: 28px;
+                   margin: 0 0 6px; }
+  .chart .detail b { font-size: 18px; font-weight: 500; color: var(--primary-text-color); }
+  .chart .detail span { font-size: 13px; color: var(--secondary-text-color); }
   .chart .b { fill: var(--secondary-text-color); opacity: 0.35; }
   .chart .b.laden { fill: var(--success-color, #43a047); opacity: 1; }
   .chart .b.verkoop { fill: var(--warning-color, #ffa600); opacity: 1; }
   .chart .b.negatief { fill: var(--info-color, #039be5); opacity: 1; }
   .chart .b.negatief_venster { fill: var(--info-color, #039be5); opacity: 0.45; }
-  .chart text { fill: var(--secondary-text-color); font-size: 10px; }
+  .chart text { fill: var(--secondary-text-color); font-size: 11px; }
   .chart .zero { stroke: var(--divider-color); stroke-width: 1; }
   .chart .now { stroke: var(--primary-color); stroke-width: 1.5; stroke-dasharray: 3 3; }
   .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--secondary-text-color); }
@@ -1189,70 +1196,149 @@ class MarstekGoedkoopLadenPrijzenCard extends MarstekBaseCard {
     ]);
   }
 
+  constructor() {
+    super();
+    this._selected = null; // begin van het aangeraakte uur (ms); null = het huidige uur
+    this._width = 0;
+  }
+
+  connectedCallback() {
+    if (typeof ResizeObserver === "undefined") return;
+    this._observer = new ResizeObserver(() => {
+      const width = Math.round(this.clientWidth);
+      if (width && Math.abs(width - this._width) >= 8) {
+        this._width = width;
+        this._signature = null;
+        if (this._hass) this._render();
+      }
+    });
+    this._observer.observe(this);
+  }
+
+  disconnectedCallback() {
+    if (this._observer) this._observer.disconnect();
+  }
+
   getCardSize() {
     return 3;
   }
 
-  _body(flow) {
+  _rows(flow) {
     const cfg = this._config;
-    const back = Number.isFinite(Number(cfg.hours_back)) && cfg.hours_back !== "" && cfg.hours_back != null ? Number(cfg.hours_back) : 2;
+    const HOUR = 3600e3;
+    const back = cfg.hours_back === "" || cfg.hours_back == null || !Number.isFinite(Number(cfg.hours_back))
+      ? 2 : Number(cfg.hours_back);
     const ahead = Number(cfg.hours_ahead) > 0 ? Number(cfg.hours_ahead) : Infinity;
     const now = Date.now();
-    const HOUR = 3600e3;
-    const rows = (flow.prijzen || [])
+    return (flow.prijzen || [])
       .map((row) => ({ ...row, time: new Date(row.start) }))
       .filter((row) => row.time.getTime() + HOUR > now - back * HOUR && row.time.getTime() <= now + ahead * HOUR);
+  }
+
+  _body(flow) {
+    const cfg = this._config;
+    const HOUR = 3600e3;
+    const now = Date.now();
+    const rows = this._rows(flow);
     if (!rows.length) return `<div class="empty">${t("Geen prijzen beschikbaar.")}</div>`;
 
-    const W = 600, left = 38, top = 14;
-    const H = Math.max(80, Number(cfg.height) || 140);
-    const bottom = cfg.show_values === true && rows.some((row) => row.prijs < 0) ? 30 : 18;
+    // Teken op de echte breedte van de kaart, zodat tekst leesbaar blijft op een telefoon.
+    const W = Math.max(260, (this._width || this.clientWidth || 560) - 32);
+    const left = 34, top = 16;
+    const H = Math.max(80, Number(cfg.height) || 150);
     const values = rows.map((row) => row.prijs);
     const high = Math.max(0, ...values), low = Math.min(0, ...values);
     const span = (high - low) || 1;
-    const y = (value) => top + ((high - value) / span) * (H - top - bottom);
     const bw = (W - left) / rows.length;
     const gap = Math.min(3, bw * 0.15);
-    const every = Math.max(1, Math.ceil(rows.length / 12));
-    const showValues = cfg.show_values === true && rows.length <= 24;
+    const every = Math.max(1, Math.ceil(26 / bw));
+    const showValues = cfg.show_values === true && bw >= 30;
+    const bottom = showValues && low < 0 ? 30 : 20;
+    const y = (value) => top + ((high - value) / span) * (H - top - bottom);
     const labels = {
       laden: t("Bijladen"), verkoop: t("Verkoop"), negatief: t("Negatieve prijs"), negatief_venster: t("Negatieve prijs"),
     };
 
-    let bars = "", axis = "", marks = "";
+    const current = rows.findIndex((row) => row.time.getTime() <= now && now < row.time.getTime() + HOUR);
+    let chosen = rows.findIndex((row) => row.time.getTime() === this._selected);
+    if (chosen < 0) chosen = current >= 0 ? current : 0;
+
+    let bars = "", axis = "", marks = "", hits = "";
     rows.forEach((row, i) => {
       const x = left + i * bw;
       const y0 = y(0), y1 = y(row.prijs);
-      const barTop = Math.min(y0, y1), barHeight = Math.max(1, Math.abs(y0 - y1));
-      const what = labels[row.soort] ? ` · ${labels[row.soort]}` : "";
-      bars += `<rect class="b ${row.soort || ""}" x="${(x + gap / 2).toFixed(1)}" y="${barTop.toFixed(1)}" width="${(bw - gap).toFixed(1)}" height="${barHeight.toFixed(1)}" rx="2"><title>${hourLabel(row.time)}:00 · € ${number(row.prijs, 3)}${what}</title></rect>`;
-      if (i % every === 0) axis += `<text x="${(x + bw / 2).toFixed(1)}" y="${H - 3}" text-anchor="middle">${hourLabel(row.time)}</text>`;
+      const barTop = Math.min(y0, y1), barHeight = Math.max(2, Math.abs(y0 - y1));
+      bars += `<rect class="b ${row.soort || ""}" x="${(x + gap / 2).toFixed(1)}" y="${barTop.toFixed(1)}" width="${Math.max(1, bw - gap).toFixed(1)}" height="${barHeight.toFixed(1)}" rx="2"/>`;
+      // De hele kolom is aan te raken, ook als de staaf zelf laag is.
+      hits += `<rect class="hit" data-i="${i}" x="${x.toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}"/>`;
+      if (i % every === 0) axis += `<text x="${(x + bw / 2).toFixed(1)}" y="${H - 4}" text-anchor="middle">${hourLabel(row.time)}</text>`;
       if (showValues) {
-        const labelY = row.prijs >= 0 ? barTop - 3 : barTop + barHeight + 10;
+        const labelY = row.prijs >= 0 ? barTop - 3 : barTop + barHeight + 11;
         marks += `<text x="${(x + bw / 2).toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle">${number(row.prijs, 2)}</text>`;
       }
     });
-    const current = rows.findIndex((row) => row.time.getTime() <= now && now < row.time.getTime() + HOUR);
     const nowLine = current < 0 ? "" : (() => {
       const x = left + (current + (now - rows[current].time.getTime()) / HOUR) * bw;
-      return `<line class="now" x1="${x.toFixed(1)}" y1="${top - 4}" x2="${x.toFixed(1)}" y2="${H - bottom}"/>`;
+      return `<line class="now" x1="${x.toFixed(1)}" y1="${top - 6}" x2="${x.toFixed(1)}" y2="${H - bottom}"/>`;
     })();
+    const selX = left + chosen * bw;
+    const selected = `<rect class="sel" x="${(selX + 0.5).toFixed(1)}" y="${top - 6}" width="${(bw - 1).toFixed(1)}" height="${(H - bottom - top + 6).toFixed(1)}"/>`;
     const scale = `
-      <text x="${left - 4}" y="${(top + 3).toFixed(1)}" text-anchor="end">${number(high, 2)}</text>
-      ${low < 0 ? `<text x="${left - 4}" y="${(H - bottom).toFixed(1)}" text-anchor="end">${number(low, 2)}</text>` : ""}
-      <text x="${left - 4}" y="${(y(0) + 3).toFixed(1)}" text-anchor="end">0</text>`;
+      <text x="${left - 5}" y="${(y(high) + 4).toFixed(1)}" text-anchor="end">${number(high, 2)}</text>
+      ${low < 0 ? `<text x="${left - 5}" y="${(H - bottom).toFixed(1)}" text-anchor="end">${number(low, 2)}</text>` : ""}
+      <text x="${left - 5}" y="${(y(0) + 4).toFixed(1)}" text-anchor="end">0</text>`;
     const kinds = ["laden", "verkoop", "negatief"].filter((kind) => rows.some((row) => row.soort === kind || (kind === "negatief" && row.soort === "negatief_venster")));
     const swatch = { laden: "var(--success-color, #43a047)", verkoop: "var(--warning-color, #ffa600)", negatief: "var(--info-color, #039be5)" };
     const legend = kinds.map((kind) => `<span><i style="background:${swatch[kind]}"></i>${labels[kind]}</span>`).join("")
       + (current >= 0 ? `<span><i style="background:var(--primary-color)"></i>${t("Nu")}</span>` : "");
+
+    // Wat je aanraakt (of het huidige uur) staat in tekst boven de grafiek.
+    const pick = rows[chosen];
+    const isNow = chosen === current;
+    const what = labels[pick.soort] ? `<span>${labels[pick.soort]}</span>` : "";
+    const detail = `
+      <div class="detail" aria-live="polite">
+        <b>€ ${number(pick.prijs, 3)}/kWh</b>
+        <span>${hourLabel(pick.time)}:00 – ${hourLabel(new Date(pick.time.getTime() + HOUR))}:00${isNow ? ` · ${t("Nu")}` : ""}</span>
+        ${what}
+      </div>`;
     return `
       <div class="chart">
-        <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t("Prijzen per uur in € per kWh")}">
+        ${detail}
+        <svg viewBox="0 0 ${W.toFixed(0)} ${H}" role="img" aria-label="${t("Prijzen per uur in € per kWh")}">
           <line class="zero" x1="${left}" y1="${y(0).toFixed(1)}" x2="${W}" y2="${y(0).toFixed(1)}"/>
-          ${scale}${bars}${marks}${nowLine}${axis}
+          ${scale}${bars}${marks}${nowLine}${selected}${axis}${hits}
         </svg>
         ${legend ? `<div class="legend">${legend}</div>` : ""}
       </div>`;
+  }
+
+  _render() {
+    const before = this._signature;
+    super._render();
+    if (this._signature === before) return;
+    const svg = this.shadowRoot.querySelector(".chart svg");
+    const state = this._hass && this._hass.states[this._entityId];
+    const flow = state && state.attributes.stroomschema;
+    if (!svg || !flow) return;
+    const rows = this._rows(flow);
+    const pick = (event) => {
+      const rect = svg.getBoundingClientRect();
+      const left = 34 * (rect.width / svg.viewBox.baseVal.width);
+      const fraction = (event.clientX - rect.left - left) / (rect.width - left);
+      const index = Math.min(rows.length - 1, Math.max(0, Math.floor(fraction * rows.length)));
+      const start = rows[index] && rows[index].time.getTime();
+      if (start && start !== this._selected) {
+        this._selected = start;
+        this._signature = null;
+        this._render();
+      }
+    };
+    // Aanraken of slepen kiest een uur; vertikaal scrollen blijft werken (touch-action: pan-y).
+    svg.addEventListener("pointerdown", pick);
+    svg.addEventListener("pointermove", (event) => {
+      if (event.pointerType !== "mouse" || event.buttons) pick(event);
+    });
   }
 }
 
