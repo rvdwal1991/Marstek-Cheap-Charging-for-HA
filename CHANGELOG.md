@@ -4,6 +4,15 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.25.0 (unreleased)
+- **Cleanup, no change in behaviour:** the flow chart and the solar forecast moved out of
+  `coordinator.py` into `flow.py` and `solar.py`, the long update routine is split into steps, and
+  unused code is gone.
+- **Options screen in groups** (Battery, Charging, Negative price, Solar, Selling, and the entities in
+  a collapsed group). Every setting is still there and keeps its value; only the layout changed.
+- **README rewritten** in all languages: shorter, with a quick start and an overview of the modes at
+  the top, compatibility and settings grouped, and the technical details at the bottom.
+
 ## 1.24.1 (2026-11-26)
 - **Fix:** the manifest now lists `energy` under `after_dependencies`, because the solar forecast is read
   from the Energy dashboard. This also fixes the hassfest check on GitHub. Nothing else changes.

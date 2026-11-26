@@ -103,71 +103,115 @@
         "title": "Innstillinger",
         "description": "Endre entitetene eller beregningsregelen. Integrasjonen lastes på nytt etterpå.",
         "data": {
-          "price_entity": "Prissensor",
-          "soc_entity": "Ladenivå (SoC)",
-          "control_mode_entity": "RS485 Control Mode",
-          "force_mode_entity": "Forcible charge/discharge",
-          "force_power_entity": "Forcible charge power",
-          "max_power_entity": "Maksimal ladeeffekt",
-          "capacity_entity": "Batterikapasitet (sensor)",
-          "charged_energy_entity": "Total ladet energi",
-          "discharged_energy_entity": "Total utladet energi",
-          "price_attribute": "Attributt med prisene",
-          "capacity_kwh": "Batterikapasitet",
-          "default_efficiency": "Virkningsgrad når tellerne mangler",
-          "margin": "Minste gevinst per kWh",
-          "top_hours": "Antall dyreste timer å sammenligne med",
-          "lookahead_hours": "Timer å se fremover",
-          "min_lookahead_hours": "Minste antall kjente timer fremover",
-          "min_power": "Minste ladeeffekt",
-          "force_discharge_power_entity": "Forcible discharge power",
-          "max_discharge_power_entity": "Maksimal utladeeffekt",
-          "min_soc_entity": "Utladegrense (SoC)",
-          "sell_margin": "Salg: minste gevinst per kWh",
-          "house_power": "Salg: gjennomsnittlig eget forbruk",
-          "reserve_min_soc": "Salg: minste reserve",
-          "min_soc": "Utladegrense",
-          "sell_price_factor": "Salgspris: faktor",
-          "sell_price_offset": "Salgspris: fradrag",
-          "negative_price_limit": "Negativ pris: grense",
-          "language": "Språk",
-          "battery_price": "Kjøpspris for batteriet",
-          "battery_cycles": "Batteriets levetid (sykluser)",
-          "modbus_hub": "Navn på Modbus-huben",
-          "modbus_slave": "Modbus-slaveadresse",
-          "negative_strategy": "Negativ pris: hvordan energien fordeles",
-          "use_solar_forecast": "Bruk solprognosen",
-          "solar_reliability": "Pålitelighet for solprognosen",
-          "house_power_entity": "Husforbruk-sensor"
+          "language": "Språk"
         },
         "data_description": {
-          "price_entity": "Sensor med de publiserte timeprisene i et attributt, for eksempel Zonneplan-timeprissensoren.",
-          "control_mode_entity": "Hovedbryter for tvunget lading/utlading: enable eller disable.",
-          "force_mode_entity": "Retning ved tvungen drift: charge, discharge eller stop.",
-          "force_power_entity": "Settes til den fordelte effekten under lading.",
-          "max_power_entity": "Bestemmer antall ladetimer og øvre grense for effekten. Tom = 2500 W.",
-          "capacity_entity": "Tom = den faste kapasiteten fra innstillingene.",
-          "charged_energy_entity": "Sammen med utladet energi bestemmer denne virkningsgraden. Tom = fast virkningsgrad.",
-          "default_efficiency": "Virkningsgraden beregnes ut fra energitellerne til Marstek (total utladet delt på total ladet). Denne faste verdien gjelder bare når tellerne ikke er satt eller ikke har noen verdi.",
-          "margin": "Etter ladetapet må lading gi minst dette beløpet i gevinst.",
-          "top_hours": "En time er billig nok når prisen er lavere enn virkningsgraden ganger gjennomsnittet av disse dyreste timene etter den, minus marginen.",
-          "min_lookahead_hours": "Timer med færre kjente priser etter seg blir ignorert.",
-          "force_discharge_power_entity": "Kreves for salg. Tom = salg er ikke mulig.",
-          "max_discharge_power_entity": "Øvre grense for salgseffekten. Tom = 2500 W.",
-          "min_soc_entity": "Under dette SoC-nivået utlades ikke Marstek. Tom = den faste verdien fra innstillingene.",
-          "sell_margin": "Det selges bare når salgsprisen overstiger kostnaden ved å lade opp igjen (ladepris delt på virkningsgraden) pluss dette beløpet.",
-          "house_power": "Bestemmer reserven: denne effekten ganger timene til neste lading blir værende i batteriet.",
-          "reserve_min_soc": "Selg aldri under dette SoC-nivået.",
-          "min_soc": "Brukes bare når ingen entitet for utladegrense er satt.",
-          "sell_price_factor": "Salgspris = timepris ganger denne faktoren, minus fradraget. Med nettmåling (saldering): 1 og 0. Uten, for eksempel 0,826 og 0,108 for ren markedspris.",
-          "negative_price_limit": "Under denne timeprisen lader batteriet alltid med full effekt (når bryteren er på). Standard 0: bare ved en virkelig negativ pris.",
-          "language": "Språk for plantekst, flytskjema og kort. Automatisk følger språket i Home Assistant.",
-          "battery_price": "Kjøpspris for batteriet i euro, til avskrivning. 0 betyr at ingen avskrivning regnes med.",
-          "battery_cycles": "Antall fulle sykluser batteriet forventes å vare. Avskrivning per kWh = pris ÷ (sykluser × kapasitet).",
-          "negative_strategy": "Fordel etter verdi: mer i de mest negative timene, lavere effekt. Maksimal gevinst: fyll de beste timene først med full effekt.",
-          "use_solar_forecast": "Tar hensyn til forventet solproduksjon fra Energi-dashbordet ved lading om natten, slik at det er plass til solen.",
-          "solar_reliability": "Den delen av prognosen det skal regnes med. Lavere er mer forsiktig.",
-          "house_power_entity": "Valgfritt. En effektsensor (W eller kW) med den totale effekten huset bruker, uten batteriet. Integrasjonen lærer ditt gjennomsnittlige forbruk per time på døgnet (hverdager og helger hver for seg) og bruker det til solcelleoverskuddet i stedet for det faste egne forbruket."
+          "language": "Språk for plantekst, flytskjema og kort. Automatisk følger språket i Home Assistant."
+        },
+        "sections": {
+          "battery": {
+            "name": "Batteri",
+            "data": {
+              "capacity_kwh": "Batterikapasitet",
+              "default_efficiency": "Virkningsgrad når tellerne mangler",
+              "battery_price": "Kjøpspris for batteriet",
+              "battery_cycles": "Batteriets levetid (sykluser)",
+              "min_soc": "Utladegrense"
+            },
+            "data_description": {
+              "default_efficiency": "Virkningsgraden beregnes ut fra energitellerne til Marstek (total utladet delt på total ladet). Denne faste verdien gjelder bare når tellerne ikke er satt eller ikke har noen verdi.",
+              "battery_price": "Kjøpspris for batteriet i euro, til avskrivning. 0 betyr at ingen avskrivning regnes med.",
+              "battery_cycles": "Antall fulle sykluser batteriet forventes å vare. Avskrivning per kWh = pris ÷ (sykluser × kapasitet).",
+              "min_soc": "Brukes bare når ingen entitet for utladegrense er satt."
+            }
+          },
+          "charging": {
+            "name": "Lading",
+            "data": {
+              "margin": "Minste gevinst per kWh",
+              "min_power": "Minste ladeeffekt",
+              "price_attribute": "Attributt med prisene",
+              "top_hours": "Antall dyreste timer å sammenligne med",
+              "lookahead_hours": "Timer å se fremover",
+              "min_lookahead_hours": "Minste antall kjente timer fremover"
+            },
+            "data_description": {
+              "margin": "Etter ladetapet må lading gi minst dette beløpet i gevinst.",
+              "top_hours": "En time er billig nok når prisen er lavere enn virkningsgraden ganger gjennomsnittet av disse dyreste timene etter den, minus marginen.",
+              "min_lookahead_hours": "Timer med færre kjente priser etter seg blir ignorert."
+            }
+          },
+          "negative": {
+            "name": "Negativ pris",
+            "data": {
+              "negative_price_limit": "Negativ pris: grense",
+              "negative_strategy": "Negativ pris: hvordan energien fordeles"
+            },
+            "data_description": {
+              "negative_price_limit": "Under denne timeprisen lader batteriet alltid med full effekt (når bryteren er på). Standard 0: bare ved en virkelig negativ pris.",
+              "negative_strategy": "Fordel etter verdi: mer i de mest negative timene, lavere effekt. Maksimal gevinst: fyll de beste timene først med full effekt."
+            }
+          },
+          "solar": {
+            "name": "Sol",
+            "data": {
+              "use_solar_forecast": "Bruk solprognosen",
+              "solar_reliability": "Pålitelighet for solprognosen",
+              "house_power_entity": "Husforbruk-sensor"
+            },
+            "data_description": {
+              "use_solar_forecast": "Tar hensyn til forventet solproduksjon fra Energi-dashbordet ved lading om natten, slik at det er plass til solen.",
+              "solar_reliability": "Den delen av prognosen det skal regnes med. Lavere er mer forsiktig.",
+              "house_power_entity": "Valgfritt. En effektsensor (W eller kW) med den totale effekten huset bruker, uten batteriet. Integrasjonen lærer ditt gjennomsnittlige forbruk per time på døgnet (hverdager og helger hver for seg) og bruker det til solcelleoverskuddet i stedet for det faste egne forbruket."
+            }
+          },
+          "selling": {
+            "name": "Salg",
+            "data": {
+              "sell_margin": "Salg: minste gevinst per kWh",
+              "house_power": "Salg: gjennomsnittlig eget forbruk",
+              "reserve_min_soc": "Salg: minste reserve",
+              "sell_price_factor": "Salgspris: faktor",
+              "sell_price_offset": "Salgspris: fradrag"
+            },
+            "data_description": {
+              "sell_margin": "Det selges bare når salgsprisen overstiger kostnaden ved å lade opp igjen (ladepris delt på virkningsgraden) pluss dette beløpet.",
+              "house_power": "Bestemmer reserven: denne effekten ganger timene til neste lading blir værende i batteriet.",
+              "reserve_min_soc": "Selg aldri under dette SoC-nivået.",
+              "sell_price_factor": "Salgspris = timepris ganger denne faktoren, minus fradraget. Med nettmåling (saldering): 1 og 0. Uten, for eksempel 0,826 og 0,108 for ren markedspris."
+            }
+          },
+          "entities": {
+            "name": "Entiteter",
+            "data": {
+              "price_entity": "Prissensor",
+              "soc_entity": "Ladenivå (SoC)",
+              "control_mode_entity": "RS485 Control Mode",
+              "force_mode_entity": "Forcible charge/discharge",
+              "force_power_entity": "Forcible charge power",
+              "max_power_entity": "Maksimal ladeeffekt",
+              "capacity_entity": "Batterikapasitet (sensor)",
+              "charged_energy_entity": "Total ladet energi",
+              "discharged_energy_entity": "Total utladet energi",
+              "force_discharge_power_entity": "Forcible discharge power",
+              "max_discharge_power_entity": "Maksimal utladeeffekt",
+              "min_soc_entity": "Utladegrense (SoC)",
+              "modbus_hub": "Navn på Modbus-huben",
+              "modbus_slave": "Modbus-slaveadresse"
+            },
+            "data_description": {
+              "price_entity": "Sensor med de publiserte timeprisene i et attributt, for eksempel Zonneplan-timeprissensoren.",
+              "control_mode_entity": "Hovedbryter for tvunget lading/utlading: enable eller disable.",
+              "force_mode_entity": "Retning ved tvungen drift: charge, discharge eller stop.",
+              "force_power_entity": "Settes til den fordelte effekten under lading.",
+              "max_power_entity": "Bestemmer antall ladetimer og øvre grense for effekten. Tom = 2500 W.",
+              "capacity_entity": "Tom = den faste kapasiteten fra innstillingene.",
+              "charged_energy_entity": "Sammen med utladet energi bestemmer denne virkningsgraden. Tom = fast virkningsgrad.",
+              "force_discharge_power_entity": "Kreves for salg. Tom = salg er ikke mulig.",
+              "max_discharge_power_entity": "Øvre grense for salgseffekten. Tom = 2500 W.",
+              "min_soc_entity": "Under dette SoC-nivået utlades ikke Marstek. Tom = den faste verdien fra innstillingene."
+            }
+          }
         }
       }
     }

@@ -8,72 +8,59 @@
 [![Open your Home Assistant instance and start setting up the integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=marstek_goedkoop_laden)
 
 Laadt in Marstek Venus-thúsbatterij by yn de goedkeapste oeren fan in dynamysk
-stroomkontrakt, sadat er fol is foardat de stroom djoer wurdt.
+stroomkontrakt, sadat er fol is foardat de prizen omheech geane.
 
-It útgongspunt is **selsfoarsjennend wêze**. De batterij bliuwt gewoan sels regelje (anti-feed,
-nul op de mjitter). Dizze yntegraasje docht mar ien ding derby: yn de goedkeapste oeren út it
-net bylade. Dêrneist is der in aparte opsje, standert útsetten, om yn de djoerste oeren
-**oerskot te ferkeapjen**.
+It útgongspunt is **selsfoarsjennend wêze**: de batterij bliuwt gewoan sels regelje (anti-feed, nul
+op de mjitter). Dizze yntegraasje docht ien ding derby, út it net bylade yn de goedkeapste oeren,
+plus in pear opsjonele ekstra's dêromhinne.
 
-> **Hardware en kompatibiliteit.** De yntegraasje stjoert in Marstek Venus oan fia de RS485-bestjoeringsregisters.
-> Allinnich de earste rige is op in echte accu draaid:
->
-> | Keppeling | Model | Status |
-> |---|---|---|
-> | LilyGO T-CAN485 + ESPHome (RS485) | Venus E v2 | **Test** op echte hardware (de opset wêrop't er boud is) |
-> | Modbus-hub yn Home Assistant, fia RS485-nei-TCP-converter (Elfin EW11 en fergelykbere) | Venus E v1/v2 | Allinnich test mei neimakke oanroppen |
-> | Modbus-hub yn Home Assistant, rjochtstreeks fia Ethernet | Venus E v3 | Allinnich test mei neimakke oanroppen |
-> | Yntegraasje *Marstek Venus Modbus* (ViperRNMC) | Venus E v3 | Allinnich test mei neimakke oanroppen |
-> | Ien fan hjirboppe | Venus A, Venus D, oare modellen | **Net kontrolearre, net test.** Se soene de bestjoeringsregisters diele, mar dat is net ferifiearre. Stel de accukapasiteit yn by de opsjes (standert 5,12 kWh). |
-> | Cloud, app of oare yntegraasjes | alle | Net stipe |
->
-> De keppelingen yn detail:
->
-> - **LilyGO T-CAN485 mei ESPHome** fia RS485, mei de konfiguraasje fan
->   [MarstekVenus-LilygoRS485](https://github.com/Superduper1969/MarstekVenus-LilygoRS485). Dit is de
->   opset wêrop't de yntegraasje boud is en wêrmei't er test is. Hy brûkt de entiteiten dy't
->   dizze opset leveret: *RS485 Control Mode*, *Forcible Charge/Discharge*, *Forcible Charge Power*
->   (ferplicht) en, opsjoneel, *Max. Charge Power*, *Max. Discharge Power*, *Forcible Discharge
->   Power*, *Discharging Cutoff Capacity* en de totaaltellers fan laden en ûntladen enerzjy.
-> - **Modbus yn Home Assistant**, mei in Modbus-hub dy't do sels yn `configuration.yaml` sette:
->   in Elfin EW11 of in oare RS485-nei-TCP-converter
->   ([MarstekVenus-ElfinEW11](https://github.com/Superduper1969/MarstekVenus-ElfinEW11)), of de
->   **Venus E v3 rjochtstreeks fia Ethernet** (Modbus TCP, poarte 502, unit 1, EMS V144 of nijer;
->   [MarstekVenusV3-modbus-TCP-IP](https://github.com/fonske/MarstekVenusV3-modbus-TCP-IP)). De
->   yntegraasje lêst de registersensoren fan dy opset en skriuwt de registers 42000 (RS485-bestjoering),
->   42010 (twangmodus), 42020/42021 (twongen laad-/ûntladefermogen) en, as do de sensoren opjefst,
->   44002/44003 (maksimaal laad-/ûntladefermogen) mei `modbus.write_register`. Mei it maksimale
->   ûntladefermogen wurkje *Fêsthâlde* en *Gjin ferlies* ek, sûnder net. De Venus E v3 hat it
->   laadnivo yn register 34002 (skaal 0,1), net yn 32104.
-> - **De yntegraasje *Marstek Venus Modbus***
->   ([ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus)), dy't ek
->   Modbus TCP praat (Ethernet by in Venus E v3, of in RS485-gateway). Kies dit as do dy
->   yntegraasje al brûkst: sy leveret de entiteiten (`switch` RS485-bestjoering, `select` twangmodus,
->   `number` fermogens). Set dêr earst de skeakeler *RS485 control mode* en de select *Force mode*
->   oan, se steane standert út.
->
-> De opsjes Modbus en Marstek Venus Modbus binne **nij en oant no ta allinnich test mei neimakke
-> oanroppen, net op echte hardware**.
->
-> Oare manieren om de accu te keppeljen (cloud, oare yntegraasjes) binne net test en wurkje
-> wierskynlik net, omdat se dizze RS485-bestjoering net bean.
->
-> **Dynamyske enerzjyprizen:** dizze yntegraasje hat allinnich sin mei in **dynamysk stroomkontrakt**,
-> dêr't de priis alle oere feroaret. Hy laadt yn de goedkeapste oeren en mijt de djoere, dus by in
-> fêst taryf is der neat te winnen. Hy is boud om de Nederlânske merk en de prizen fan
-> Zonneplan hinne (oerenprizen, foar de oare dei publisearre tusken 13:00 en 15:00). Eltse priissensor
-> mei in oerenpriislist as attribút is genôch, sjoch [Priissensor](#priissensor).
->
-> **Taal:** de planrigel, it stroomskema en de kaarten folgje de opsje *Taal* (Automatysk,
-> Nederlands, English, Frysk, Deutsch, Français, Español, Svenska of Norsk;
-> automatysk folget Home Assistant as dat ien fan dizze is, oars Ingelsk). Entiteitsnammen folgje de taal fan Home Assistant. Steatwearden en attribútnammen (`laden`, `tekst`, …) steane fêst.
+**Do hast nedich:**
 
-## Wat er docht
+- in **dynamysk stroomkontrakt** mei oerenprizen. By in fêst taryf is der neat te winnen. Hy is
+  boud om de Nederlânske merk en Zonneplan hinne (de prizen foar de oare dei ferskine
+  tusken 13:00 en 15:00), mar elke sensor mei in oerenpriislist docht it, sjoch
+  [Priissensor](#priissensor);
+- in Marstek Venus dy't Home Assistant oer RS485 of Modbus bestjoere kin, sjoch
+  [Kompatibiliteit](#kompatibiliteit). **Allinnich de opset mei LilyGO RS485 + ESPHome is op in
+  echte accu test.**
+- Home Assistant 2026.3 of nijer.
+
+## Wat it docht
+
+| Modus | Standert | Wat it docht |
+|---|---|---|
+| **Priissturing** | út | Laadt yn de goedkeapste oeren út it net en ferspriedt it fermogen oer dy oeren. |
+| **Lade by negative priis** | oan | Laadt as de oerepriis negatyf is en makket it measte fan it finster. |
+| **Sinneprognose** | oan | Laadt yn de nacht minder as de sinne de batterij oerdeis fol makket. Hat in sinneprognose yn it Enerzjydashboerd nedich. |
+| **Fêsthâlde ûnder kostpriis** | oan | Ûntladt net salang't it net goedkeaper is as wat it byladen foarried kostet. |
+| **Gjin ferlies** | út | Strange ferzje fan fêsthâlde: ferkeapet byladen foarried ek nea ûnder de kostpriis. |
+| **Ferkeap** | út | Ferkeapet oerskot yn de djoerste oeren. |
+
+Elke modus hat in eigen skeakeler. **Priissturing stiet út nei it ynstallearjen**: stel de yntegraasje yn,
+kontrolearje oft de planrigel op de laadplan-sensor goed útsjocht en set him dan oan.
+
+## Fluchstart
+
+1. Ynstallearje mei HACS (knop hjirboppe, of foegje dit repository ta as oanpast repository, kategory
+   *Integration*), of kopiearje `custom_components/marstek_goedkoop_laden` nei
+   `/config/custom_components/`. Start Home Assistant opnij.
+2. *Ynstellingen → Apparaten en tsjinsten → Yntegraasje tafoegje → Marstek Goedkoop Laden*.
+3. Kies hoe dyn Marstek keppele is, dan de priissensor en de Marstek-entiteiten.
+   Wat herkend wurdt, stiet al ynfolle. By Modbus joust do ek de namme fan dyn Modbus-hub op (bygelyks
+   `MarstekVenus`) en it slave-adres.
+4. Set de skeakeler **Priissturing** oan as it plan goed útsjocht.
+5. Foegje kaarten ta: *Dashboerd bewurkje → Kaart tafoegje → sykje op "Marstek"*, sjoch [Dashboardkaarten](#dashboardkaarten).
+
+Teksten (planrigel, stroomskema, kaarten) folgje de opsje *Taal*: Automatysk, Nederlands,
+English, Frysk, Deutsch, Français, Español, Svenska of Norsk. Automatysk folget Home Assistant
+as dat ien fan dizze is, oars Ingelsk.
+
+## Hoe it laadplan wurket
 
 1. **Betellet bylade út?** In oere is goedkeap genôch as de priis leger is as
-   `rendemint × (gemiddelde fan de 6 djoerste oeren yn de 18 oeren dêrnei) − marzje`.
-   It rendemint (hinne en wer, laden en ûntladen, sa'n 77 % by myn apparaat) wurdt metten
-   út de enerzjytellers fan de Marstek.
+   `rendemint × (gemiddelde fan de 6 djoerste oeren yn de 18 oeren dêrnei) − marzje`. It
+   rendemint (hinne en wer, laden en ûntladen, sa'n 77 % metten hjir) komt fan de
+   enerzjytellers fan de Marstek.
 2. **Finster.** It earste blok goedkeape oeren is it laadfinster. Ien of twa oeren dy't
    krekt net goedkeap genôch binne, brekke it blok net; der wurdt allinnich yn de goedkeape
    oeren sels laden.
@@ -81,199 +68,156 @@ net bylade. Dêrneist is der in aparte opsje, standert útsetten, om yn de djoer
    om fan it hjoeddeistige SoC nei 100 % te kommen. Is it finster te koart om de batterij fol te
    krijen, dan plant er allinnich wat der yn past en seit dat yn de planrigel.
 4. **Fermogen ferspriede.** It laadfermogen is de enerzjy dy't noch by moat, dield troch de tiid dy't der
-   fan de laadoeren noch oer is. Dat hâldt de belêsting fan de netoansluting en de groep yn
-   it hûs sa leech mooglik. It fermogen wurdt ûnderweis oanpast.
+   fan de laadoeren noch oer is. Dat hâldt de belêsting fan de netoansluting leech. It
+   fermogen wurdt ûnderweis oanpast.
 5. **Klear is klear.** As de laadoeren foarby binne of de batterij fol is, giet de Marstek
-   werom nei anti-feed. Hy begjint net opnij yn itselde finster en hâldt de lading net fêst.
+   werom nei anti-feed. Hy begjint net opnij yn itselde finster.
 
-Der wurde allinnich **publisearre** prizen brûkt. It plan foar de nacht ferskynt dus sadree't
-de prizen fan moarn bekend binne (by Zonneplan tusken 13:00 en 15:00).
+Der wurde allinnich **publisearre** prizen brûkt, dus it plan foar de nacht ferskynt sadree't de
+prizen fan moarn bekend binne. Foarbyld (10 novimber 2026, batterij op 12 %): goedkeap finster
+23:00–07:00, laden om 02:00, 03:00 en 04:00 op sa'n 1900 W foar gemiddeld € 0,37, tsjin
+€ 0,55–0,67 oerdeis.
 
-Foarbyld (10 novimber 2026, batterij op 12 %): goedkeap finster 23:00–07:00, laden om 02:00,
-03:00 en 04:00 op sa'n 1900 W foar gemiddeld € 0,37, tsjin € 0,55–0,67 oerdeis.
+### Lade by in negative priis
 
-## Lade by in negative priis
-
-As de oerepriis negatyf is, laadt de batterij út it net, los fan it laadplan
-en ek as de priissturing út stiet. Dit hat in eigen skeakeler, **standert oan**.
-
-Der wurdt sjoen nei it hiele **finster** fan opienfolgjende negative oeren, net allinnich nei it hjoeddeistige oere, en
-dêr wurdt it measte fan makke:
+As de oerepriis negatyf is, laadt de batterij, los fan it laadplan en ek as de
+priissturing út stiet. Der wurdt sjoen nei it hiele **finster** fan opienfolgjende negative oeren:
 
 1. Der wurdt útrekkene hoefolle de batterij noch kwyt kin (SoC oant 100 %).
-2. Dy enerzjy wurdt oer de oeren ferdield **nei harren wearde**: hoe negatiever de priis, hoe mear
-   der yn dat oere laden wurdt (oant wat in oere oan kin op it maksimale fermogen). Foarbyld: trije
-   negative oeren fan −€ 0,03, −€ 0,20 en −€ 0,12 en noch 3 kWh te laden. It oere fan −€ 0,20 krijt
-   sa'n 1,9 kWh en it oere fan −€ 0,12 sa'n 1,2 kWh. It oere fan −€ 0,03 soe ûnder it minimale
-   laadfermogen bliuwe, dus dat falt ôf en syn oanpart giet nei de oare twa.
-3. Omdat de enerzjy oer de oeren ferspraat wurdt, bliuwt it fermogen leger as in koart skoftke op
-   fol fermogen laden. Kin de batterij mear oan as it finster biedt, dan wurdt eltse oere
-   oant it maksimum fol. In inkeld oere dat de batterij net fol krijt, wurdt op fol fermogen laden.
-4. De planrigel en it stroomskema litte it finster, de keazen oeren, it fermogen en de ferwachte
-   opbringst sjen (wat dy betelle wurdt om te laden).
+2. Dy enerzjy wurdt oer de oeren ferdield **nei harren wearde**: hoe negatiever de priis, hoe
+   mear der yn dat oere laden wurdt, oant wat in oere oan kin op it maksimale fermogen. Foarbyld:
+   −€ 0,03, −€ 0,20 en −€ 0,12 mei 3 kWh te laden jout sa'n 1,9 kWh yn it oere fan −€ 0,20 en
+   1,2 kWh yn it oere fan −€ 0,12. It oere fan −€ 0,03 soe ûnder it minimale laadfermogen
+   bliuwe, dus dat falt ôf en syn oanpart giet nei de oare twa.
+3. Ferspriede hâldt it fermogen leger as in koarte stoat op fol fermogen. In inkeld oere dat de batterij
+   net fol krijt, wurdt op fol fermogen laden.
 
-De opsje *Negative priis: ferdieling fan de enerzjy* wikselet tusken twa manieren:
+De opsje *Negative priis: ferdieling fan de enerzjy* kin op **Maksimale opbringst** set wurde: it bêste
+oere wurdt earst fol makke op fol fermogen, dan it folgjende. Yn it foarbyld jout dat sa'n € 0,55
+yn plak fan € 0,52, mei as priis mear stoaten op fol fermogen. It plan wurdt elke
+minút opnij berekkene, en in oere dat al yn gebrûk is, krijt in bytsje ekstra romte foardat er ôffalt.
 
-- **Nei wearde ferdiele** (standert): sa't hjirboppe beskreaun, leger fermogen, wat minder opbringst.
-- **Maksimale opbringst**: de oeren wurde ien foar ien fol makke, bêste priis earst, elk op fol
-  fermogen, en de rest giet nei it folgjende bêste oere. Yn it foarbyld nimt it oere fan −€ 0,20
-  2,25 kWh op fol fermogen op en it oere fan −€ 0,12 de oerbleaune 0,8 kWh, wat sa'n € 0,55
-  opbringt yn plak fan € 0,52. De priis is mear koarte stoaten op fol fermogen.
+### Sinneprognose
 
-Sadree't de priis wer posityf wurdt of de batterij fol is, giet de Marstek werom nei
-anti-feed. It plan wurdt elke minút opnij berekkene; in oere dat al yn gebrûk wie, krijt in bytsje ekstra
-romte foardat er ôffalt omdat er ûnder it minimale fermogen sit.
+Mei sinnepanielen wurdt de batterij oerdeis fergees fol. As do him yn de nacht fol út it
+net laadst, hat it oerskot gjin romte mear en giet it foar lyts of neat nei it net, wat
+mear útmakket no't de salderingsregeling (*salderingsregeling*) ophâldt. Dus sjocht de yntegraasje nei
+de ferwachte sinne-opbringst:
 
-De grins is ynstelber (*Negative priis: grins*, standert € 0,00). De priis komt fan de
-priissensor, dus by Zonneplan is dat de priis ynklusyf belesting.
-
-## Sinneprognose
-
-Mei sinnepanielen wurdt de batterij oerdeis fergees fol. As do him yn de nacht fol út it net
-laadst, hat it sinne-oerskot gjin romte mear en giet it foar lyts of neat nei it net,
-wat mear útmakket no't de salderingsregeling (*salderingsregeling*) ophâldt. Dus
-hâldt de yntegraasje rekken mei de ferwachte sinne-opbringst:
-
-1. Hy lêst de prognose út it **Enerzjydashboerd** fan Home Assistant (*Ynstellingen → Dashboerden →
-   Enerzjy → Sinnepanielen → Prognose sinneproduksje*). Forecast.Solar, Solcast, Open-Meteo en
-   oare prognoseyntegraasjes wurkje, en der hoecht neat ekstra ynsteld te wurden. Sûnder in prognose
-   dêr feroaret der neat.
+1. Hy lêst de prognose út it **Enerzjydashboerd** (*Ynstellingen → Dashboerden → Enerzjy → Sinnepanielen → Prognose sinneproduksje*). Forecast.Solar, Solcast, Open-Meteo en oare prognoseyntegraasjes wurkje, sûnder dat der wat ekstra ynsteld hoecht te wurden. Sûnder in prognose dêr feroaret der neat.
 2. Hy rekkenet it ferwachte oerskot út: per oere de prognose, kear de ynstelling foar
    betrouberens (standert 70 %), minus dyn eigen ferbrûk yn dat oere. Mei in *Sensor foar húsfermogen*
    leart de yntegraasje dyn gemiddelde ferbrûk per oere fan de dei (wurkdagen en wykein
-   apart) en brûkt dat, sadat in middei dat it hûs sels opfrettet gjin oerskot oerlit;
-   sûnder de sensor wurdt it fêste *Ferkeapje: gemiddeld eigen ferbrûk* brûkt.
-3. Hy laadt yn de nacht mar safolle dat der romte is foar dat oerskot as de sinne
-   opkomt: de enerzjy dy't dyn eigen ferbrûk oant dan opmakket, plus wat der noch nedich is. Op in
-   sinnige dei kin dat in pear kWh wêze yn plak fan in folle batterij, of hielendal neat (de planrigel
-   seit dan dat de sinne de batterij folt).
-4. In bewolkte dei jout in lyts of gjin oerskot, en dan wurdt de batterij lykas earder fol laden.
+   apart) en brûkt dat, sadat in middei dat it hûs sels opfrettet gjin oerskot oerlit.
+   Sûnder de sensor wurdt it fêste *Ferkeapje: gemiddeld eigen ferbrûk* brûkt.
+3. Hy laadt yn de nacht mar safolle dat der romte is foar dat oerskot as de sinne opkomt:
+   wat dyn eigen ferbrûk oant dan opmakket, plus wat der noch nedich is. Op in sinnige dei kin dat
+   in pear kWh wêze yn plak fan in folle batterij, of neat (de planrigel seit dan dat de sinne de
+   batterij folt). In bewolkte dei jout in lyts of gjin oerskot, en dan wurdt de batterij fol laden.
 
-Dit kin útset wurde mei *Sinneprognose brûke*. De prognose wurdt alle 30 minuten lêzen. Hy
-ferleget allinnich de te laden hoemannichte; hy ferpleatst gjin laadoeren en feroaret neat oan ferkeapjen.
+De prognose wurdt alle 30 minuten lêzen. Hy ferleget allinnich de te laden hoemannichte; hy
+ferpleatst gjin laadoeren en feroaret neat oan ferkeapjen.
 
-## Fêsthâlde ûnder de kostpriis
+### Fêsthâlde en gjin ferlies
 
-Enerzjy dy't út it net laden is hat in kostpriis: de laadpriis dield troch it rendemint. As
-de batterij dy enerzjy fuortdaliks nei it laden werom joech, yn oeren dy't goedkeaper binne as dy
-kostpriis, dan soe laden jild kostje. Ûntlade wurdt dêrom blokkearre salang't:
+Enerzjy dy't út it net laden is hat in kostpriis: de laadpriis dield troch it rendemint. As de
+batterij dy enerzjy werom joech yn oeren dy't goedkeaper binne as dat, soe laden jild kostje.
+**Fêsthâlde** blokkearret dêrom it ûntladen salang't der byladen foarried yn de batterij sit (sjoch
+[Opbringst](#opbringst)) en de oerepriis ûnder de kostpriis fan dat foarried leit. It hûs brûkt dan netstroom,
+dy't op dat momint goedkeaper is. Sadree't de priis de kostpriis berikt, of it foarried
+opmakke is, nimt de Marstek it wer oer.
 
-- der byladen foarried yn de batterij sit (sjoch *Opbringst*), en
-- de oerepriis leger is as de kostpriis fan dat foarried.
+Technysk set de yntegraasje it maksimale ûntladefermogen op 0. De Marstek bliuwt yn
+anti-feed, dus laden út sinneoerskot giet gewoan troch. As in oare automatisearring dat fermogen
+tidens it fêsthâlden set (bygelyks in begrinzer foar in EV-lader), ûnthâldt de yntegraasje dy wearde
+en jout se letter werom. De Marstek kin netenerzjy net ûnderskiede fan sinne-enerzjy, dus tidens in
+fêsthâlden wurdt de hiele batterij net ûntladen. Fêsthâlde hat de entiteit foar it maksimale ûntladefermogen
+nedich.
 
-It hûs brûkt dan netstroom, dy't op dat momint goedkeaper is as wat der yn de batterij sit.
-Sadree't de priis de kostpriis berikt, of it foarried opmakke is, nimt de Marstek it wer oer.
-Dit hat in eigen skeakeler, **standert oan**.
+**Gjin ferlies** is in aparte, strangere skeakeler: fêsthâlde wurdt ôfdwongen, ek as de skeakeler Fêsthâlde út stiet, en
+der wurdt neat ûnder de kostpriis ferkocht. Elke boekte kWh bringt dan minstens syn kostpriis op. Wat it
+net útslute kin:
 
-Technysk set de yntegraasje it maksimale ûntladefermogen (*Max. Discharge power*) op 0.
-De Marstek bliuwt yn anti-feed, dus laden út sinneoerskot giet gewoan troch. As in oare
-automatisearring dat fermogen tidens it fêsthâlden op in oare wearde set (bygelyks in begrinzer foar in
-EV-lader), ûnthâldt de yntegraasje dy wearde, set it wer op 0 en jout letter de
-ûnthâlden wearde werom.
+- **Stilstân:** as de priis lang ûnder de kostpriis bliuwt, bliuwt de batterij
+  blokkearre, ek foar bewarre sinne-enerzjy.
+- **Ôfwikend rendemint:** as de batterij minder werom jout as it gemiddelde rendemint, is er leech
+  foardat it foarried yn de boeken opmakke is; de rest ferfalt sûnder dat der in ferlies boekt wurdt.
+- **Sliten** wurdt net meirekkene, útsein as do in oankeappriis ynstelst (sjoch [Opbringst](#opbringst)).
 
-Let op: de Marstek kin enerzjy út it net net ûnderskiede fan sinne-enerzjy. Tidens it fêsthâlden
-wurdt de hiele batterij dus net ûntladen.
+### Ferkeapje
 
-## Gjin ferlies
-
-In aparte skeakeler (standert út) dy't de yntegraasje strang makket: enerzjy dy't út it net
-laden is wurdt nea ûnder de kostpriis brûkt of ferkocht.
-
-- **Fêsthâlde wurdt ôfdwongen**, ek as de skeakeler *Fêsthâlde* út stiet.
-- **Ferkeapje ûnder de kostpriis wurdt blokkearre.** As der byladen foarried yn de batterij sit en de
-  ferkeappriis leger is as de kostpriis dêrfan, wurdt der neat ferkocht.
-
-Elke boekte kWh bringt dan minstens syn kostpriis op, sadat de winst fan in dei net ûnder nul kin.
-Wat it net útslute kin:
-
-- **Stilstân.** As de priis lang ûnder de kostpriis bliuwt, bliuwt de batterij
-  blokkearre foar ûntlade, ek foar bewarre sinne-enerzjy.
-- **Ôfwikend rendemint.** De kostpriis brûkt it gemiddelde rendemint. As de batterij yn in syklus
-  minder werom jout, is er leech foardat it foarried yn de boeken opmakke is; de rest
-  ferfalt sûnder dat der in ferlies boekt wurdt.
-- **Sliten** fan de batterij wurdt net meirekkene; brûk dêrfoar de minimale winst per kWh.
-
-De yntegraasje rekkenet fuortdaliks opnij as in nije priisperioade begjint, sadat in fêsthâlden
-nea oant in minút te let ynset.
-
-## Ferkeapje (opsjoneel)
-
-Ferkeapje hat in eigen skeakeler en is ûnôfhinklik fan laden. Der wurdt allinnich ferkocht wat echt oer is. In oere wurdt
-brûkt om te ferkeapjen as dit alles opgiet:
+Ferkeapje hat in eigen skeakeler en is ûnôfhinklik fan laden. Der wurdt allinnich ferkocht wat echt oer is.
+In oere wurdt brûkt om te ferkeapjen as dit alles opgiet:
 
 1. **In goedkeap laden komt der oan**: der leit in laadfinster mei publisearre prizen foarút, sadat de kosten
    fan weromlade bekend binne.
 2. **De opbringst is dúdlik heger as weromlade**: ferkeappriis ≥ laadpriis dield troch it
    rendemint, plus de ferkeapmarzje (standert € 0,10 per kWh).
-3. **Der is oerskot boppe de reserve.** De reserve is de ûntladegrins fan de Marstek plus
-   it ferwachte eigen ferbrûk oant it weromlade (gemiddeld húsfermogen × oeren), mei in
-   ynstelber minimum (standert 20 %).
+3. **Der is oerskot boppe de reserve**: de ûntladegrins fan de Marstek plus it ferwachte eigen
+   ferbrûk oant it weromlade, mei in ynstelber minimum (standert 20 %).
 4. **It is ien fan de djoerste oeren** foar it laadfinster.
 
-Lykas by it laden wurdt it ferkeapfermogen oer de keazen oeren ferspraat. Oan de reserve
-hâldt it ferkeapjen op en giet de Marstek werom nei anti-feed.
-
-Yn de winter is der selden oerskot: mei in batterij fan 5 kWh slokt it eigen ferbrûk oant de folgjende
-lading meastal de hiele lading op. De opsje docht benammen wat as de sinne de batterij
-fol makket en der in jûnspriispiek is.
+It ferkeapfermogen wurdt oer de keazen oeren ferspraat; oan de reserve hâldt it ferkeapjen op. Yn de winter is
+der selden oerskot; de opsje docht benammen wat as de sinne de batterij fol makket en der in
+jûnspriispiek is. Hy hat de entiteit foar it twongen ûntladefermogen nedich.
 
 **Nei it ein fan de salderingsregeling** (de Nederlânske *salderingsregeling*, 1 jannewaris 2027) bringt weromlevering
 minder op as de oerepriis. Stel dan *Ferkeappriis: faktor* en *ôftrek* yn: ferkeappriis =
-oerepriis × faktor − ôftrek. Foar de kale merkpriis by Zonneplan is dat sa'n
-0,826 en € 0,108.
+oerepriis × faktor − ôftrek. Foar de kale merkpriis by Zonneplan is dat sa'n 0,826
+en € 0,108.
 
-## Oanstjoering fan de Marstek
+## Kompatibiliteit
 
-De yntegraasje stjoert de batterij oan fia de RS485-ynterface (LilyGO T-CAN485 mei
-ESPHome):
+De yntegraasje stjoert in Marstek Venus oan fia de RS485-bestjoeringsregisters.
+
+| Keppeling | Model | Status |
+|---|---|---|
+| LilyGO T-CAN485 + ESPHome (RS485) | Venus E v2 | **Test** op echte hardware (de opset wêrop't er boud is) |
+| Modbus-hub yn Home Assistant, fia RS485-nei-TCP-converter (Elfin EW11 en fergelykbere) | Venus E v1/v2 | Allinnich test mei neimakke oanroppen |
+| Modbus-hub yn Home Assistant, rjochtstreeks fia Ethernet | Venus E v3 | Allinnich test mei neimakke oanroppen |
+| Yntegraasje *Marstek Venus Modbus* (ViperRNMC) | Venus E v3 | Allinnich test mei neimakke oanroppen |
+| Ien fan hjirboppe | Venus A, Venus D, oare modellen | **Net kontrolearre, net test.** Se soene de bestjoeringsregisters diele, mar dat is net ferifiearre. Stel de accukapasiteit yn by de opsjes (standert 5,12 kWh). |
+| Cloud, app of oare yntegraasjes | alle | Net stipe |
+
+- **LilyGO T-CAN485 mei ESPHome** fia RS485, mei de konfiguraasje fan
+  [MarstekVenus-LilygoRS485](https://github.com/Superduper1969/MarstekVenus-LilygoRS485). Hy brûkt
+  de entiteiten dy't dizze opset leveret: *RS485 Control Mode*, *Forcible Charge/Discharge*,
+  *Forcible Charge Power* (ferplicht) en, opsjoneel, *Max. Charge Power*, *Max. Discharge Power*,
+  *Forcible Discharge Power*, *Discharging Cutoff Capacity* en de totaaltellers fan laden en
+  ûntladen enerzjy.
+- **Modbus yn Home Assistant**, mei in Modbus-hub dy't do sels yn
+  `configuration.yaml` sette: in Elfin EW11 of in oare RS485-nei-TCP-converter
+  ([MarstekVenus-ElfinEW11](https://github.com/Superduper1969/MarstekVenus-ElfinEW11)), of de
+  **Venus E v3 rjochtstreeks fia Ethernet** (Modbus TCP, poarte 502, unit 1, EMS V144 of nijer;
+  [MarstekVenusV3-modbus-TCP-IP](https://github.com/fonske/MarstekVenusV3-modbus-TCP-IP)). De
+  yntegraasje lêst de registersensoren fan dy opset en skriuwt de registers 42000 (RS485-bestjoering),
+  42010 (twangmodus), 42020/42021 (twongen laad-/ûntladefermogen) en, as do de sensoren opjefst,
+  44002/44003 (maksimaal laad-/ûntladefermogen) mei `modbus.write_register`. Sûnder it maksimale
+  ûntladefermogen binne *Fêsthâlde* en *Gjin ferlies* net beskikber. De Venus E v3 hat it
+  laadnivo yn register 34002 (skaal 0,1), net yn 32104.
+- **De yntegraasje *Marstek Venus Modbus***
+  ([ViperRNMC/marstek_venus_modbus](https://github.com/ViperRNMC/marstek_venus_modbus)), dy't ek
+  Modbus TCP praat. Kies dit as do him al brûkst: hy leveret de entiteiten (`switch`
+  RS485-bestjoering, `select` twangmodus, `number` fermogens). Set dêr earst de skeakeler
+  *RS485 control mode* en de select *Force mode* oan, se steane standert út.
+
+### Wat de yntegraasje nei de Marstek stjoert
 
 | Momint | Kommando's |
 |---|---|
-| Begjin mei laden | laadfermogen sette → *Forcible charge/discharge* op `charge` → *RS485 Control Mode* op `enable` |
+| Begjin mei laden | laadfermogen sette → twangmodus `charge` → RS485-bestjoering `enable` |
 | Tidens it laden | laadfermogen oanpasse (stappen fan 100 W) |
-| Klear, of priissturing út | *RS485 Control Mode* op `disable`, forcible werom op `charge`, laadfermogen werom op it maksimum |
-| Begjin mei ferkeapjen | ûntladefermogen sette → forcible op `discharge` → *RS485 Control Mode* op `enable` |
+| Klear, of priissturing út | RS485-bestjoering `disable`, twangmodus werom op `charge`, laadfermogen werom op it maksimum |
+| Begjin mei ferkeapjen | ûntladefermogen sette → twangmodus `discharge` → RS485-bestjoering `enable` |
 | Ferkeapjen klear, of ferkeapjen út | itselde as klear: werom nei de rêststân |
 
 Twongen **ût**laden dat do sels begjinst, wurdt oerlitten. Twongen laden dat do sels
 begjinst, wurdt weromset salang't de priissturing oan stiet; set dy earst út as do dat wolst.
 
-## Entiteiten
+## Ynstellingen
 
-| Entiteit | Ynhâld |
-|---|---|
-| `switch.*_price_control` | Oan: it laadplan wurdt útfierd. Út: de Marstek regelet alles sels. Útsette set de Marstek fuortdaliks werom yn anti-feed. |
-| `switch.*_charge_at_negative_price` | Oan (standert): altyd op fol fermogen laden as de oerepriis negatyf is. Attribút `nu_actief`. |
-| `switch.*_hold_below_cost_price` | Oan (standert): net ûntlade salang't de oerepriis ûnder de kostpriis fan it byladen foarried leit. Attributen `nu_actief`, `tot`, `voorraad_kwh`, `kostprijs`. |
-| `switch.*_no_loss` | Oan: fêsthâlde ôfdwongen en nea ûnder de kostpriis ferkeapje. Attributen `vasthouden_actief`, `verkoop_tegengehouden`, `voorraad_kwh`, `kostprijs`. |
-| `switch.*_selling` | Oan: oerskot wurdt yn de djoerste oeren ferkocht. Ûnôfhinklik fan priissturing. |
-| `sensor.*_sell_plan` | Steat: `verkopen`, `gepland`, `geen` of `onbekend`. Attributen: `verkoopuren`, `vermogen`, `overschot_kwh`, `reserve_soc`, `drempelprijs`, `terugkoopprijs` en `tekst`. |
-| `sensor.*_charge_plan` | Steat: `laden`, `gepland`, `klaar`, `vol`, `geen` of `onbekend`. Attributen: `laaduren`, `venster`, `eind`, `uren_nodig`, `vermogen`, `klaar_tot`, `tekst` (lêsbere gearfetting) en `stroomschema` (tiidline en kontrôles foar de kaart). |
-| `sensor.*_planned_charge_power` | It ferspraat laadfermogen yn W. |
-| `sensor.*_energy_to_charge` | Enerzjy út it net dy't nedich is om fol te kommen, yn kWh. |
-| `sensor.*_charge_start` / `*_charge_end` | Begjin en ein fan de plande bylade. |
-| `sensor.*_gain_today` / `*_gain_this_week` / `*_gain_this_month` | Realisearre opbringst yn euro's sûnt 00:00, sûnt moandei 00:00 en sûnt de earste fan de moanne (sjoch *Opbringst*). Attributen: it foarried en, foar hjoed, wat der laden en brûkt is. |
-| `sensor.*_gain_this_year` | Realisearre opbringst sûnt 1 jannewaris. |
-| `sensor.*_gain_last_week` | De definitive opbringst fan de foarige wike. |
-| `sensor.*_expected_gain` | Rûsde opbringst fan de hjoeddeistige plannen yn euro's (laden plus ferkeapjen); attribút `regels` befettet de útsplitsing. |
-| `sensor.*_efficiency` | It brûkte rendemint, yn prosinten. Attribút `bron`: metten út de enerzjytellers of de fêste wearde. |
-| `sensor.*_average_charge_price` | Gemiddelde priis fan de laadoeren yn €/kWh. |
-
-De nammen hjirboppe hearre by in Ingelsktalige ynstallaasje. Stiet Home Assistant op Nederlânsk, dan
-hjitte se `*_laadplan`, `*_prijssturing` ensafuorthinne. De steatwearden en attribútnammen
-binne yn beide talen itselde.
-
-## Ynstallaasje
-
-1. Ynstallearje mei HACS (knop hjirboppe, of foegje dit repository ta as oanpast repository, kategory
-   *Integration*), of kopiearje `custom_components/marstek_goedkoop_laden` nei
-   `/config/custom_components/`. Start Home Assistant opnij.
-2. Gean nei *Ynstellingen → Apparaten en tsjinsten → Yntegraasje tafoegje → Marstek Goedkoop Laden*.
-3. Kies hoe dyn Marstek keppele is (*LilyGO RS485 mei ESPHome*, *Modbus yn Home Assistant* of *Marstek Venus Modbus-yntegraasje*),
-   dan de priissensor en de Marstek-entiteiten. Wat herkend wurdt, stiet al ynfolle. By Modbus
-   joust do ek de namme fan dyn Modbus-hub op (bygelyks `MarstekVenus`) en it slave-adres.
-
-Fereasket Home Assistant 2026.3 of nijer.
+Ûnder *Konfigurearje* by de yntegraasje. De opsjes steane yn groepen; de entiteiten steane yn in
+ynklapte groep ûnderoan.
 
 ### Priissensor
 
@@ -283,127 +227,74 @@ De yntegraasje lêst de prizen út in attribút fan ien sensor (standert `foreca
 - Zonneplan (âld): `datetime`, `electricity_price`
 - Algemien: `start` (of `start_time`, `datetime`) en `price` (of `value`, `prijs`) yn €/kWh
 
-### Ynstellingen
+### Opsjes
 
-Ûnder *Konfigurearje* by de yntegraasje:
-
-| Ynstelling | Standert | Betsjutting |
-|---|---|---|
-| Taal | Automatysk | Taal fan planrigel, stroomskema en kaarten: Automatysk, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska of Norsk. |
-| Oankeappriis accu | € 0 | Foar de ôfskriuwing. 0 set de ôfskriuwing út. |
-| Libbensdoer accu (syklussen) | 6000 | Ferwachte oantal folsleine syklussen. Ôfskriuwing per kWh = priis ÷ (syklussen × kapasiteit); bygelyks € 1.500 oer 6.000 syklussen fan 5,12 kWh is sa'n € 0,049 per kWh. |
-| Sinneprognose brûke | Oan | Hâld by it laden yn de nacht rekken mei de ferwachte sinne-opbringst út it Enerzjydashboerd. |
-| Betrouberens fan de sinneprognose | 70 % | It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger. |
-| Sensor foar húsfermogen | gjin | Opsjonele sensor mei it fermogen dat it hiele hûs brûkt (W of kW), sûnder de batterij. De yntegraasje leart it gemiddelde per oere fan de dei, foar wurkdagen en wykein, en brûkt dat foar it sinne-oerskot yn plak fan it fêste eigen ferbrûk. In laadpeal ferfoarmet it gemiddelde, lit dy dus fuort as it kin. |
-| Minimale winst per kWh | € 0,02 | Wat laden nei ôftrek fan it laadferlies minstens opbringe moat. Oeren dy't minder as in heale sint boppe de grins lizze telle ek mei, sadat in hast platte nacht net om in fraksje fan in sint opsnipele wurdt. |
-| Oantal djoerste oeren om mei te fergelykjen | 6 | Mei hoefolle djoere oeren letter op de dei in oere fergelike wurdt. |
-| Oantal oeren foarút sjen | 18 | Hoe fier foarby in oere sjoen wurdt nei djoere oeren. |
-| Minimaal oantal bekende oeren foarút | 8 | Oeren mei minder bekende prizen dêrnei wurde negearre. |
-| Minimaal laadfermogen | 400 W | Legere grins by it ferspriede. |
-| Rendemint as de tellers ûntbrekke | 0,77 | It rendemint wurdt berekkene út de enerzjytellers fan de Marstek (totaal ûntladen ÷ totaal laden, begrinzge op 70–95 %). Dizze fêste wearde jildt allinnich as dy tellers ûntbrekke. It rendemint fan allinnich laden of allinnich ûntlade is de woartel dêrfan. |
-| Accukapasiteit | 5,12 kWh | Allinnich brûkt as der gjin kapasiteitssensor ynsteld is. |
-| Negative priis: grins | € 0,00 | Ûnder dizze oerepriis laadt de batterij op fol fermogen. |
-| Ferkeapje: minimale winst per kWh | € 0,10 | Wat ferkeapje nei weromlade minstens opbringe moat. |
-| Ferkeapje: gemiddeld eigen ferbrûk | 400 W | Bepaalt de reserve oant it weromlade. |
-| Ferkeapje: minimale reserve | 20 % | Ûnder dizze SoC wurdt neat ferkocht. |
-| Ferkeappriis: faktor en ôftrek | 1 en € 0 | Ferkeappriis = oerepriis × faktor − ôftrek. |
+| Groep | Ynstelling | Standert | Betsjutting |
+|---|---|---|---|
+| | Taal | Automatysk | Taal fan planrigel, stroomskema en kaarten. |
+| Accu | Accukapasiteit | 5,12 kWh | Allinnich brûkt as der gjin kapasiteitssensor ynsteld is. |
+| Accu | Rendemint as de tellers ûntbrekke | 0,77 | It rendemint wurdt berekkene út de enerzjytellers fan de Marstek (totaal ûntladen ÷ totaal laden, begrinzge op 70–95 %). Dizze fêste wearde jildt allinnich as dy tellers ûntbrekke. It rendemint fan ien rjochting is de woartel dêrfan. |
+| Accu | Oankeappriis accu | € 0 | Foar de ôfskriuwing. 0 set se út. |
+| Accu | Libbensdoer accu (syklussen) | 6000 | Ôfskriuwing per kWh = priis ÷ (syklussen × kapasiteit); € 1.500 oer 6.000 syklussen fan 5,12 kWh is sa'n € 0,049 per kWh. |
+| Accu | Ûntladegrins | 12 % | Brûkt as der gjin entiteit foar de ûntladegrins ynsteld is. |
+| Bylade | Minimale winst per kWh | € 0,02 | Wat laden nei ôftrek fan it laadferlies minstens opbringe moat. Oeren dy't minder as in heale sint boppe de grins lizze telle ek mei, sadat in hast platte nacht net om in fraksje fan in sint opsnipele wurdt. |
+| Bylade | Minimaal laadfermogen | 400 W | Legere grins by it ferspriede. |
+| Bylade | Attribút mei de prizen | `forecast` | It attribút fan de priissensor mei de oerenprizen. |
+| Bylade | Oantal djoerste oeren om mei te fergelykjen | 6 | Mei hoefolle djoere oeren letter op de dei in oere fergelike wurdt. |
+| Bylade | Oantal oeren foarút sjen | 18 | Hoe fier foarby in oere sjoen wurdt nei djoere oeren. |
+| Bylade | Minimaal oantal bekende oeren foarút | 8 | Oeren mei minder bekende prizen dêrnei wurde negearre. |
+| Negative priis | Negative priis: grins | € 0,00 | Ûnder dizze oerepriis laadt de batterij. |
+| Negative priis | Negative priis: ferdieling fan de enerzjy | Nei wearde | Nei wearde (leger fermogen) of maksimale opbringst (bêste oeren earst). |
+| Sinne | Sinneprognose brûke | Oan | Hâldt by it laden yn de nacht rekken mei de ferwachte sinne-opbringst út it Enerzjydashboerd. |
+| Sinne | Betrouberens fan de sinneprognose | 70 % | It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger. |
+| Sinne | Sensor foar húsfermogen | gjin | Opsjonele sensor mei it fermogen dat it hiele hûs brûkt (W of kW), sûnder de batterij. In laadpeal ferfoarmet it gemiddelde, lit dy dus fuort as it kin. |
+| Ferkeap | Ferkeapje: minimale winst per kWh | € 0,10 | Wat ferkeapje nei weromlade minstens opbringe moat. |
+| Ferkeap | Ferkeapje: gemiddeld eigen ferbrûk | 400 W | Bepaalt de reserve oant it weromlade, en is it fêste eigen ferbrûk foar it sinne-oerskot. |
+| Ferkeap | Ferkeapje: minimale reserve | 20 % | Ûnder dizze SoC wurdt neat ferkocht. |
+| Ferkeap | Ferkeappriis: faktor en ôftrek | 1 en € 0 | Ferkeappriis = oerepriis × faktor − ôftrek. |
 
 It maksimale laadfermogen (de *Max. Charge power* fan de Marstek) bepaalt it oantal laadoeren.
 Set it leger en der wurde mear oeren plend en der wurdt rêstiger laden.
 
-## Dashboard
-
-### Kaarten fan de yntegraasje
+## Dashboardkaarten
 
 De yntegraasje leveret sân kaarten mei; der hoecht gjin resource tafoege te wurden. Fernij de
-browser nei it ynstallearjen of bywurkjen. Elke kaart is yn te stellen yn de kaarteditor (de
-fisuele editor) en yn YAML, en as do `entity` weilitst, wurdt de laadplan-sensor automatysk fûn.
+browser nei it ynstallearjen of bywurkjen. Elke kaart is yn te stellen yn de kaarteditor en yn YAML, en
+as do `entity` weilitst, wurdt de laadplan-sensor automatysk fûn.
 
 | Kaart | Ynhâld |
 |---|---|
 | `custom:marstek-goedkoop-laden-card` | Stroomskema: de tiidline fan hjoed en per ûnderdiel (bylade, ferkeap, negative priis, fêsthâlde) hokker kontrôles slagje en op hokker it stopt. |
 | `custom:marstek-goedkoop-laden-compact-card` | Itselde yn in pear rigels: de tiidline, per ûnderdiel de útkomst mei de reden, en ien rigel mei de opbringst. |
-| `custom:marstek-goedkoop-laden-opbrengst-card` | Allinnich de opbringst: hjoed, dizze wike, foarige wike, dizze moanne en de ferwachting fan it hjoeddeistige plan. |
-| `custom:marstek-goedkoop-laden-schakelaars-card` | Kompakt: knoppen om bylade, ferkeap, lade by negative priis, fêsthâlde en gjin ferlies oan of út te setten. |
+| `custom:marstek-goedkoop-laden-opbrengst-card` | Allinnich de opbringst: hjoed, dizze wike, foarige wike, dizze moanne, dit jier en de ferwachting fan it hjoeddeistige plan. |
+| `custom:marstek-goedkoop-laden-schakelaars-card` | Kompakt: knoppen om de modi oan of út te setten. |
 | `custom:marstek-goedkoop-laden-status-card` | Wat der no bart, it laadnivo as balke, de priis no en de folgjende stap. |
 | `custom:marstek-goedkoop-laden-prijzen-card` | Priisgrafyk sûnder ekstra kaarten: de oeren mei laden, ferkeapjen en negative prizen markearre, en in line foar no. |
 | `custom:marstek-goedkoop-laden-voorraad-card` | It byladen foarried, de kostpriis dêrfan, it rendemint, de ôfskriuwing per kWh en de kapasiteit. |
 
 ```yaml
-type: custom:marstek-goedkoop-laden-card
-entity: sensor.marstek_goedkoop_laden_laadplan   # opsjoneel
-title: Priissturing                              # opsjoneel
-opbrengst: false                                 # opsjoneel, sjoch hjirûnder
-```
-
-De opbringstkaart is oan te passen, yn YAML of yn de kaarteditor:
-
-```yaml
 type: custom:marstek-goedkoop-laden-opbrengst-card
-tiles: [vandaag, maand, jaar]   # kies út: vandaag, week, vorige_week, maand, jaar, verwacht (yn dizze folchoarder)
-expected_details: false         # ferberch de rigels per ûnderdiel fan it plan (standert: true)
-notes: false                    # ferberch de taljochting ûnder de kaart (standert: true)
+entity: sensor.marstek_goedkoop_laden_laadplan   # opsjoneel
+title: Opbringst                                 # opsjoneel
+tiles: [vandaag, maand, jaar]                    # hokker tegels, yn dizze folchoarder
+notes: false                                     # ferberch de taljochting ûnder de kaart
 ```
-
-| Opsje | Standert | Betsjutting |
-|---|---|---|
-| `tiles` | alle seis | Hokker tegels en yn hokker folchoarder: hjoed, dizze wike, foarige wike, dizze moanne, dit jier, ferwachte (plan). |
-| `expected_details` | `true` | De rigels mei de ferwachte opbringst per ûnderdiel (laden, ferkeapjen). |
-| `notes` | `true` | De taljochting mei it byladen foarried, wat der hjoed laden is en de ôfskriuwing. |
-
-Opsjes fan de oare kaarten (se steane ek allegearre yn de kaarteditor):
 
 | Kaart | Opsje | Standert | Betsjutting |
 |---|---|---|---|
+| alle | `entity`, `title` | automatysk fûn, gjin | De laadplan-sensor en in titel. |
 | stroomskema, kompakt | `show_timeline` | `true` | De tiidline fan hjoed sjen litte. |
+| stroomskema, kompakt | `opbrengst` | út, ien rigel | Ek de opbringst sjen litte. |
 | stroomskema, kompakt, skeakelers | `lanes` | alle fiif | Hokker ûnderdielen sjen litte: `bijladen`, `verkoop`, `negatief`, `vasthouden`, `geen_verlies`. |
+| opbringst | `tiles` | alle seis | Elk fan `vandaag`, `week`, `vorige_week`, `maand`, `jaar`, `verwacht`, yn dizze folchoarder. |
+| opbringst | `expected_details`, `notes` | `true` | De rigels per ûnderdiel fan it plan; de taljochting mei foarried, wat der hjoed laden is en de ôfskriuwing. |
 | status | `show_soc`, `show_price`, `show_next` | `true` | De SoC-balke, de priis no, de folgjende stap. |
-| prizen | `hours_back` | `2` | Oeren fan it ferline om sjen te litten. |
-| prizen | `hours_ahead` | `0` | Oeren foarút om sjen te litten; 0 is oant de lêste bekende priis. |
-| prizen | `show_values` | `false` | De priis boppe elke balke printsje (oant 24 balken). |
-| prizen | `height` | `140` | Hichte fan de grafyk yn piksels. |
-| foarried | `tiles` | alle fiif | `voorraad`, `kostprijs`, `rendement`, `afschrijving`, `capaciteit`. |
-| foarried | `notes` | `true` | De taljochting ûnder de kaart. |
+| prizen | `hours_back`, `hours_ahead` | `2`, `0` | Oeren fan it ferline; oeren foarút (0 is oant de lêste bekende priis). |
+| prizen | `show_values`, `height` | `false`, `140` | De priis boppe elke balke printsje (oant 24 balken); hichte yn piksels. |
+| foarried | `tiles`, `notes` | alle fiif, `true` | `voorraad`, `kostprijs`, `rendement`, `afschrijving`, `capaciteit`; de taljochting ûnder de kaart. |
 
-`opbrengst` bepaalt oft de stroomskemakaart ek de opbringst toant: standert út by de gewoane
-kaart, standert ien rigel by de kompakte kaart. Yn it stroomskema is grien in slagge
-kontrôle, read de kontrôle dêr't it op stopt en streekjes in útkomst dêr't neat bart.
-Alle kaarten lêze it attribút `stroomschema` fan de laadplan-sensor.
-
-## Opbringst
-
-**Ôfskriuwing.** Stelst do in oankeappriis yn, dan kostet elke kWh dy't de accu ûntladt in bytsje sliten: priis ÷ (syklussen × kapasiteit). Dat giet ôf fan de realisearre opbringst (hjoed, wike, moanne), telt mei yn de ferwachte opbringst en yn de beslissingen: in oere is allinnich it laden wurdich as it ek nei de sliten noch wint, ferkeapje freget de sliten boppe op de ferkeapmarzje, en *Fêsthâlde* en *Gjin ferlies* nimme kostpriis plus sliten as break-evenpriis. By in priis fan 0 (standert) feroaret der neat.
-
-Der binne twa soarten opbringst: wat it hjoeddeistige plan nei ferwachting opbringt, en wat der echt
-fertsjinne is.
-
-### Ferwachte (skatting foarôf)
-
-- **Laden**: wat de te keapjen enerzjy kostet, tsjin wat se letter wurdich is. Dy wearde is it
-  rendemint kear de gemiddelde priis fan de djoere oeren dêr't it laadoere mei fergelike is.
-- **Ferkeapje**: de opbringst fan it oerskot, minus wat weromlade kostet.
-
-Tidens in laden telt allinnich mei wat der noch laden wurde moat.
-
-### Hjoed en dizze wike (realisearre)
-
-1. Enerzjy dy't de yntegraasje út it net laadt (laadplan of negative priis) wurdt
-   **foarried**: brûkbere kWh = laden kWh × rendemint, mei as kostpriis wat dy enerzjy op dat
-   momint kostte.
-2. As de batterij dan ûntladt foar eigen ferbrûk, wurdt earst dat foarried brûkt. De winst is
-   `ûntladen kWh × (stroompriis op dat momint − kostpriis per brûkbere kWh)`.
-3. By ferkeapjen is de winst `ferkochte kWh × ferkeappriis − kostpriis`; foar enerzjy dy't net
-   út it foarried komt (sinne-enerzjy) is de kostpriis wat weromlade kostet.
-4. **Hjoed** is de som sûnt 00:00, **dizze wike** sûnt moandei 00:00 en **dizze moanne** sûnt de earste fan de moanne. **Foarige wike** is it definitive bedrach fan de wike derfoar.
-
-Wat noch yn it foarried sit is noch net fertsjinne en telt pas as it brûkt wurdt. Enerzjy
-dy't de sinne yn de batterij docht en dy't do letter sels brûkst, telt net mei: de Marstek docht
-dat ek sûnder dizze yntegraasje. De bedragen komme fan de enerzjytellers fan de Marstek
-en de oerepriis op dat momint; in tellersprong nei in steuring wurdt net boekt.
-
-### Losse kaarten
-
-Planrigel (Markdown-kaart):
+Yn it stroomskema is grien in slagge kontrôle, read de kontrôle dêr't it op stopt en streekjes in
+útkomst dêr't neat bart. Planrigel yn in Markdown-kaart:
 
 ```yaml
 type: markdown
@@ -413,16 +304,67 @@ content: >-
   · ⚠️ priissturing stiet **út**{% endif %}
 ```
 
+## Opbringst
+
+Der binne twa soarten opbringst: wat it hjoeddeistige plan nei ferwachting opbringt, en wat der echt
+fertsjinne is.
+
+**Ferwachte (skatting foarôf).** Laden: wat de te keapjen enerzjy kostet, tsjin wat se letter
+wurdich is (it rendemint kear de gemiddelde priis fan de djoere oeren dêr't it laadoere mei
+fergelike is). Ferkeapje: de opbringst fan it oerskot, minus wat weromlade kostet. Tidens in
+laden telt allinnich mei wat der noch laden wurde moat.
+
+**Realisearre (hjoed, wike, moanne, jier).**
+
+1. Enerzjy dy't de yntegraasje út it net laadt (laadplan of negative priis) wurdt
+   **foarried**: brûkbere kWh = laden kWh × rendemint, mei as kostpriis wat dy enerzjy op dat
+   momint kostte.
+2. As de batterij dan ûntladt foar eigen ferbrûk, wurdt earst dat foarried brûkt. De winst is
+   `ûntladen kWh × (stroompriis op dat momint − kostpriis per brûkbere kWh)`.
+3. By ferkeapjen is de winst `ferkochte kWh × ferkeappriis − kostpriis`; foar enerzjy dy't net
+   út it foarried komt (sinne-enerzjy) is de kostpriis wat weromlade kostet.
+4. **Hjoed** telt sûnt 00:00, **dizze wike** sûnt moandei 00:00, **dizze moanne** sûnt de earste
+   en **dit jier** sûnt 1 jannewaris. **Foarige wike** is it definitive bedrach fan de wike derfoar.
+
+Wat noch yn it foarried sit is noch net fertsjinne en telt pas as it brûkt wurdt. Enerzjy dy't de
+sinne yn de batterij docht en dy't do letter sels brûkst, telt net mei: de Marstek docht dat ek
+sûnder dizze yntegraasje. De bedragen komme fan de enerzjytellers fan de Marstek en de oerepriis
+op dat momint; in tellersprong nei in steuring wurdt net boekt.
+
+**Ôfskriuwing.** Stelst do in oankeappriis yn, dan kostet elke kWh dy't de accu ûntladt in bytsje
+sliten: priis ÷ (syklussen × kapasiteit). Dat giet ôf fan de realisearre opbringst, telt mei yn de
+ferwachte opbringst en yn de beslissingen: in oere is allinnich it laden wurdich as it ek nei de
+sliten noch wint, ferkeapje freget de sliten boppe op de ferkeapmarzje, en *Fêsthâlde* en *Gjin ferlies* nimme kostpriis
+plus sliten as break-evenpriis. By in priis fan 0 (standert) feroaret der neat.
+
+## Entiteiten
+
+| Entiteit | Ynhâld |
+|---|---|
+| `switch.*_priissturing` | Oan: it laadplan wurdt útfierd. Út: de Marstek regelet alles sels. |
+| `switch.*_lade_by_negative_priis` | Oan (standert): laden as de oerepriis negatyf is. |
+| `switch.*_festhalde_under_kostpriis` | Oan (standert): net ûntlade ûnder de kostpriis fan it foarried. |
+| `switch.*_gjin_ferlies` | Oan: fêsthâlde ôfdwongen en nea ûnder de kostpriis ferkeapje. |
+| `switch.*_ferkeap` | Oan: oerskot wurdt yn de djoerste oeren ferkocht. Ûnôfhinklik fan priissturing. |
+| `sensor.*_laadplan` | Steat: `laden`, `gepland`, `klaar`, `vol`, `geen` of `onbekend`. Attributen: `tekst` (lêsbere gearfetting), `laaduren`, `venster`, `stroomschema` (tiidline, kontrôles, prizen en oersjoch foar de kaarten) en mear. |
+| `sensor.*_ferkeapplan` | Steat: `verkopen`, `gepland`, `geen` of `onbekend`. Attributen: `verkoopuren`, `overschot_kwh`, `reserve_soc`, `tekst` en mear. |
+| `sensor.*_pland_laadfermogen`, `*_enerzjy_om_by_te_laden`, `*_start_bylade`, `*_ein_bylade`, `*_gemiddelde_laadpriis` | It ferspraat laadfermogen yn W, de enerzjy dy't noch laden wurde moat yn kWh, begjin en ein fan de plande bylade, en de gemiddelde priis dêrfan yn €/kWh. |
+| `sensor.*_opbringst_hjoed`, `*_opbringst_dizze_wike`, `*_opbringst_foarige_wike`, `*_opbringst_dizze_moanne`, `*_opbringst_dit_jier` | Realisearre opbringst yn euro's (sjoch [Opbringst](#opbringst)). |
+| `sensor.*_ferwachte_opbringst` | Rûsde opbringst fan de hjoeddeistige plannen yn euro's; attribút `regels` befettet de útsplitsing. |
+| `sensor.*_rendemint` | It brûkte rendemint, yn prosinten. Attribút `bron`: metten of fêst. |
+
+Entiteitsnammen folgje de taal fan Home Assistant op it momint dat de entiteit oanmakke wurdt (yn it Frysk
+hjitte se `*_laadplan`, `*_priissturing` ensafuorthinne; yn it Nederlânsk `*_prijssturing`). **Steatwearden en attribútnammen binne
+yn elke taal Nederlânsk** (`laden`, `tekst`, …); se steane fêst, sadat automatisearringen bliuwe wurkje.
+
 ## Untwikkelje
 
 De rekkenregel sit apart fan Home Assistant yn `planner.py` en hat tests mei
-echte prizen. De bestjoeringslogika is test tsjin in nepe Home Assistant
-(`tests/test_sturing.py`):
+echte prizen. De bestjoeringslogika is test tsjin in nepe Home Assistant:
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
-
 
 ## Wizigingen
 
@@ -432,7 +374,7 @@ Sjoch [CHANGELOG.md](CHANGELOG.md), ynklusyf de brekkende wizigingen.
 
 Dizze yntegraasje stiet op it wurk fan de Marstek Venus-mienskip:
 
-- De [Tweakers-forumtried](https://gathering.tweakers.net/forum/list_messages/2282240/0) dêr't dit mienskipswurk besprutsen wurdt, in earefermelding foar elkenien dy't befinings en konfiguraasjes dielt.
+- De [Tweakers-forumtried](https://gathering.tweakers.net/forum/list_messages/2282240/0) dêr't dit mienskipswurk besprutsen wurdt, in earefermelding foar elkenien dy't dêr befinings en konfiguraasjes dielt.
 - [Superduper1969](https://github.com/Superduper1969) foar de LilyGO RS485- en Elfin EW11-konfiguraasjes dêr't dizze yntegraasje om hinne boud is, en scruysberghs, dy't yn dy konfiguraasjes betanke wurdt.
 - [fonske](https://github.com/fonske) foar de Modbus TCP-konfiguraasje fan de Venus E v3.
 - [ViperRNMC](https://github.com/ViperRNMC) foar de Marstek Venus Modbus-yntegraasje.

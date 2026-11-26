@@ -103,71 +103,115 @@
         "title": "Ynstellingen",
         "description": "Pas de entiteiten of de rekkenregel oan. De yntegraasje wurdt dêrnei opnij laden.",
         "data": {
-          "price_entity": "Priissensor",
-          "soc_entity": "Laadnivo (SoC)",
-          "control_mode_entity": "RS485 control mode",
-          "force_mode_entity": "Forcible charge/discharge",
-          "force_power_entity": "Forcible charge power",
-          "max_power_entity": "Maksimaal laadfermogen",
-          "capacity_entity": "Accukapasiteit (sensor)",
-          "charged_energy_entity": "Totaal laden enerzjy",
-          "discharged_energy_entity": "Totaal ûntladen enerzjy",
-          "price_attribute": "Attribút mei de prizen",
-          "capacity_kwh": "Accukapasiteit",
-          "default_efficiency": "Rendemint as de tellers ûntbrekke",
-          "margin": "Minimale winst per kWh",
-          "top_hours": "Oantal djoerste oeren om mei te fergelykjen",
-          "lookahead_hours": "Oantal oeren foarút sjen",
-          "min_lookahead_hours": "Minimaal oantal bekende oeren foarút",
-          "min_power": "Minimaal laadfermogen",
-          "force_discharge_power_entity": "Forcible discharge power",
-          "max_discharge_power_entity": "Maksimaal ûntladefermogen",
-          "min_soc_entity": "Ûntladegrins (SoC)",
-          "sell_margin": "Ferkeapje: minimale winst per kWh",
-          "house_power": "Ferkeapje: gemiddeld eigen ferbrûk",
-          "reserve_min_soc": "Ferkeapje: minimale reserve",
-          "min_soc": "Ûntladegrins",
-          "sell_price_factor": "Ferkeappriis: faktor",
-          "sell_price_offset": "Ferkeappriis: ôftrek",
-          "negative_price_limit": "Negative priis: grins",
-          "language": "Taal",
-          "battery_price": "Oankeappriis accu",
-          "battery_cycles": "Libbensdoer accu (syklussen)",
-          "modbus_hub": "Namme fan de Modbus-hub",
-          "modbus_slave": "Modbus-slaveadres",
-          "negative_strategy": "Negative priis: ferdieling fan de enerzjy",
-          "use_solar_forecast": "Sinneprognose brûke",
-          "solar_reliability": "Betrouberens fan de sinneprognose",
-          "house_power_entity": "Sensor foar húsfermogen"
+          "language": "Taal"
         },
         "data_description": {
-          "price_entity": "Sensor mei de publisearre oerenprizen yn in attribút, bygelyks de Zonneplan-oerenpriissensor.",
-          "control_mode_entity": "Haadskeakeler foar twinge: enable of disable.",
-          "force_mode_entity": "Rjochting by twinge: charge, discharge of stop.",
-          "force_power_entity": "Wurdt by it bylade op it útsmarde fermogen set.",
-          "max_power_entity": "Bepaalt it oantal laadoeren en de boppegrins fan it fermogen. Leech = 2500 W.",
-          "capacity_entity": "Leech = de fêste kapasiteit út de ynstellingen.",
-          "charged_energy_entity": "Tegearre mei de ûntladen enerzjy bepaalt dit it rendemint. Leech = fêst rendemint.",
-          "default_efficiency": "It rendemint wurdt berekkene út de enerzjytellers fan de Marstek (totaal ûntladen dield troch totaal laden). Dizze fêste wearde jildt allinnich as dy tellers net ynfolle binne of gjin wearde jouwe.",
-          "margin": "Bylade moat nei ôftrek fan it laadferlies minstens dit bedrach opbringe.",
-          "top_hours": "In oere is goedkeap genôch as de priis leger is as it rendemint kear it gemiddelde fan dizze djoerste oeren dêrnei, minus de marzje.",
-          "min_lookahead_hours": "Oeren dêr't minder prizen nei bekend binne, telle net mei.",
-          "force_discharge_power_entity": "Nedich foar ferkeapje. Leech = ferkeapje is net mooglik.",
-          "max_discharge_power_entity": "Boppegrins fan it ferkeapfermogen. Leech = 2500 W.",
-          "min_soc_entity": "Ûnder dizze SoC ûntladet de Marstek net. Leech = de fêste wearde út de ynstellingen.",
-          "sell_margin": "Ferkeapje bart allinnich as de ferkeappriis heger is as weromlade kostet (laadpriis dield troch it rendemint) plus dit bedrach.",
-          "house_power": "Bepaalt de reserve: dit fermogen kear de oeren oant it weromladen bliuwt yn de accu.",
-          "reserve_min_soc": "Ûnder dizze SoC wurdt nea ferkocht.",
-          "min_soc": "Allinnich brûkt as der gjin entiteit foar de ûntladegrins ynfolle is.",
-          "sell_price_factor": "Ferkeappriis = oerepriis kear dizze faktor, minus de ôftrek. Mei salderen: 1 en 0. Sûnder salderen bygelyks 0,826 en 0,108 foar de kale merkpriis.",
-          "negative_price_limit": "Ûnder dizze oerepriis laadt de accu altyd op fol fermogen (as de skeakeler oan stiet). Standert 0: allinnich by in echt negative priis.",
-          "language": "Taal fan planrigel, stroomskema en kaarten. Automatysk folget de taal fan Home Assistant.",
-          "battery_price": "Oankeappriis fan de accu yn euro's, foar de ôfskriuwing. 0 betsjut dat der gjin ôfskriuwing meirekkene wurdt.",
-          "battery_cycles": "Oantal folsleine syklussen dat de accu nei ferwachting meigiet. Ôfskriuwing per kWh = priis ÷ (syklussen × kapasiteit).",
-          "negative_strategy": "Nei wearde ferdield: mear yn de negativere oeren, leger fermogen. Maksimale opbringst: de bêste oeren earst fol op fol fermogen.",
-          "use_solar_forecast": "Hâldt by it laden yn de nacht rekken mei de ferwachte sinne-opbringst út it Enerzjydashboerd, sadat der romte is foar de sinne.",
-          "solar_reliability": "It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger.",
-          "house_power_entity": "Opsjoneel. In fermogenssensor (W of kW) mei it totale fermogen dat it hûs brûkt, sûnder de batterij. De yntegraasje leart dyn gemiddelde ferbrûk per oere fan de dei (wurkdagen en wykein apart) en brûkt dat foar it sinne-oerskot yn plak fan it fêste eigen ferbrûk."
+          "language": "Taal fan planrigel, stroomskema en kaarten. Automatysk folget de taal fan Home Assistant."
+        },
+        "sections": {
+          "battery": {
+            "name": "Accu",
+            "data": {
+              "capacity_kwh": "Accukapasiteit",
+              "default_efficiency": "Rendemint as de tellers ûntbrekke",
+              "battery_price": "Oankeappriis accu",
+              "battery_cycles": "Libbensdoer accu (syklussen)",
+              "min_soc": "Ûntladegrins"
+            },
+            "data_description": {
+              "default_efficiency": "It rendemint wurdt berekkene út de enerzjytellers fan de Marstek (totaal ûntladen dield troch totaal laden). Dizze fêste wearde jildt allinnich as dy tellers net ynfolle binne of gjin wearde jouwe.",
+              "battery_price": "Oankeappriis fan de accu yn euro's, foar de ôfskriuwing. 0 betsjut dat der gjin ôfskriuwing meirekkene wurdt.",
+              "battery_cycles": "Oantal folsleine syklussen dat de accu nei ferwachting meigiet. Ôfskriuwing per kWh = priis ÷ (syklussen × kapasiteit).",
+              "min_soc": "Allinnich brûkt as der gjin entiteit foar de ûntladegrins ynfolle is."
+            }
+          },
+          "charging": {
+            "name": "Bylade",
+            "data": {
+              "margin": "Minimale winst per kWh",
+              "min_power": "Minimaal laadfermogen",
+              "price_attribute": "Attribút mei de prizen",
+              "top_hours": "Oantal djoerste oeren om mei te fergelykjen",
+              "lookahead_hours": "Oantal oeren foarút sjen",
+              "min_lookahead_hours": "Minimaal oantal bekende oeren foarút"
+            },
+            "data_description": {
+              "margin": "Bylade moat nei ôftrek fan it laadferlies minstens dit bedrach opbringe.",
+              "top_hours": "In oere is goedkeap genôch as de priis leger is as it rendemint kear it gemiddelde fan dizze djoerste oeren dêrnei, minus de marzje.",
+              "min_lookahead_hours": "Oeren dêr't minder prizen nei bekend binne, telle net mei."
+            }
+          },
+          "negative": {
+            "name": "Negative priis",
+            "data": {
+              "negative_price_limit": "Negative priis: grins",
+              "negative_strategy": "Negative priis: ferdieling fan de enerzjy"
+            },
+            "data_description": {
+              "negative_price_limit": "Ûnder dizze oerepriis laadt de accu altyd op fol fermogen (as de skeakeler oan stiet). Standert 0: allinnich by in echt negative priis.",
+              "negative_strategy": "Nei wearde ferdield: mear yn de negativere oeren, leger fermogen. Maksimale opbringst: de bêste oeren earst fol op fol fermogen."
+            }
+          },
+          "solar": {
+            "name": "Sinne",
+            "data": {
+              "use_solar_forecast": "Sinneprognose brûke",
+              "solar_reliability": "Betrouberens fan de sinneprognose",
+              "house_power_entity": "Sensor foar húsfermogen"
+            },
+            "data_description": {
+              "use_solar_forecast": "Hâldt by it laden yn de nacht rekken mei de ferwachte sinne-opbringst út it Enerzjydashboerd, sadat der romte is foar de sinne.",
+              "solar_reliability": "It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger.",
+              "house_power_entity": "Opsjoneel. In fermogenssensor (W of kW) mei it totale fermogen dat it hûs brûkt, sûnder de batterij. De yntegraasje leart dyn gemiddelde ferbrûk per oere fan de dei (wurkdagen en wykein apart) en brûkt dat foar it sinne-oerskot yn plak fan it fêste eigen ferbrûk."
+            }
+          },
+          "selling": {
+            "name": "Ferkeap",
+            "data": {
+              "sell_margin": "Ferkeapje: minimale winst per kWh",
+              "house_power": "Ferkeapje: gemiddeld eigen ferbrûk",
+              "reserve_min_soc": "Ferkeapje: minimale reserve",
+              "sell_price_factor": "Ferkeappriis: faktor",
+              "sell_price_offset": "Ferkeappriis: ôftrek"
+            },
+            "data_description": {
+              "sell_margin": "Ferkeapje bart allinnich as de ferkeappriis heger is as weromlade kostet (laadpriis dield troch it rendemint) plus dit bedrach.",
+              "house_power": "Bepaalt de reserve: dit fermogen kear de oeren oant it weromladen bliuwt yn de accu.",
+              "reserve_min_soc": "Ûnder dizze SoC wurdt nea ferkocht.",
+              "sell_price_factor": "Ferkeappriis = oerepriis kear dizze faktor, minus de ôftrek. Mei salderen: 1 en 0. Sûnder salderen bygelyks 0,826 en 0,108 foar de kale merkpriis."
+            }
+          },
+          "entities": {
+            "name": "Entiteiten",
+            "data": {
+              "price_entity": "Priissensor",
+              "soc_entity": "Laadnivo (SoC)",
+              "control_mode_entity": "RS485 control mode",
+              "force_mode_entity": "Forcible charge/discharge",
+              "force_power_entity": "Forcible charge power",
+              "max_power_entity": "Maksimaal laadfermogen",
+              "capacity_entity": "Accukapasiteit (sensor)",
+              "charged_energy_entity": "Totaal laden enerzjy",
+              "discharged_energy_entity": "Totaal ûntladen enerzjy",
+              "force_discharge_power_entity": "Forcible discharge power",
+              "max_discharge_power_entity": "Maksimaal ûntladefermogen",
+              "min_soc_entity": "Ûntladegrins (SoC)",
+              "modbus_hub": "Namme fan de Modbus-hub",
+              "modbus_slave": "Modbus-slaveadres"
+            },
+            "data_description": {
+              "price_entity": "Sensor mei de publisearre oerenprizen yn in attribút, bygelyks de Zonneplan-oerenpriissensor.",
+              "control_mode_entity": "Haadskeakeler foar twinge: enable of disable.",
+              "force_mode_entity": "Rjochting by twinge: charge, discharge of stop.",
+              "force_power_entity": "Wurdt by it bylade op it útsmarde fermogen set.",
+              "max_power_entity": "Bepaalt it oantal laadoeren en de boppegrins fan it fermogen. Leech = 2500 W.",
+              "capacity_entity": "Leech = de fêste kapasiteit út de ynstellingen.",
+              "charged_energy_entity": "Tegearre mei de ûntladen enerzjy bepaalt dit it rendemint. Leech = fêst rendemint.",
+              "force_discharge_power_entity": "Nedich foar ferkeapje. Leech = ferkeapje is net mooglik.",
+              "max_discharge_power_entity": "Boppegrins fan it ferkeapfermogen. Leech = 2500 W.",
+              "min_soc_entity": "Ûnder dizze SoC ûntladet de Marstek net. Leech = de fêste wearde út de ynstellingen."
+            }
+          }
         }
       }
     }

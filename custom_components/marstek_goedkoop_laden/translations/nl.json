@@ -103,71 +103,115 @@
         "title": "Instellingen",
         "description": "Pas de entiteiten of de rekenregel aan. De integratie wordt daarna herladen.",
         "data": {
-          "price_entity": "Prijssensor",
-          "soc_entity": "Laadniveau (SoC)",
-          "control_mode_entity": "RS485 Control Mode",
-          "force_mode_entity": "Forcible charge/discharge",
-          "force_power_entity": "Forcible charge power",
-          "max_power_entity": "Maximaal laadvermogen",
-          "capacity_entity": "Accucapaciteit (sensor)",
-          "charged_energy_entity": "Totaal geladen energie",
-          "discharged_energy_entity": "Totaal ontladen energie",
-          "price_attribute": "Attribuut met de prijzen",
-          "capacity_kwh": "Accucapaciteit",
-          "default_efficiency": "Rendement als de tellers ontbreken",
-          "margin": "Minimale winst per kWh",
-          "top_hours": "Aantal duurste uren om mee te vergelijken",
-          "lookahead_hours": "Aantal uren vooruit kijken",
-          "min_lookahead_hours": "Minimaal aantal bekende uren vooruit",
-          "min_power": "Minimaal laadvermogen",
-          "force_discharge_power_entity": "Forcible discharge power",
-          "max_discharge_power_entity": "Maximaal ontlaadvermogen",
-          "min_soc_entity": "Ontlaadgrens (SoC)",
-          "sell_margin": "Verkoop: minimale winst per kWh",
-          "house_power": "Verkoop: gemiddeld eigen verbruik",
-          "reserve_min_soc": "Verkoop: minimale reserve",
-          "min_soc": "Ontlaadgrens",
-          "sell_price_factor": "Verkoopprijs: factor",
-          "sell_price_offset": "Verkoopprijs: aftrek",
-          "negative_price_limit": "Negatieve prijs: grens",
-          "language": "Taal",
-          "battery_price": "Aanschafprijs accu",
-          "battery_cycles": "Levensduur accu (cycli)",
-          "modbus_hub": "Naam van de Modbus-hub",
-          "modbus_slave": "Modbus-slaveadres",
-          "negative_strategy": "Negatieve prijs: verdeling van de energie",
-          "use_solar_forecast": "Zonneverwachting gebruiken",
-          "solar_reliability": "Betrouwbaarheid zonneverwachting",
-          "house_power_entity": "Huisverbruiksensor"
+          "language": "Taal"
         },
         "data_description": {
-          "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
-          "control_mode_entity": "Hoofdschakelaar voor forceren: enable of disable.",
-          "force_mode_entity": "Richting bij forceren: charge, discharge of stop.",
-          "force_power_entity": "Wordt tijdens het bijladen op het uitgesmeerde vermogen gezet.",
-          "max_power_entity": "Bepaalt het aantal laaduren en de bovengrens van het vermogen. Leeg = 2500 W.",
-          "capacity_entity": "Leeg = de vaste capaciteit uit de instellingen.",
-          "charged_energy_entity": "Samen met de ontladen energie bepaalt dit het rendement. Leeg = vast rendement.",
-          "default_efficiency": "Het rendement wordt berekend uit de energietellers van de Marstek (totaal ontladen gedeeld door totaal geladen). Deze vaste waarde geldt alleen als die tellers niet zijn ingevuld of geen waarde geven.",
-          "margin": "Bijladen moet na aftrek van het laadverlies minstens dit bedrag opleveren.",
-          "top_hours": "Een uur is goedkoop genoeg als de prijs lager is dan het rendement maal het gemiddelde van deze duurste uren erna, min de marge.",
-          "min_lookahead_hours": "Uren waarvan minder prijzen erna bekend zijn, tellen niet mee.",
-          "force_discharge_power_entity": "Nodig voor verkopen. Leeg = verkopen is niet mogelijk.",
-          "max_discharge_power_entity": "Bovengrens van het verkoopvermogen. Leeg = 2500 W.",
-          "min_soc_entity": "Onder deze SoC ontlaadt de Marstek niet. Leeg = de vaste waarde uit de instellingen.",
-          "sell_margin": "Verkopen gebeurt alleen als de verkoopprijs hoger is dan terugladen kost (laadprijs gedeeld door het rendement) plus dit bedrag.",
-          "house_power": "Bepaalt de reserve: dit vermogen maal de uren tot het terugladen blijft in de accu staan.",
-          "reserve_min_soc": "Onder deze SoC wordt nooit verkocht.",
-          "min_soc": "Alleen gebruikt als er geen entiteit voor de ontlaadgrens is ingevuld.",
-          "sell_price_factor": "Verkoopprijs = uurprijs maal deze factor, min de aftrek. Met salderen: 1 en 0. Zonder salderen bijvoorbeeld 0,826 en 0,108 voor de kale marktprijs.",
-          "negative_price_limit": "Onder deze uurprijs laadt de accu altijd op vol vermogen (als de schakelaar aan staat). Standaard 0: alleen bij een echt negatieve prijs.",
-          "language": "Taal van planregel, stroomschema en kaarten. Automatisch volgt de taal van Home Assistant.",
-          "battery_price": "Aanschafprijs van de accu in euro, voor de afschrijving. 0 betekent dat er geen afschrijving wordt meegeteld.",
-          "battery_cycles": "Aantal volledige cycli dat de accu naar verwachting meegaat. Afschrijving per kWh = prijs ÷ (cycli × capaciteit).",
-          "negative_strategy": "Naar waarde verdeeld: meer in de negatievere uren, lager vermogen. Maximale opbrengst: de beste uren eerst vol op vol vermogen.",
-          "use_solar_forecast": "Houdt bij het bijladen 's nachts rekening met de verwachte zonne-opbrengst uit het Energie-dashboard, zodat er ruimte is voor de zon.",
-          "solar_reliability": "Het deel van de verwachting waarop je rekent. Lager is voorzichtiger.",
-          "house_power_entity": "Optioneel. Een vermogenssensor (W of kW) met het totale vermogen dat het huis verbruikt, zonder de accu. De integratie leert je gemiddelde verbruik per uur van de dag (werkdagen en weekend apart) en gebruikt dat voor het zonne-overschot in plaats van het vaste eigen verbruik."
+          "language": "Taal van planregel, stroomschema en kaarten. Automatisch volgt de taal van Home Assistant."
+        },
+        "sections": {
+          "battery": {
+            "name": "Accu",
+            "data": {
+              "capacity_kwh": "Accucapaciteit",
+              "default_efficiency": "Rendement als de tellers ontbreken",
+              "battery_price": "Aanschafprijs accu",
+              "battery_cycles": "Levensduur accu (cycli)",
+              "min_soc": "Ontlaadgrens"
+            },
+            "data_description": {
+              "default_efficiency": "Het rendement wordt berekend uit de energietellers van de Marstek (totaal ontladen gedeeld door totaal geladen). Deze vaste waarde geldt alleen als die tellers niet zijn ingevuld of geen waarde geven.",
+              "battery_price": "Aanschafprijs van de accu in euro, voor de afschrijving. 0 betekent dat er geen afschrijving wordt meegeteld.",
+              "battery_cycles": "Aantal volledige cycli dat de accu naar verwachting meegaat. Afschrijving per kWh = prijs ÷ (cycli × capaciteit).",
+              "min_soc": "Alleen gebruikt als er geen entiteit voor de ontlaadgrens is ingevuld."
+            }
+          },
+          "charging": {
+            "name": "Bijladen",
+            "data": {
+              "margin": "Minimale winst per kWh",
+              "min_power": "Minimaal laadvermogen",
+              "price_attribute": "Attribuut met de prijzen",
+              "top_hours": "Aantal duurste uren om mee te vergelijken",
+              "lookahead_hours": "Aantal uren vooruit kijken",
+              "min_lookahead_hours": "Minimaal aantal bekende uren vooruit"
+            },
+            "data_description": {
+              "margin": "Bijladen moet na aftrek van het laadverlies minstens dit bedrag opleveren.",
+              "top_hours": "Een uur is goedkoop genoeg als de prijs lager is dan het rendement maal het gemiddelde van deze duurste uren erna, min de marge.",
+              "min_lookahead_hours": "Uren waarvan minder prijzen erna bekend zijn, tellen niet mee."
+            }
+          },
+          "negative": {
+            "name": "Negatieve prijs",
+            "data": {
+              "negative_price_limit": "Negatieve prijs: grens",
+              "negative_strategy": "Negatieve prijs: verdeling van de energie"
+            },
+            "data_description": {
+              "negative_price_limit": "Onder deze uurprijs laadt de accu altijd op vol vermogen (als de schakelaar aan staat). Standaard 0: alleen bij een echt negatieve prijs.",
+              "negative_strategy": "Naar waarde verdeeld: meer in de negatievere uren, lager vermogen. Maximale opbrengst: de beste uren eerst vol op vol vermogen."
+            }
+          },
+          "solar": {
+            "name": "Zon",
+            "data": {
+              "use_solar_forecast": "Zonneverwachting gebruiken",
+              "solar_reliability": "Betrouwbaarheid zonneverwachting",
+              "house_power_entity": "Huisverbruiksensor"
+            },
+            "data_description": {
+              "use_solar_forecast": "Houdt bij het bijladen 's nachts rekening met de verwachte zonne-opbrengst uit het Energie-dashboard, zodat er ruimte is voor de zon.",
+              "solar_reliability": "Het deel van de verwachting waarop je rekent. Lager is voorzichtiger.",
+              "house_power_entity": "Optioneel. Een vermogenssensor (W of kW) met het totale vermogen dat het huis verbruikt, zonder de accu. De integratie leert je gemiddelde verbruik per uur van de dag (werkdagen en weekend apart) en gebruikt dat voor het zonne-overschot in plaats van het vaste eigen verbruik."
+            }
+          },
+          "selling": {
+            "name": "Verkoop",
+            "data": {
+              "sell_margin": "Verkoop: minimale winst per kWh",
+              "house_power": "Verkoop: gemiddeld eigen verbruik",
+              "reserve_min_soc": "Verkoop: minimale reserve",
+              "sell_price_factor": "Verkoopprijs: factor",
+              "sell_price_offset": "Verkoopprijs: aftrek"
+            },
+            "data_description": {
+              "sell_margin": "Verkopen gebeurt alleen als de verkoopprijs hoger is dan terugladen kost (laadprijs gedeeld door het rendement) plus dit bedrag.",
+              "house_power": "Bepaalt de reserve: dit vermogen maal de uren tot het terugladen blijft in de accu staan.",
+              "reserve_min_soc": "Onder deze SoC wordt nooit verkocht.",
+              "sell_price_factor": "Verkoopprijs = uurprijs maal deze factor, min de aftrek. Met salderen: 1 en 0. Zonder salderen bijvoorbeeld 0,826 en 0,108 voor de kale marktprijs."
+            }
+          },
+          "entities": {
+            "name": "Entiteiten",
+            "data": {
+              "price_entity": "Prijssensor",
+              "soc_entity": "Laadniveau (SoC)",
+              "control_mode_entity": "RS485 Control Mode",
+              "force_mode_entity": "Forcible charge/discharge",
+              "force_power_entity": "Forcible charge power",
+              "max_power_entity": "Maximaal laadvermogen",
+              "capacity_entity": "Accucapaciteit (sensor)",
+              "charged_energy_entity": "Totaal geladen energie",
+              "discharged_energy_entity": "Totaal ontladen energie",
+              "force_discharge_power_entity": "Forcible discharge power",
+              "max_discharge_power_entity": "Maximaal ontlaadvermogen",
+              "min_soc_entity": "Ontlaadgrens (SoC)",
+              "modbus_hub": "Naam van de Modbus-hub",
+              "modbus_slave": "Modbus-slaveadres"
+            },
+            "data_description": {
+              "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
+              "control_mode_entity": "Hoofdschakelaar voor forceren: enable of disable.",
+              "force_mode_entity": "Richting bij forceren: charge, discharge of stop.",
+              "force_power_entity": "Wordt tijdens het bijladen op het uitgesmeerde vermogen gezet.",
+              "max_power_entity": "Bepaalt het aantal laaduren en de bovengrens van het vermogen. Leeg = 2500 W.",
+              "capacity_entity": "Leeg = de vaste capaciteit uit de instellingen.",
+              "charged_energy_entity": "Samen met de ontladen energie bepaalt dit het rendement. Leeg = vast rendement.",
+              "force_discharge_power_entity": "Nodig voor verkopen. Leeg = verkopen is niet mogelijk.",
+              "max_discharge_power_entity": "Bovengrens van het verkoopvermogen. Leeg = 2500 W.",
+              "min_soc_entity": "Onder deze SoC ontlaadt de Marstek niet. Leeg = de vaste waarde uit de instellingen."
+            }
+          }
         }
       }
     }

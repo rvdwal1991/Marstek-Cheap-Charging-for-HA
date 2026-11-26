@@ -8,6 +8,7 @@ import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.data_entry_flow import section
 from homeassistant.helpers import selector
 
 from .const import (
@@ -47,6 +48,8 @@ from .const import (
     CONF_LANGUAGE,
     CONF_NEGATIVE_PRICE_LIMIT,
     CONF_NEGATIVE_STRATEGY,
+    NEGATIVE_STRATEGY_MAX_GAIN,
+    NEGATIVE_STRATEGY_VALUE,
     DEFAULT_NEGATIVE_STRATEGY,
     CONF_PRICE_ATTRIBUTE,
     CONF_PRICE_ENTITY,
@@ -213,7 +216,7 @@ def _param_schema(current: dict[str, Any]) -> dict[Any, Any]:
         vol.Required(CONF_NEGATIVE_PRICE_LIMIT, default=default(CONF_NEGATIVE_PRICE_LIMIT, DEFAULT_NEGATIVE_PRICE_LIMIT)): _number(-1, 1, 0.005, "€/kWh"),
         vol.Required(CONF_NEGATIVE_STRATEGY, default=default(CONF_NEGATIVE_STRATEGY, DEFAULT_NEGATIVE_STRATEGY)): selector.SelectSelector(
             selector.SelectSelectorConfig(
-                options=["value", "max_gain"],
+                options=[NEGATIVE_STRATEGY_VALUE, NEGATIVE_STRATEGY_MAX_GAIN],
                 mode=selector.SelectSelectorMode.DROPDOWN,
                 translation_key="negative_strategy",
             )
@@ -227,12 +230,49 @@ def _param_schema(current: dict[str, Any]) -> dict[Any, Any]:
     }
 
 
+# Het opties-scherm in groepen. Wat hier niet staat (de taal) blijft bovenaan staan; de
+# entiteiten en de verbindingsgegevens komen in de laatste, ingeklapte groep.
+SECTIONS: tuple[tuple[str, tuple[str, ...], bool], ...] = (
+    ("battery", (CONF_CAPACITY_KWH, CONF_DEFAULT_EFFICIENCY, CONF_BATTERY_PRICE, CONF_BATTERY_CYCLES, CONF_MIN_SOC), False),
+    ("charging", (CONF_MARGIN, CONF_MIN_POWER, CONF_PRICE_ATTRIBUTE, CONF_TOP_HOURS, CONF_LOOKAHEAD_HOURS, CONF_MIN_LOOKAHEAD_HOURS), False),
+    ("negative", (CONF_NEGATIVE_PRICE_LIMIT, CONF_NEGATIVE_STRATEGY), False),
+    ("solar", (CONF_USE_SOLAR, CONF_SOLAR_RELIABILITY, CONF_HOUSE_ENTITY), False),
+    ("selling", (CONF_SELL_MARGIN, CONF_HOUSE_POWER, CONF_RESERVE_MIN_SOC, CONF_SELL_PRICE_FACTOR, CONF_SELL_PRICE_OFFSET), True),
+)
+
+
+def _options_schema(entities: dict[Any, Any], params: dict[Any, Any]) -> vol.Schema:
+    """Taal bovenaan, dan de groepen, en de entiteiten ingeklapt onderaan."""
+    by_key = {str(marker.schema): (marker, selector_) for marker, selector_ in params.items()}
+    schema: dict[Any, Any] = {}
+    if CONF_LANGUAGE in by_key:
+        marker, selector_ = by_key.pop(CONF_LANGUAGE)
+        schema[marker] = selector_
+    for name, keys, collapsed in SECTIONS:
+        fields = {by_key[key][0]: by_key[key][1] for key in keys if key in by_key}
+        schema[vol.Required(name)] = section(vol.Schema(fields), {"collapsed": collapsed})
+    schema[vol.Required("entities")] = section(vol.Schema(entities), {"collapsed": True})
+    return vol.Schema(schema)
+
+
+def _flatten(user_input: dict[str, Any]) -> dict[str, Any]:
+    """Haal de waarden uit de groepen en zet ze op één niveau."""
+    flat: dict[str, Any] = {}
+    for key, value in user_input.items():
+        if isinstance(value, dict):
+            flat.update(value)
+        else:
+            flat[key] = value
+    return flat
+
+
 def _normalize(user_input: dict[str, Any], connection: str = CONNECTION_ESPHOME) -> dict[str, Any]:
     """Leeggemaakte optionele velden expliciet op None zetten."""
-    data = dict(user_input)
+    data = _flatten(user_input)
     data[CONF_CONNECTION] = connection
     for key in OPTIONAL_KEYS:
         data.setdefault(key, None)
+    data.setdefault(CONF_HOUSE_ENTITY, None)
     if CONF_MODBUS_SLAVE in data:
         data[CONF_MODBUS_SLAVE] = int(data[CONF_MODBUS_SLAVE])
     return data
@@ -282,5 +322,5 @@ class MarstekGoedkoopLadenOptionsFlow(OptionsFlow):
         connection = current.get(CONF_CONNECTION) or CONNECTION_ESPHOME
         if user_input is not None:
             return self.async_create_entry(data=_normalize(user_input, connection))
-        schema = {**_entity_schema(self.hass, current, connection), **_param_schema(current)}
-        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema))
+        schema = _options_schema(_entity_schema(self.hass, current, connection), _param_schema(current))
+        return self.async_show_form(step_id="init", data_schema=schema)

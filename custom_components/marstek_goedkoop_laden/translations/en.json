@@ -103,71 +103,115 @@
         "title": "Options",
         "description": "Change the entities or the planning rule. The integration reloads afterwards.",
         "data": {
-          "price_entity": "Price sensor",
-          "soc_entity": "State of charge",
-          "control_mode_entity": "RS485 control mode",
-          "force_mode_entity": "Forcible charge/discharge",
-          "force_power_entity": "Forcible charge power",
-          "max_power_entity": "Maximum charge power",
-          "capacity_entity": "Battery capacity (sensor)",
-          "charged_energy_entity": "Total charged energy",
-          "discharged_energy_entity": "Total discharged energy",
-          "price_attribute": "Attribute holding the prices",
-          "capacity_kwh": "Battery capacity",
-          "default_efficiency": "Efficiency when the counters are missing",
-          "margin": "Minimum gain per kWh",
-          "top_hours": "Number of most expensive hours to compare with",
-          "lookahead_hours": "Hours to look ahead",
-          "min_lookahead_hours": "Minimum known hours ahead",
-          "min_power": "Minimum charge power",
-          "force_discharge_power_entity": "Forcible discharge power",
-          "max_discharge_power_entity": "Maximum discharge power",
-          "min_soc_entity": "Discharge cut-off (SoC)",
-          "sell_margin": "Selling: minimum gain per kWh",
-          "house_power": "Selling: average own consumption",
-          "reserve_min_soc": "Selling: minimum reserve",
-          "min_soc": "Discharge cut-off",
-          "sell_price_factor": "Sell price: factor",
-          "sell_price_offset": "Sell price: deduction",
-          "negative_price_limit": "Negative price: limit",
-          "language": "Language",
-          "battery_price": "Battery purchase price",
-          "battery_cycles": "Battery lifetime (cycles)",
-          "modbus_hub": "Modbus hub name",
-          "modbus_slave": "Modbus slave address",
-          "negative_strategy": "Negative price: how to divide the energy",
-          "use_solar_forecast": "Use the solar forecast",
-          "solar_reliability": "Solar forecast reliability",
-          "house_power_entity": "House power sensor"
+          "language": "Language"
         },
         "data_description": {
-          "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
-          "control_mode_entity": "Master switch for forcing: enable or disable.",
-          "force_mode_entity": "Direction when forcing: charge, discharge or stop.",
-          "force_power_entity": "Set to the spread-out power while charging.",
-          "max_power_entity": "Sets the number of charge hours and the upper limit of the power. Empty = 2500 W.",
-          "capacity_entity": "Empty = the fixed capacity from the options.",
-          "charged_energy_entity": "Together with the discharged energy this sets the efficiency. Empty = fixed efficiency.",
-          "default_efficiency": "The efficiency is calculated from the Marstek energy counters (total discharged divided by total charged). This fixed value only applies when those counters are not set or have no value.",
-          "margin": "After the charging loss, charging has to gain at least this amount.",
-          "top_hours": "An hour is cheap enough when its price is below the efficiency times the average of these most expensive hours after it, minus the margin.",
-          "min_lookahead_hours": "Hours with fewer known prices after them are ignored.",
-          "force_discharge_power_entity": "Needed for selling. Empty = selling is not possible.",
-          "max_discharge_power_entity": "Upper limit of the sell power. Empty = 2500 W.",
-          "min_soc_entity": "The Marstek does not discharge below this SoC. Empty = the fixed value from the options.",
-          "sell_margin": "Selling only happens when the sell price exceeds the cost of recharging (charge price divided by the efficiency) plus this amount.",
-          "house_power": "Sets the reserve: this power times the hours until recharging stays in the battery.",
-          "reserve_min_soc": "Never sell below this SoC.",
-          "min_soc": "Only used when no discharge cut-off entity is set.",
-          "sell_price_factor": "Sell price = hourly price times this factor, minus the deduction. With net metering: 1 and 0. Without, for example 0.826 and 0.108 for the bare market price.",
-          "negative_price_limit": "Below this hourly price the battery always charges at full power (when the switch is on). Default 0: only at a truly negative price.",
-          "language": "Language of the plan text, flow chart and cards. Automatic follows the Home Assistant language.",
-          "battery_price": "Purchase price of the battery in euros, for depreciation. 0 means no depreciation is counted.",
-          "battery_cycles": "Number of full cycles the battery is expected to last. Depreciation per kWh = price ÷ (cycles × capacity).",
-          "negative_strategy": "Spread by value: more in the more negative hours, lower power. Maximum gain: fill the best hours first at full power.",
-          "use_solar_forecast": "Takes the expected solar yield from the Energy dashboard into account when charging at night, so there is room for the sun.",
-          "solar_reliability": "The part of the forecast to count on. Lower is more careful.",
-          "house_power_entity": "Optional. A power sensor (W or kW) with the total power the house uses, without the battery. The integration learns your average consumption per hour of the day (weekdays and weekends separately) and uses it for the solar surplus instead of the fixed own consumption."
+          "language": "Language of the plan text, flow chart and cards. Automatic follows the Home Assistant language."
+        },
+        "sections": {
+          "battery": {
+            "name": "Battery",
+            "data": {
+              "capacity_kwh": "Battery capacity",
+              "default_efficiency": "Efficiency when the counters are missing",
+              "battery_price": "Battery purchase price",
+              "battery_cycles": "Battery lifetime (cycles)",
+              "min_soc": "Discharge cut-off"
+            },
+            "data_description": {
+              "default_efficiency": "The efficiency is calculated from the Marstek energy counters (total discharged divided by total charged). This fixed value only applies when those counters are not set or have no value.",
+              "battery_price": "Purchase price of the battery in euros, for depreciation. 0 means no depreciation is counted.",
+              "battery_cycles": "Number of full cycles the battery is expected to last. Depreciation per kWh = price ÷ (cycles × capacity).",
+              "min_soc": "Only used when no discharge cut-off entity is set."
+            }
+          },
+          "charging": {
+            "name": "Charging",
+            "data": {
+              "margin": "Minimum gain per kWh",
+              "min_power": "Minimum charge power",
+              "price_attribute": "Attribute holding the prices",
+              "top_hours": "Number of most expensive hours to compare with",
+              "lookahead_hours": "Hours to look ahead",
+              "min_lookahead_hours": "Minimum known hours ahead"
+            },
+            "data_description": {
+              "margin": "After the charging loss, charging has to gain at least this amount.",
+              "top_hours": "An hour is cheap enough when its price is below the efficiency times the average of these most expensive hours after it, minus the margin.",
+              "min_lookahead_hours": "Hours with fewer known prices after them are ignored."
+            }
+          },
+          "negative": {
+            "name": "Negative price",
+            "data": {
+              "negative_price_limit": "Negative price: limit",
+              "negative_strategy": "Negative price: how to divide the energy"
+            },
+            "data_description": {
+              "negative_price_limit": "Below this hourly price the battery always charges at full power (when the switch is on). Default 0: only at a truly negative price.",
+              "negative_strategy": "Spread by value: more in the more negative hours, lower power. Maximum gain: fill the best hours first at full power."
+            }
+          },
+          "solar": {
+            "name": "Solar",
+            "data": {
+              "use_solar_forecast": "Use the solar forecast",
+              "solar_reliability": "Solar forecast reliability",
+              "house_power_entity": "House power sensor"
+            },
+            "data_description": {
+              "use_solar_forecast": "Takes the expected solar yield from the Energy dashboard into account when charging at night, so there is room for the sun.",
+              "solar_reliability": "The part of the forecast to count on. Lower is more careful.",
+              "house_power_entity": "Optional. A power sensor (W or kW) with the total power the house uses, without the battery. The integration learns your average consumption per hour of the day (weekdays and weekends separately) and uses it for the solar surplus instead of the fixed own consumption."
+            }
+          },
+          "selling": {
+            "name": "Selling",
+            "data": {
+              "sell_margin": "Selling: minimum gain per kWh",
+              "house_power": "Selling: average own consumption",
+              "reserve_min_soc": "Selling: minimum reserve",
+              "sell_price_factor": "Sell price: factor",
+              "sell_price_offset": "Sell price: deduction"
+            },
+            "data_description": {
+              "sell_margin": "Selling only happens when the sell price exceeds the cost of recharging (charge price divided by the efficiency) plus this amount.",
+              "house_power": "Sets the reserve: this power times the hours until recharging stays in the battery.",
+              "reserve_min_soc": "Never sell below this SoC.",
+              "sell_price_factor": "Sell price = hourly price times this factor, minus the deduction. With net metering: 1 and 0. Without, for example 0.826 and 0.108 for the bare market price."
+            }
+          },
+          "entities": {
+            "name": "Entities",
+            "data": {
+              "price_entity": "Price sensor",
+              "soc_entity": "State of charge",
+              "control_mode_entity": "RS485 control mode",
+              "force_mode_entity": "Forcible charge/discharge",
+              "force_power_entity": "Forcible charge power",
+              "max_power_entity": "Maximum charge power",
+              "capacity_entity": "Battery capacity (sensor)",
+              "charged_energy_entity": "Total charged energy",
+              "discharged_energy_entity": "Total discharged energy",
+              "force_discharge_power_entity": "Forcible discharge power",
+              "max_discharge_power_entity": "Maximum discharge power",
+              "min_soc_entity": "Discharge cut-off (SoC)",
+              "modbus_hub": "Modbus hub name",
+              "modbus_slave": "Modbus slave address"
+            },
+            "data_description": {
+              "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
+              "control_mode_entity": "Master switch for forcing: enable or disable.",
+              "force_mode_entity": "Direction when forcing: charge, discharge or stop.",
+              "force_power_entity": "Set to the spread-out power while charging.",
+              "max_power_entity": "Sets the number of charge hours and the upper limit of the power. Empty = 2500 W.",
+              "capacity_entity": "Empty = the fixed capacity from the options.",
+              "charged_energy_entity": "Together with the discharged energy this sets the efficiency. Empty = fixed efficiency.",
+              "force_discharge_power_entity": "Needed for selling. Empty = selling is not possible.",
+              "max_discharge_power_entity": "Upper limit of the sell power. Empty = 2500 W.",
+              "min_soc_entity": "The Marstek does not discharge below this SoC. Empty = the fixed value from the options."
+            }
+          }
         }
       }
     }

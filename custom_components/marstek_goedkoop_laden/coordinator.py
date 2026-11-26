@@ -60,6 +60,7 @@ from .const import (
     CONF_NEGATIVE_STRATEGY,
     CONF_SOLAR_RELIABILITY,
     CONF_USE_SOLAR,
+    HOLD_MIN_STOCK_KWH,
     DEFAULT_SOLAR_RELIABILITY,
     DEFAULT_USE_SOLAR,
     NEGATIVE_STRATEGY_MAX_GAIN,
@@ -98,13 +99,13 @@ from .const import (
     MODE_ENABLE,
     UPDATE_INTERVAL_SECONDS,
 )
+from .flow import build_flow
 from .house import HouseProfile
 from .i18n import resolve as resolve_language, tr
+from .solar import async_read_forecast
 from .ledger import Ledger
 from .planner import (
-    FULL_SOC,
     NEGATIVE_CHARGING,
-    NEGATIVE_WAITING,
     SELL_SELLING,
     STATUS_CHARGING,
     Plan,
@@ -119,13 +120,9 @@ from .planner import (
     compute_sell_plan,
     negative_price_slot,
     plan_negative,
-    step,
 )
 
 _LOGGER = logging.getLogger(__name__)
-
-# Onder deze voorraad (kWh) wordt er niet vastgehouden.
-HOLD_MIN_STOCK_KWH = 0.1
 
 STORAGE_VERSION = 1
 
@@ -407,12 +404,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
     # ------------------------------------------------------------------ update
 
     async def _async_refresh_solar(self) -> None:
-        """Lees de zonneverwachting uit het Energie-dashboard van Home Assistant (om de 30 min).
-
-        Dat dashboard kent de verwachting van Forecast.Solar, Solcast, Open-Meteo en
-        andere integraties, dus er is niets extra in te stellen. Lukt het niet, of
-        staat er geen verwachting in, dan blijft de lijst leeg en verandert er niets.
-        """
+        """Lees de zonneverwachting (om de 30 min). Lukt het niet, dan blijft de lijst leeg."""
         now = dt_util.utcnow()
         if not self.conf.get(CONF_USE_SOLAR, DEFAULT_USE_SOLAR):
             self._solar_hours = ()
@@ -421,28 +413,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             return
         self._solar_checked = now
         try:
-            from homeassistant.components.energy import async_get_manager
-            from homeassistant.components.energy.websocket_api import async_get_energy_platforms
-
-            manager = await async_get_manager(self.hass)
-            entry_ids: set[str] = set()
-            for source in (manager.data or {}).get("energy_sources", []):
-                if source.get("type") == "solar":
-                    entry_ids.update(source.get("config_entry_solar_forecast") or [])
-            platforms = await async_get_energy_platforms(self.hass) if entry_ids else {}
-            per_hour: dict[datetime, float] = {}
-            for entry_id in entry_ids:
-                entry = self.hass.config_entries.async_get_entry(entry_id)
-                if entry is None or entry.domain not in platforms:
-                    continue
-                forecast = await platforms[entry.domain](self.hass, entry_id)
-                for stamp, wh in ((forecast or {}).get("wh_hours") or {}).items():
-                    moment = dt_util.parse_datetime(stamp)
-                    if moment is None:
-                        continue
-                    hour = moment.replace(minute=0, second=0, microsecond=0)
-                    per_hour[hour] = per_hour.get(hour, 0.0) + float(wh)
-            self._solar_hours = tuple(sorted(per_hour.items()))
+            self._solar_hours = await async_read_forecast(self.hass)
         except Exception:  # noqa: BLE001 - de verwachting is optioneel
             _LOGGER.debug("Zonneverwachting niet beschikbaar", exc_info=True)
             self._solar_hours = ()
@@ -472,136 +443,13 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         await self._async_refresh_solar()
         inputs = self._read_inputs()
         self.inputs = inputs
-        plan = compute_plan(
-            prices=inputs["prices"],
-            now=dt_util.utcnow(),
-            soc=inputs["soc"],
-            capacity_kwh=inputs["capacity_kwh"],
-            max_power_w=inputs["max_power_w"],
-            efficiency=inputs["efficiency"],
-            charging=inputs["charging"],
-            active=self.enabled,
-            memory=self._memory,
-            params=self.params,
-            tz=dt_util.DEFAULT_TIME_ZONE,
-        )
-        if plan.memory() != self._memory:
-            self._memory = plan.memory()
-            self._save()
-
         now = dt_util.utcnow()
-        if not self.can_sell:
-            sell = SellPlan(text="Verkopen is niet ingesteld: kies de entiteit voor het ontlaadvermogen")
-        else:
-            sell = compute_sell_plan(
-                charge_plan=plan,
-                now=now,
-                soc=inputs["soc"],
-                capacity_kwh=inputs["capacity_kwh"],
-                max_power_w=inputs["max_discharge_power_w"],
-                efficiency=inputs["efficiency"],
-                min_soc=inputs["min_soc"],
-                selling=self._selling,
-                previous_hours=self._sell_hours,
-                params=self.sell_params,
-                tz=dt_util.DEFAULT_TIME_ZONE,
-            )
-        self.sell_plan = sell
-        if sell.sell_hours != self._sell_hours:
-            self._sell_hours = sell.sell_hours
-            self._save()
 
-        # Negatieve prijs: nu laden op vol vermogen, los van het plan.
-        limit = float(self.conf.get(CONF_NEGATIVE_PRICE_LIMIT, DEFAULT_NEGATIVE_PRICE_LIMIT))
-        slot = negative_price_slot(plan.prices, now, limit)
-        soc = inputs["soc"]
-        self.negative_plan = None
-        if self.negative_enabled and slot is not None:
-            self.negative_plan = plan_negative(
-                plan.prices,
-                now,
-                soc,
-                inputs["capacity_kwh"],
-                inputs["max_power_w"],
-                float(self.conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
-                limit,
-                self._negative_hours,
-                self.conf.get(CONF_NEGATIVE_STRATEGY) == NEGATIVE_STRATEGY_MAX_GAIN,
-            )
-        self._negative_hours = self.negative_plan.hours if self.negative_plan else ()
-        self.negative_active = bool(
-            self.negative_plan and self.negative_plan.status == NEGATIVE_CHARGING
-        )
-
-        # Gerealiseerde opbrengst bijwerken aan de hand van de energietellers.
-        current = next((s for s in plan.prices if s.start <= now < s.end), None)
-        price_now = current.price if current else None
-        sell_params = self.sell_params
-        if self.ledger.update(
-            now=dt_util.now(),
-            charged=inputs["charged_total"],
-            discharged=inputs["discharged_total"],
-            price=price_now,
-            grid_charging=bool(
-                inputs["charging"]
-                and (
-                    self.negative_active
-                    or self._negative_charging
-                    or (self.enabled and plan.status == STATUS_CHARGING)
-                )
-            ),
-            selling=self._selling,
-            export_price=(
-                price_now * sell_params.price_factor - sell_params.price_offset
-                if price_now is not None
-                else None
-            ),
-            replacement_cost=(
-                sell.refill_price / inputs["efficiency"] if sell.refill_price else None
-            ),
-            efficiency=inputs["efficiency"],
-            depreciation=self.depreciation,
-        ):
-            self._save()
-
-        # Vasthouden: is de accu leeg (en wordt er niet geladen), dan vervalt de
-        # voorraad in de boeken.
-        soc = inputs["soc"]
-        if (
-            soc is not None
-            and soc <= inputs["min_soc"] + 1
-            and not inputs["charging"]
-            and self.ledger.clear_stock()
-        ):
-            self._save()
-        cost = self._stock_cost()
-        has_stock = self.ledger.stock_kwh >= HOLD_MIN_STOCK_KWH and cost is not None
-        export_now = (
-            price_now * sell_params.price_factor - sell_params.price_offset
-            if price_now is not None
-            else None
-        )
-        # Geen verlies: bijgeladen voorraad niet verkopen onder de kostprijs.
-        self.sell_blocked = bool(
-            self.no_loss_enabled and has_stock and export_now is not None and export_now < cost
-        )
-        selling_now = self._selling or (
-            self.sell_enabled and sell.status == SELL_SELLING and not self.sell_blocked
-        )
-        self.hold_active = bool(
-            self.hold_on
-            and self.can_hold
-            and self.ledger.stock_kwh >= HOLD_MIN_STOCK_KWH
-            and cost is not None
-            and price_now is not None
-            and price_now < cost
-            and not selling_now
-        )
-        self.hold_until = None
-        if self.hold_active:
-            self.hold_until = next(
-                (s.start for s in plan.prices if s.start > now and s.price >= cost), None
-            )
+        plan = self._compute_charge_plan(inputs)
+        sell = self._compute_sell_plan(plan, inputs, now)
+        limit, slot = self._update_negative(plan, inputs, now)
+        price_now = self._update_ledger(plan, sell, inputs, now)
+        self._update_hold(plan, sell, inputs, now, price_now)
         await self._async_apply_hold(inputs)
 
         if (
@@ -628,6 +476,149 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             )
         return plan
 
+    def _compute_charge_plan(self, inputs: dict[str, Any]) -> Plan:
+        """Het laadplan voor de goedkope uren; onthoudt wat het vorige plan was."""
+        plan = compute_plan(
+            prices=inputs["prices"],
+            now=dt_util.utcnow(),
+            soc=inputs["soc"],
+            capacity_kwh=inputs["capacity_kwh"],
+            max_power_w=inputs["max_power_w"],
+            efficiency=inputs["efficiency"],
+            charging=inputs["charging"],
+            active=self.enabled,
+            memory=self._memory,
+            params=self.params,
+            tz=dt_util.DEFAULT_TIME_ZONE,
+        )
+        if plan.memory() != self._memory:
+            self._memory = plan.memory()
+            self._save()
+        return plan
+
+    def _compute_sell_plan(self, plan: Plan, inputs: dict[str, Any], now: datetime) -> SellPlan:
+        """Het verkoopplan (alleen als er een ontlaadvermogen is ingesteld)."""
+        if not self.can_sell:
+            sell = SellPlan(text="Verkopen is niet ingesteld: kies de entiteit voor het ontlaadvermogen")
+        else:
+            sell = compute_sell_plan(
+                charge_plan=plan,
+                now=now,
+                soc=inputs["soc"],
+                capacity_kwh=inputs["capacity_kwh"],
+                max_power_w=inputs["max_discharge_power_w"],
+                efficiency=inputs["efficiency"],
+                min_soc=inputs["min_soc"],
+                selling=self._selling,
+                previous_hours=self._sell_hours,
+                params=self.sell_params,
+                tz=dt_util.DEFAULT_TIME_ZONE,
+            )
+        self.sell_plan = sell
+        if sell.sell_hours != self._sell_hours:
+            self._sell_hours = sell.sell_hours
+            self._save()
+        return sell
+
+    def _update_negative(
+        self, plan: Plan, inputs: dict[str, Any], now: datetime
+    ) -> tuple[float, PriceSlot | None]:
+        """Laden bij een negatieve prijs: nu laden, los van het plan. Geeft (grens, huidig vak)."""
+        limit = float(self.conf.get(CONF_NEGATIVE_PRICE_LIMIT, DEFAULT_NEGATIVE_PRICE_LIMIT))
+        slot = negative_price_slot(plan.prices, now, limit)
+        self.negative_plan = None
+        if self.negative_enabled and slot is not None:
+            self.negative_plan = plan_negative(
+                plan.prices,
+                now,
+                inputs["soc"],
+                inputs["capacity_kwh"],
+                inputs["max_power_w"],
+                float(self.conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
+                limit,
+                self._negative_hours,
+                self.conf.get(CONF_NEGATIVE_STRATEGY) == NEGATIVE_STRATEGY_MAX_GAIN,
+            )
+        self._negative_hours = self.negative_plan.hours if self.negative_plan else ()
+        self.negative_active = bool(
+            self.negative_plan and self.negative_plan.status == NEGATIVE_CHARGING
+        )
+        return limit, slot
+
+    def _export_price(self, price: float | None) -> float | None:
+        """Wat een kWh opbrengt als hij aan het net wordt geleverd."""
+        if price is None:
+            return None
+        params = self.sell_params
+        return price * params.price_factor - params.price_offset
+
+    def _update_ledger(
+        self, plan: Plan, sell: SellPlan, inputs: dict[str, Any], now: datetime
+    ) -> float | None:
+        """Boek de gerealiseerde opbrengst aan de hand van de energietellers. Geeft de prijs nu."""
+        current = next((s for s in plan.prices if s.start <= now < s.end), None)
+        price_now = current.price if current else None
+        if self.ledger.update(
+            now=dt_util.now(),
+            charged=inputs["charged_total"],
+            discharged=inputs["discharged_total"],
+            price=price_now,
+            grid_charging=bool(
+                inputs["charging"]
+                and (
+                    self.negative_active
+                    or self._negative_charging
+                    or (self.enabled and plan.status == STATUS_CHARGING)
+                )
+            ),
+            selling=self._selling,
+            export_price=self._export_price(price_now),
+            replacement_cost=(
+                sell.refill_price / inputs["efficiency"] if sell.refill_price else None
+            ),
+            efficiency=inputs["efficiency"],
+            depreciation=self.depreciation,
+        ):
+            self._save()
+        return price_now
+
+    def _update_hold(
+        self, plan: Plan, sell: SellPlan, inputs: dict[str, Any], now: datetime, price_now: float | None
+    ) -> None:
+        """Vasthouden en Geen verlies: wanneer mag de accu niet ontladen of verkopen?"""
+        # Is de accu leeg (en wordt er niet geladen), dan vervalt de voorraad in de boeken.
+        soc = inputs["soc"]
+        if (
+            soc is not None
+            and soc <= inputs["min_soc"] + 1
+            and not inputs["charging"]
+            and self.ledger.clear_stock()
+        ):
+            self._save()
+        cost = self.stock_cost()
+        has_stock = self.ledger.stock_kwh >= HOLD_MIN_STOCK_KWH and cost is not None
+        export_now = self._export_price(price_now)
+        # Geen verlies: bijgeladen voorraad niet verkopen onder de kostprijs.
+        self.sell_blocked = bool(
+            self.no_loss_enabled and has_stock and export_now is not None and export_now < cost
+        )
+        selling_now = self._selling or (
+            self.sell_enabled and sell.status == SELL_SELLING and not self.sell_blocked
+        )
+        self.hold_active = bool(
+            self.hold_on
+            and self.can_hold
+            and has_stock
+            and price_now is not None
+            and price_now < cost
+            and not selling_now
+        )
+        self.hold_until = None
+        if self.hold_active:
+            self.hold_until = next(
+                (s.start for s in plan.prices if s.start > now and s.price >= cost), None
+            )
+
     # ---------------------------------------------------------- stroomschema
 
     @property
@@ -640,7 +631,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             return 0.0
         return price / (cycles * capacity)
 
-    def _stock_cost(self) -> float | None:
+    def stock_cost(self) -> float | None:
         """Kostprijs van de voorraad inclusief afschrijving: onder die prijs is gebruiken verlies."""
         base = self.ledger.stock_price
         return None if base is None else base + self.depreciation
@@ -651,7 +642,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         chosen = self.conf.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
         return resolve_language(self.hass.config.language if chosen in (None, "auto") else chosen)
 
-    def _switch_entity(self, key: str) -> str | None:
+    def switch_entity(self, key: str) -> str | None:
         """De entity_id van een van de eigen schakelaars (voor de schakelaarkaart)."""
         return er.async_get(self.hass).async_get_entity_id(
             "switch", DOMAIN, f"{self.config_entry.entry_id}_{key}"
@@ -667,273 +658,7 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         negative_slot: PriceSlot | None,
     ) -> dict[str, Any]:
         """Tijdlijn en controles per onderdeel, voor de kaart op het dashboard."""
-
-        def clock(moment: datetime) -> str:
-            return dt_util.as_local(moment).strftime("%H:%M")
-
-        def euro(value: float, digits: int = 2) -> str:
-            return f"{value:.{digits}f}".replace(".", ",")
-
-        def ranges(hours: tuple[datetime, ...]) -> list[tuple[datetime, datetime]]:
-            result: list[tuple[datetime, datetime]] = []
-            for start in sorted(hours):
-                end = start + timedelta(hours=1)
-                if result and result[-1][1] == start:
-                    result[-1] = (result[-1][0], end)
-                else:
-                    result.append((start, end))
-            return result
-
-        cost = self._stock_cost()
-        control, force = inputs["control_mode"], inputs["force_mode"]
-        if self.negative_active:
-            doing = "Laden op vol vermogen (negatieve prijs)"
-        elif control == MODE_ENABLE and force == FORCE_CHARGE:
-            doing = "Bijladen uit het net"
-        elif control == MODE_ENABLE and force == FORCE_DISCHARGE:
-            doing = "Verkopen aan het net" if self._selling else "Ontladen (handmatig)"
-        elif control == MODE_ENABLE and force == FORCE_STOP:
-            doing = "Stilgezet (handmatig)"
-        elif control is None:
-            doing = "Marstek niet bereikbaar"
-        elif self.hold_active:
-            doing = "Vasthouden: ontladen geblokkeerd"
-        else:
-            doing = "Zelf regelen (anti-feed)"
-
-        events: list[tuple[datetime, datetime, dict]] = []
-        for start, end in ranges(plan.charge_hours):
-            if end <= now:
-                continue
-            if self.enabled:
-                detail = f"Ca. {plan.power_w} W, {euro(plan.energy_kwh, 1)} kWh, gemiddeld € {euro(plan.average_price or 0)}"
-                kind = "actie"
-            else:
-                detail = "Wordt niet uitgevoerd: bijladen staat uit"
-                kind = "eind"
-            events.append((start, end, step(f"{clock(start)} – {clock(end)} · bijladen", detail, kind)))
-        for start, end in ranges(sell.sell_hours):
-            if end <= now:
-                continue
-            if self.sell_enabled:
-                detail = f"Ca. {sell.power_w} W, {euro(sell.energy_kwh, 1)} kWh, gemiddeld € {euro(sell.average_price or 0)}"
-                kind = "actie"
-            else:
-                detail = "Wordt niet uitgevoerd: verkopen staat uit"
-                kind = "eind"
-            events.append((start, end, step(f"{clock(start)} – {clock(end)} · verkopen", detail, kind)))
-        if self.hold_active and self.hold_until is not None and cost is not None:
-            events.append(
-                (
-                    self.hold_until,
-                    self.hold_until,
-                    step(
-                        f"{clock(self.hold_until)} · ontladen vrij",
-                        f"Prijs komt boven de kostprijs van € {euro(cost)}",
-                        "eind",
-                    ),
-                )
-            )
-        events.sort(key=lambda item: item[0])
-
-        timeline = [step("Nu", doing, "nu")]
-        timeline.extend(item[2] for item in events)
-        # Na de laatste laad- of verkoopactie regelt de Marstek weer zelf. Het
-        # vrijgeven van het ontladen is zelf al zo'n eindpunt.
-        last = max(events, key=lambda item: item[1]) if events else None
-        if last is None:
-            timeline.append(step("Geen acties gepland", "De Marstek blijft zelf regelen", "eind"))
-        elif last[0] != last[1]:
-            timeline.append(step(f"{clock(last[1])} · klaar", "Weer zelf regelen (anti-feed)", "eind"))
-
-        if negative_slot is not None:
-            price_step = step("Prijs onder de grens", f"Nu € {euro(negative_slot.price)}", "ok")
-            soc = inputs["soc"]
-            neg = self.negative_plan
-            if neg is not None and neg.status in (NEGATIVE_CHARGING, NEGATIVE_WAITING):
-                window_text = f"{clock(neg.window[0].start)} – {clock(neg.window[-1].end)} · {len(neg.window)} uur"
-                picked = ", ".join(
-                    f"{clock(start)} {euro(kwh, 1)} kWh" for start, kwh in sorted((neg.allocation or {}).items())
-                ) or "–"
-                negative_steps = [
-                    price_step,
-                    step("Negatief venster", window_text, "ok"),
-                    step("Beste uren eerst vol" if self.conf.get(CONF_NEGATIVE_STRATEGY) == NEGATIVE_STRATEGY_MAX_GAIN else "Energie naar waarde per uur", picked, "ok"),
-                ]
-                if neg.status == NEGATIVE_CHARGING:
-                    negative_steps.append(step("Laden uitgesmeerd", f"{neg.power_w} W · {euro(neg.energy_kwh, 1)} kWh · verwacht € {euro(neg.gain)}", "actie"))
-                else:
-                    negative_steps.append(step("Dit uur overslaan", "Een ander uur levert meer op", "wacht"))
-            else:
-                negative_steps = [
-                    price_step,
-                    step("Accu is vol", "Niets te laden", "stop"),
-                    step("Niet actief", "Stopt bij deze stap", "eind"),
-                ]
-        else:
-            current = next((s for s in plan.prices if s.start <= now < s.end), None)
-            detail = f"Nu € {euro(current.price)}" if current else "Prijs onbekend"
-            negative_steps = [
-                step(f"Prijs niet onder € {euro(limit)}", detail, "stop"),
-                step("Niet actief", "Wacht op een negatief uur", "eind"),
-            ]
-
-        current_slot = next((s for s in plan.prices if s.start <= now < s.end), None)
-        if not self.can_hold:
-            hold_steps = [
-                step("Niet ingesteld", "Kies de entiteit voor het maximale ontlaadvermogen", "stop"),
-                step("Niet actief", "Stopt bij deze stap", "eind"),
-            ]
-        elif self.ledger.stock_kwh < HOLD_MIN_STOCK_KWH or cost is None:
-            hold_steps = [
-                step("Geen bijgeladen voorraad", "Niets om vast te houden", "stop"),
-                step("Niet actief", "De Marstek regelt zelf", "eind"),
-            ]
-        else:
-            stock_step = step(
-                "Bijgeladen voorraad",
-                f"{euro(self.ledger.stock_kwh, 1)} kWh, kostprijs € {euro(cost)}",
-                "ok",
-            )
-            price_text = f"Nu € {euro(current_slot.price)}" if current_slot else "Prijs onbekend"
-            if self.hold_active:
-                until = f"Tot {clock(self.hold_until)}" if self.hold_until else f"Tot de prijs boven € {euro(cost)} komt"
-                hold_steps = [
-                    stock_step,
-                    step("Prijs onder kostprijs", price_text, "ok"),
-                    step("Ontladen geblokkeerd", until, "actie"),
-                ]
-            else:
-                hold_steps = [
-                    stock_step,
-                    step("Prijs niet onder kostprijs", price_text, "stop"),
-                    step("Ontladen vrij", "De voorraad wordt met winst gebruikt", "eind"),
-                ]
-
-        if self.no_loss_enabled:
-            if self.ledger.stock_kwh >= HOLD_MIN_STOCK_KWH and cost is not None:
-                guard = step(
-                    "Voorraad bewaakt",
-                    f"{euro(self.ledger.stock_kwh, 1)} kWh, alleen boven € {euro(cost)}",
-                    "actie",
-                )
-            else:
-                guard = step("Geen voorraad", "Nu niets te bewaken", "eind")
-            no_loss_steps = [
-                step("Ontladen boven kostprijs", "Vasthouden geldt altijd", "ok"),
-                step("Verkopen boven kostprijs", "Nooit onder de kostprijs", "ok"),
-                guard,
-            ]
-        else:
-            no_loss_steps = []
-
-        if self.can_sell:
-            sell_steps = list(sell.steps)
-            if self.sell_blocked and sell_steps and sell_steps[-1]["soort"] == "actie":
-                sell_steps[-1] = step("Onder de kostprijs", f"Voorraad kost € {euro(cost or 0)}", "stop")
-                sell_steps.append(step("Geen verkoop", "Tegengehouden door geen verlies", "eind"))
-        else:
-            sell_steps = [
-                step("Verkopen ingesteld", "Kies de entiteit voor het ontlaadvermogen", "stop"),
-                step("Geen verkoop", "Niet ingesteld", "eind"),
-            ]
-
-        def money(value: float) -> str:
-            return f"€ {euro(abs(value))}"
-
-        lines: list[dict[str, Any]] = []
-        total = 0.0
-        if not self.enabled:
-            lines.append({"titel": "Bijladen", "bedrag": None, "detail": "Staat uit"})
-        elif plan.gain_eur is not None and plan.charge_hours:
-            total += plan.gain_eur
-            lines.append(
-                {
-                    "titel": "Bijladen",
-                    "bedrag": plan.gain_eur,
-                    "detail": f"{euro(plan.energy_kwh, 1)} kWh inkopen voor {money(plan.cost_eur or 0)}, later {money(plan.value_eur or 0)} waard",
-                }
-            )
-        else:
-            lines.append({"titel": "Bijladen", "bedrag": 0.0, "detail": "Geen bijladen gepland"})
-        if not self.sell_enabled:
-            lines.append({"titel": "Verkoop", "bedrag": None, "detail": "Staat uit"})
-        elif sell.gain_eur is not None and sell.sell_hours:
-            total += sell.gain_eur
-            lines.append(
-                {
-                    "titel": "Verkoop",
-                    "bedrag": sell.gain_eur,
-                    "detail": f"{euro(sell.energy_kwh, 1)} kWh verkopen voor {money(sell.revenue_eur or 0)}, terugladen kost {money(sell.refill_cost_eur or 0)}",
-                }
-            )
-        else:
-            lines.append({"titel": "Verkoop", "bedrag": 0.0, "detail": "Geen verkoop gepland"})
-        self.expected_gain = round(total, 2)
-
-        charge_hours = set(plan.charge_hours)
-        sell_hours = set(sell.sell_hours)
-        negative_hours = set(self.negative_plan.hours) if self.negative_plan else set()
-        window_start = now - timedelta(hours=3)
-        prices = []
-        for slot in plan.prices:
-            if slot.end <= window_start:
-                continue
-            kind = (
-                "negatief" if slot.start in negative_hours
-                else "laden" if slot.start in charge_hours
-                else "verkoop" if slot.start in sell_hours
-                else "negatief_venster" if slot.price < limit
-                else ""
-            )
-            prices.append({"start": slot.start.isoformat(), "prijs": round(slot.price, 4), "soort": kind})
-        current_price = next((s.price for s in plan.prices if s.start <= now < s.end), None)
-        stock_cost = self._stock_cost()
-        overview = {
-            "status": plan.status,
-            "bezig": doing,
-            "soc": inputs["soc"],
-            "prijs_nu": None if current_price is None else round(current_price, 4),
-            "laadvermogen_w": plan.power_w,
-            "rendement": round(inputs["efficiency"], 3),
-            "afschrijving_per_kwh": round(self.depreciation, 4),
-            "kostprijs": None if stock_cost is None else round(stock_cost, 4),
-            "grens_negatief": limit,
-            "capaciteit_kwh": inputs["capacity_kwh"],
-            "zon_overschot_kwh": plan.solar_kwh,
-        }
-
-        return {
-            "tijdlijn": timeline,
-            "overzicht": overview,
-            "prijzen": prices,
-            "resultaat": {
-                "totaal": round(total, 2),
-                "regels": lines,
-                "vandaag": round(self.ledger.day_gain, 2),
-                "week": round(self.ledger.week_gain, 2),
-                "vorige_week": (
-                    round(self.ledger.prev_week_gain, 2) if self.ledger.prev_week_gain is not None else None
-                ),
-                "maand": round(self.ledger.month_gain, 2),
-                "jaar": round(self.ledger.year_gain, 2),
-                "geladen_kwh": round(self.ledger.day_charged_kwh, 2),
-                "laadkosten": round(self.ledger.day_charge_cost, 2),
-                "afschrijving": round(self.ledger.day_depreciation, 2),
-                "gebruikt_kwh": round(self.ledger.day_used_kwh + self.ledger.day_sold_kwh, 2),
-                "voorraad_kwh": round(self.ledger.stock_kwh, 2),
-                "voorraad_prijs": (
-                    round(self.ledger.stock_price, 3) if self.ledger.stock_price is not None else None
-                ),
-            },
-            "banen": [
-                {"id": "bijladen", "titel": "Bijladen", "icoon": "mdi:battery-charging", "aan": self.enabled, "stappen": list(plan.steps), "schakelaar": self._switch_entity("prijssturing")},
-                {"id": "verkoop", "titel": "Verkoop", "icoon": "mdi:transmission-tower-export", "aan": self.sell_enabled, "stappen": sell_steps, "schakelaar": self._switch_entity("verkoop")},
-                {"id": "negatief", "titel": "Negatieve prijs", "icoon": "mdi:cash-minus", "aan": self.negative_enabled, "stappen": negative_steps, "schakelaar": self._switch_entity("negatieve_prijs")},
-                {"id": "vasthouden", "titel": "Vasthouden", "icoon": "mdi:lock-clock", "aan": self.hold_on, "stappen": hold_steps, "schakelaar": self._switch_entity("vasthouden")},
-                {"id": "geen_verlies", "titel": "Geen verlies", "icoon": "mdi:shield-check", "aan": self.no_loss_enabled, "stappen": no_loss_steps, "schakelaar": self._switch_entity("geen_verlies")},
-            ],
-        }
+        return build_flow(self, plan, sell, inputs, now, limit, negative_slot)
 
     @callback
     def async_start_listening(self) -> None:

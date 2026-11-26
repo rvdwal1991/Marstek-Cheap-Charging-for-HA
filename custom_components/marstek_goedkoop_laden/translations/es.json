@@ -103,71 +103,115 @@
         "title": "Opciones",
         "description": "Cambia las entidades o la regla de planificación. Después la integración se recarga.",
         "data": {
-          "price_entity": "Sensor de precios",
-          "soc_entity": "Nivel de carga (SoC)",
-          "control_mode_entity": "Modo de control RS485",
-          "force_mode_entity": "Carga/descarga forzada",
-          "force_power_entity": "Potencia de carga forzada",
-          "max_power_entity": "Potencia máxima de carga",
-          "capacity_entity": "Capacidad de la batería (sensor)",
-          "charged_energy_entity": "Energía total cargada",
-          "discharged_energy_entity": "Energía total descargada",
-          "price_attribute": "Atributo con los precios",
-          "capacity_kwh": "Capacidad de la batería",
-          "default_efficiency": "Rendimiento si faltan los contadores",
-          "margin": "Beneficio mínimo por kWh",
-          "top_hours": "Número de horas más caras con las que comparar",
-          "lookahead_hours": "Horas a mirar hacia delante",
-          "min_lookahead_hours": "Mínimo de horas conocidas por delante",
-          "min_power": "Potencia mínima de carga",
-          "force_discharge_power_entity": "Potencia de descarga forzada",
-          "max_discharge_power_entity": "Potencia máxima de descarga",
-          "min_soc_entity": "Límite de descarga (SoC)",
-          "sell_margin": "Venta: beneficio mínimo por kWh",
-          "house_power": "Venta: consumo propio medio",
-          "reserve_min_soc": "Venta: reserva mínima",
-          "min_soc": "Límite de descarga",
-          "sell_price_factor": "Precio de venta: factor",
-          "sell_price_offset": "Precio de venta: deducción",
-          "negative_price_limit": "Precio negativo: límite",
-          "language": "Idioma",
-          "battery_price": "Precio de compra de la batería",
-          "battery_cycles": "Vida útil de la batería (ciclos)",
-          "modbus_hub": "Nombre del hub Modbus",
-          "modbus_slave": "Dirección esclava Modbus",
-          "negative_strategy": "Precio negativo: cómo repartir la energía",
-          "use_solar_forecast": "Usar la previsión solar",
-          "solar_reliability": "Fiabilidad de la previsión solar",
-          "house_power_entity": "Sensor de potencia de la casa"
+          "language": "Idioma"
         },
         "data_description": {
-          "price_entity": "Sensor que guarda los precios horarios publicados en un atributo, por ejemplo el sensor de tarifa horaria de Zonneplan.",
-          "control_mode_entity": "Interruptor general del modo forzado: activar o desactivar.",
-          "force_mode_entity": "Sentido al forzar: cargar, descargar o parar.",
-          "force_power_entity": "Se ajusta a la potencia repartida durante la carga.",
-          "max_power_entity": "Determina el número de horas de carga y el límite superior de potencia. Vacío = 2500 W.",
-          "capacity_entity": "Vacío = la capacidad fija de las opciones.",
-          "charged_energy_entity": "Junto con la energía descargada determina el rendimiento. Vacío = rendimiento fijo.",
-          "default_efficiency": "El rendimiento se calcula a partir de los contadores de energía de la Marstek (total descargado dividido por total cargado). Este valor fijo solo se aplica cuando esos contadores no están configurados o no tienen valor.",
-          "margin": "Tras la pérdida de carga, cargar debe ganar al menos esta cantidad.",
-          "top_hours": "Una hora es lo bastante barata cuando su precio está por debajo del rendimiento multiplicado por la media de estas horas más caras posteriores, menos el margen.",
-          "min_lookahead_hours": "Se ignoran las horas con menos precios conocidos a continuación.",
-          "force_discharge_power_entity": "Necesaria para vender. Vacío = no se puede vender.",
-          "max_discharge_power_entity": "Límite superior de la potencia de venta. Vacío = 2500 W.",
-          "min_soc_entity": "La Marstek no se descarga por debajo de este SoC. Vacío = el valor fijo de las opciones.",
-          "sell_margin": "Solo se vende cuando el precio de venta supera el coste de volver a cargar (precio de carga dividido por el rendimiento) más esta cantidad.",
-          "house_power": "Determina la reserva: esta potencia multiplicada por las horas hasta la próxima carga se queda en la batería.",
-          "reserve_min_soc": "Nunca se vende por debajo de este SoC.",
-          "min_soc": "Solo se usa cuando no hay una entidad de límite de descarga.",
-          "sell_price_factor": "Precio de venta = precio horario multiplicado por este factor, menos la deducción. Con balance neto: 1 y 0. Sin él, por ejemplo 0,826 y 0,108 para el precio de mercado puro.",
-          "negative_price_limit": "Por debajo de este precio horario la batería siempre carga a plena potencia (con el interruptor activado). Por defecto 0: solo con un precio realmente negativo.",
-          "language": "Idioma del texto del plan, del diagrama de flujo y de las tarjetas. Automático sigue el idioma de Home Assistant.",
-          "battery_price": "Precio de compra de la batería en euros, para la amortización. 0 significa que no se cuenta amortización.",
-          "battery_cycles": "Número de ciclos completos que se espera que dure la batería. Amortización por kWh = precio ÷ (ciclos × capacidad).",
-          "negative_strategy": "Repartir por valor: más en las horas más negativas, menor potencia. Beneficio máximo: llenar primero las mejores horas a plena potencia.",
-          "use_solar_forecast": "Tiene en cuenta el rendimiento solar esperado del panel de Energía al cargar por la noche, para que quede espacio para el sol.",
-          "solar_reliability": "La parte de la previsión con la que contar. Más baja es más prudente.",
-          "house_power_entity": "Opcional. Un sensor de potencia (W o kW) con la potencia total que consume la casa, sin la batería. La integración aprende tu consumo medio por hora del día (días laborables y fines de semana por separado) y lo usa para el excedente solar en lugar del consumo propio fijo."
+          "language": "Idioma del texto del plan, del diagrama de flujo y de las tarjetas. Automático sigue el idioma de Home Assistant."
+        },
+        "sections": {
+          "battery": {
+            "name": "Batería",
+            "data": {
+              "capacity_kwh": "Capacidad de la batería",
+              "default_efficiency": "Rendimiento si faltan los contadores",
+              "battery_price": "Precio de compra de la batería",
+              "battery_cycles": "Vida útil de la batería (ciclos)",
+              "min_soc": "Límite de descarga"
+            },
+            "data_description": {
+              "default_efficiency": "El rendimiento se calcula a partir de los contadores de energía de la Marstek (total descargado dividido por total cargado). Este valor fijo solo se aplica cuando esos contadores no están configurados o no tienen valor.",
+              "battery_price": "Precio de compra de la batería en euros, para la amortización. 0 significa que no se cuenta amortización.",
+              "battery_cycles": "Número de ciclos completos que se espera que dure la batería. Amortización por kWh = precio ÷ (ciclos × capacidad).",
+              "min_soc": "Solo se usa cuando no hay una entidad de límite de descarga."
+            }
+          },
+          "charging": {
+            "name": "Carga",
+            "data": {
+              "margin": "Beneficio mínimo por kWh",
+              "min_power": "Potencia mínima de carga",
+              "price_attribute": "Atributo con los precios",
+              "top_hours": "Número de horas más caras con las que comparar",
+              "lookahead_hours": "Horas a mirar hacia delante",
+              "min_lookahead_hours": "Mínimo de horas conocidas por delante"
+            },
+            "data_description": {
+              "margin": "Tras la pérdida de carga, cargar debe ganar al menos esta cantidad.",
+              "top_hours": "Una hora es lo bastante barata cuando su precio está por debajo del rendimiento multiplicado por la media de estas horas más caras posteriores, menos el margen.",
+              "min_lookahead_hours": "Se ignoran las horas con menos precios conocidos a continuación."
+            }
+          },
+          "negative": {
+            "name": "Precio negativo",
+            "data": {
+              "negative_price_limit": "Precio negativo: límite",
+              "negative_strategy": "Precio negativo: cómo repartir la energía"
+            },
+            "data_description": {
+              "negative_price_limit": "Por debajo de este precio horario la batería siempre carga a plena potencia (con el interruptor activado). Por defecto 0: solo con un precio realmente negativo.",
+              "negative_strategy": "Repartir por valor: más en las horas más negativas, menor potencia. Beneficio máximo: llenar primero las mejores horas a plena potencia."
+            }
+          },
+          "solar": {
+            "name": "Solar",
+            "data": {
+              "use_solar_forecast": "Usar la previsión solar",
+              "solar_reliability": "Fiabilidad de la previsión solar",
+              "house_power_entity": "Sensor de potencia de la casa"
+            },
+            "data_description": {
+              "use_solar_forecast": "Tiene en cuenta el rendimiento solar esperado del panel de Energía al cargar por la noche, para que quede espacio para el sol.",
+              "solar_reliability": "La parte de la previsión con la que contar. Más baja es más prudente.",
+              "house_power_entity": "Opcional. Un sensor de potencia (W o kW) con la potencia total que consume la casa, sin la batería. La integración aprende tu consumo medio por hora del día (días laborables y fines de semana por separado) y lo usa para el excedente solar en lugar del consumo propio fijo."
+            }
+          },
+          "selling": {
+            "name": "Venta",
+            "data": {
+              "sell_margin": "Venta: beneficio mínimo por kWh",
+              "house_power": "Venta: consumo propio medio",
+              "reserve_min_soc": "Venta: reserva mínima",
+              "sell_price_factor": "Precio de venta: factor",
+              "sell_price_offset": "Precio de venta: deducción"
+            },
+            "data_description": {
+              "sell_margin": "Solo se vende cuando el precio de venta supera el coste de volver a cargar (precio de carga dividido por el rendimiento) más esta cantidad.",
+              "house_power": "Determina la reserva: esta potencia multiplicada por las horas hasta la próxima carga se queda en la batería.",
+              "reserve_min_soc": "Nunca se vende por debajo de este SoC.",
+              "sell_price_factor": "Precio de venta = precio horario multiplicado por este factor, menos la deducción. Con balance neto: 1 y 0. Sin él, por ejemplo 0,826 y 0,108 para el precio de mercado puro."
+            }
+          },
+          "entities": {
+            "name": "Entidades",
+            "data": {
+              "price_entity": "Sensor de precios",
+              "soc_entity": "Nivel de carga (SoC)",
+              "control_mode_entity": "Modo de control RS485",
+              "force_mode_entity": "Carga/descarga forzada",
+              "force_power_entity": "Potencia de carga forzada",
+              "max_power_entity": "Potencia máxima de carga",
+              "capacity_entity": "Capacidad de la batería (sensor)",
+              "charged_energy_entity": "Energía total cargada",
+              "discharged_energy_entity": "Energía total descargada",
+              "force_discharge_power_entity": "Potencia de descarga forzada",
+              "max_discharge_power_entity": "Potencia máxima de descarga",
+              "min_soc_entity": "Límite de descarga (SoC)",
+              "modbus_hub": "Nombre del hub Modbus",
+              "modbus_slave": "Dirección esclava Modbus"
+            },
+            "data_description": {
+              "price_entity": "Sensor que guarda los precios horarios publicados en un atributo, por ejemplo el sensor de tarifa horaria de Zonneplan.",
+              "control_mode_entity": "Interruptor general del modo forzado: activar o desactivar.",
+              "force_mode_entity": "Sentido al forzar: cargar, descargar o parar.",
+              "force_power_entity": "Se ajusta a la potencia repartida durante la carga.",
+              "max_power_entity": "Determina el número de horas de carga y el límite superior de potencia. Vacío = 2500 W.",
+              "capacity_entity": "Vacío = la capacidad fija de las opciones.",
+              "charged_energy_entity": "Junto con la energía descargada determina el rendimiento. Vacío = rendimiento fijo.",
+              "force_discharge_power_entity": "Necesaria para vender. Vacío = no se puede vender.",
+              "max_discharge_power_entity": "Límite superior de la potencia de venta. Vacío = 2500 W.",
+              "min_soc_entity": "La Marstek no se descarga por debajo de este SoC. Vacío = el valor fijo de las opciones."
+            }
+          }
         }
       }
     }

@@ -40,7 +40,7 @@ class TranslateTest(unittest.TestCase):
     def test_coordinator_texts_have_no_dutch_left(self):
         src = (pathlib.Path(__file__).parent.parent / "custom_components/marstek_goedkoop_laden")
         strings = set()
-        for name in ("planner.py", "coordinator.py"):
+        for name in ("planner.py", "coordinator.py", "flow.py"):
             text = (src / name).read_text()
             for line in text.splitlines():
                 if re.search(r"step\(|text=|\"titel\"|detail|doing = |kind", line):

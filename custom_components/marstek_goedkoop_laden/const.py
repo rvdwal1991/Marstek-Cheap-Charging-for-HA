@@ -100,5 +100,8 @@ FORCE_STOP = "stop"
 
 # Na een stuuropdracht even niets nieuws sturen: de Marstek meldt zijn nieuwe
 # toestand pas terug bij de volgende uitlezing, en dat kan tientallen seconden duren.
+# Onder deze voorraad (kWh) wordt er niet vastgehouden.
+HOLD_MIN_STOCK_KWH = 0.1
+
 COMMAND_SETTLE_SECONDS = 30
 UPDATE_INTERVAL_SECONDS = 60

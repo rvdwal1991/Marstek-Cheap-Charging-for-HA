@@ -103,71 +103,115 @@
         "title": "Optionen",
         "description": "Passe die Entitäten oder die Rechenregel an. Danach wird die Integration neu geladen.",
         "data": {
-          "price_entity": "Preissensor",
-          "soc_entity": "Ladestand (SoC)",
-          "control_mode_entity": "RS485-Steuermodus",
-          "force_mode_entity": "Erzwungenes Laden/Entladen",
-          "force_power_entity": "Erzwungene Ladeleistung",
-          "max_power_entity": "Maximale Ladeleistung",
-          "capacity_entity": "Akkukapazität (Sensor)",
-          "charged_energy_entity": "Gesamt geladene Energie",
-          "discharged_energy_entity": "Gesamt entladene Energie",
-          "price_attribute": "Attribut mit den Preisen",
-          "capacity_kwh": "Akkukapazität",
-          "default_efficiency": "Wirkungsgrad, wenn die Zähler fehlen",
-          "margin": "Mindestgewinn pro kWh",
-          "top_hours": "Anzahl der teuersten Stunden zum Vergleich",
-          "lookahead_hours": "Stunden Vorausschau",
-          "min_lookahead_hours": "Mindestanzahl bekannter Stunden im Voraus",
-          "min_power": "Minimale Ladeleistung",
-          "force_discharge_power_entity": "Erzwungene Entladeleistung",
-          "max_discharge_power_entity": "Maximale Entladeleistung",
-          "min_soc_entity": "Entladegrenze (SoC)",
-          "sell_margin": "Verkauf: Mindestgewinn pro kWh",
-          "house_power": "Verkauf: durchschnittlicher Eigenverbrauch",
-          "reserve_min_soc": "Verkauf: Mindestreserve",
-          "min_soc": "Entladegrenze",
-          "sell_price_factor": "Verkaufspreis: Faktor",
-          "sell_price_offset": "Verkaufspreis: Abzug",
-          "negative_price_limit": "Negativer Preis: Grenze",
-          "language": "Sprache",
-          "battery_price": "Anschaffungspreis des Akkus",
-          "battery_cycles": "Lebensdauer des Akkus (Zyklen)",
-          "modbus_hub": "Name des Modbus-Hubs",
-          "modbus_slave": "Modbus-Slave-Adresse",
-          "negative_strategy": "Negativer Preis: Aufteilung der Energie",
-          "use_solar_forecast": "Solarprognose verwenden",
-          "solar_reliability": "Zuverlässigkeit der Solarprognose",
-          "house_power_entity": "Hausleistungssensor"
+          "language": "Sprache"
         },
         "data_description": {
-          "price_entity": "Sensor, der die veröffentlichten Stundenpreise in einem Attribut enthält, z. B. der Zonneplan-Stundenpreissensor.",
-          "control_mode_entity": "Hauptschalter zum Erzwingen: enable oder disable.",
-          "force_mode_entity": "Richtung beim Erzwingen: charge, discharge oder stop.",
-          "force_power_entity": "Wird beim Laden auf die verteilte Leistung gesetzt.",
-          "max_power_entity": "Bestimmt die Anzahl der Ladestunden und die Obergrenze der Leistung. Leer = 2500 W.",
-          "capacity_entity": "Leer = die feste Kapazität aus den Optionen.",
-          "charged_energy_entity": "Zusammen mit der entladenen Energie bestimmt dies den Wirkungsgrad. Leer = fester Wirkungsgrad.",
-          "default_efficiency": "Der Wirkungsgrad wird aus den Energiezählern der Marstek berechnet (gesamt entladen geteilt durch gesamt geladen). Dieser feste Wert gilt nur, wenn diese Zähler nicht gesetzt sind oder keinen Wert liefern.",
-          "margin": "Nach Abzug des Ladeverlusts muss das Laden mindestens diesen Betrag einbringen.",
-          "top_hours": "Eine Stunde ist günstig genug, wenn ihr Preis unter dem Wirkungsgrad mal dem Durchschnitt dieser teuersten Stunden danach liegt, abzüglich der Marge.",
-          "min_lookahead_hours": "Stunden, nach denen weniger Preise bekannt sind, zählen nicht mit.",
-          "force_discharge_power_entity": "Für den Verkauf nötig. Leer = Verkaufen ist nicht möglich.",
-          "max_discharge_power_entity": "Obergrenze der Verkaufsleistung. Leer = 2500 W.",
-          "min_soc_entity": "Unter diesem SoC entlädt die Marstek nicht. Leer = der feste Wert aus den Optionen.",
-          "sell_margin": "Verkauft wird nur, wenn der Verkaufspreis höher ist als die Kosten des Wiederaufladens (Ladepreis geteilt durch den Wirkungsgrad) plus dieser Betrag.",
-          "house_power": "Bestimmt die Reserve: Diese Leistung mal die Stunden bis zum Wiederaufladen bleibt im Akku.",
-          "reserve_min_soc": "Unter diesem SoC wird nie verkauft.",
-          "min_soc": "Wird nur verwendet, wenn keine Entität für die Entladegrenze gesetzt ist.",
-          "sell_price_factor": "Verkaufspreis = Stundenpreis mal diesen Faktor, minus den Abzug. Mit Netto-Messung (Saldierung): 1 und 0. Ohne z. B. 0,826 und 0,108 für den reinen Marktpreis.",
-          "negative_price_limit": "Unter diesem Stundenpreis lädt der Akku immer mit voller Leistung (wenn der Schalter an ist). Standard 0: nur bei einem wirklich negativen Preis.",
-          "language": "Sprache von Planzeile, Flussdiagramm und Karten. Automatisch folgt der Sprache von Home Assistant.",
-          "battery_price": "Anschaffungspreis des Akkus in Euro, für die Abschreibung. 0 bedeutet, dass keine Abschreibung eingerechnet wird.",
-          "battery_cycles": "Anzahl der vollen Zyklen, die der Akku voraussichtlich hält. Abschreibung pro kWh = Preis ÷ (Zyklen × Kapazität).",
-          "negative_strategy": "Nach Wert verteilen: mehr in den stärker negativen Stunden, geringere Leistung. Maximaler Ertrag: die besten Stunden zuerst mit voller Leistung füllen.",
-          "use_solar_forecast": "Berücksichtigt beim nächtlichen Laden den erwarteten Solarertrag aus dem Energie-Dashboard, damit Platz für die Sonne bleibt.",
-          "solar_reliability": "Der Teil der Prognose, auf den gezählt wird. Niedriger ist vorsichtiger.",
-          "house_power_entity": "Optional. Ein Leistungssensor (W oder kW) mit der gesamten Leistung, die das Haus verbraucht, ohne den Akku. Die Integration lernt deinen durchschnittlichen Verbrauch je Tageszeit-Stunde (Werktage und Wochenenden getrennt) und nutzt ihn für den Solarüberschuss anstelle des festen Eigenverbrauchs."
+          "language": "Sprache von Planzeile, Flussdiagramm und Karten. Automatisch folgt der Sprache von Home Assistant."
+        },
+        "sections": {
+          "battery": {
+            "name": "Akku",
+            "data": {
+              "capacity_kwh": "Akkukapazität",
+              "default_efficiency": "Wirkungsgrad, wenn die Zähler fehlen",
+              "battery_price": "Anschaffungspreis des Akkus",
+              "battery_cycles": "Lebensdauer des Akkus (Zyklen)",
+              "min_soc": "Entladegrenze"
+            },
+            "data_description": {
+              "default_efficiency": "Der Wirkungsgrad wird aus den Energiezählern der Marstek berechnet (gesamt entladen geteilt durch gesamt geladen). Dieser feste Wert gilt nur, wenn diese Zähler nicht gesetzt sind oder keinen Wert liefern.",
+              "battery_price": "Anschaffungspreis des Akkus in Euro, für die Abschreibung. 0 bedeutet, dass keine Abschreibung eingerechnet wird.",
+              "battery_cycles": "Anzahl der vollen Zyklen, die der Akku voraussichtlich hält. Abschreibung pro kWh = Preis ÷ (Zyklen × Kapazität).",
+              "min_soc": "Wird nur verwendet, wenn keine Entität für die Entladegrenze gesetzt ist."
+            }
+          },
+          "charging": {
+            "name": "Laden",
+            "data": {
+              "margin": "Mindestgewinn pro kWh",
+              "min_power": "Minimale Ladeleistung",
+              "price_attribute": "Attribut mit den Preisen",
+              "top_hours": "Anzahl der teuersten Stunden zum Vergleich",
+              "lookahead_hours": "Stunden Vorausschau",
+              "min_lookahead_hours": "Mindestanzahl bekannter Stunden im Voraus"
+            },
+            "data_description": {
+              "margin": "Nach Abzug des Ladeverlusts muss das Laden mindestens diesen Betrag einbringen.",
+              "top_hours": "Eine Stunde ist günstig genug, wenn ihr Preis unter dem Wirkungsgrad mal dem Durchschnitt dieser teuersten Stunden danach liegt, abzüglich der Marge.",
+              "min_lookahead_hours": "Stunden, nach denen weniger Preise bekannt sind, zählen nicht mit."
+            }
+          },
+          "negative": {
+            "name": "Negativer Preis",
+            "data": {
+              "negative_price_limit": "Negativer Preis: Grenze",
+              "negative_strategy": "Negativer Preis: Aufteilung der Energie"
+            },
+            "data_description": {
+              "negative_price_limit": "Unter diesem Stundenpreis lädt der Akku immer mit voller Leistung (wenn der Schalter an ist). Standard 0: nur bei einem wirklich negativen Preis.",
+              "negative_strategy": "Nach Wert verteilen: mehr in den stärker negativen Stunden, geringere Leistung. Maximaler Ertrag: die besten Stunden zuerst mit voller Leistung füllen."
+            }
+          },
+          "solar": {
+            "name": "Solar",
+            "data": {
+              "use_solar_forecast": "Solarprognose verwenden",
+              "solar_reliability": "Zuverlässigkeit der Solarprognose",
+              "house_power_entity": "Hausleistungssensor"
+            },
+            "data_description": {
+              "use_solar_forecast": "Berücksichtigt beim nächtlichen Laden den erwarteten Solarertrag aus dem Energie-Dashboard, damit Platz für die Sonne bleibt.",
+              "solar_reliability": "Der Teil der Prognose, auf den gezählt wird. Niedriger ist vorsichtiger.",
+              "house_power_entity": "Optional. Ein Leistungssensor (W oder kW) mit der gesamten Leistung, die das Haus verbraucht, ohne den Akku. Die Integration lernt deinen durchschnittlichen Verbrauch je Tageszeit-Stunde (Werktage und Wochenenden getrennt) und nutzt ihn für den Solarüberschuss anstelle des festen Eigenverbrauchs."
+            }
+          },
+          "selling": {
+            "name": "Verkauf",
+            "data": {
+              "sell_margin": "Verkauf: Mindestgewinn pro kWh",
+              "house_power": "Verkauf: durchschnittlicher Eigenverbrauch",
+              "reserve_min_soc": "Verkauf: Mindestreserve",
+              "sell_price_factor": "Verkaufspreis: Faktor",
+              "sell_price_offset": "Verkaufspreis: Abzug"
+            },
+            "data_description": {
+              "sell_margin": "Verkauft wird nur, wenn der Verkaufspreis höher ist als die Kosten des Wiederaufladens (Ladepreis geteilt durch den Wirkungsgrad) plus dieser Betrag.",
+              "house_power": "Bestimmt die Reserve: Diese Leistung mal die Stunden bis zum Wiederaufladen bleibt im Akku.",
+              "reserve_min_soc": "Unter diesem SoC wird nie verkauft.",
+              "sell_price_factor": "Verkaufspreis = Stundenpreis mal diesen Faktor, minus den Abzug. Mit Netto-Messung (Saldierung): 1 und 0. Ohne z. B. 0,826 und 0,108 für den reinen Marktpreis."
+            }
+          },
+          "entities": {
+            "name": "Entitäten",
+            "data": {
+              "price_entity": "Preissensor",
+              "soc_entity": "Ladestand (SoC)",
+              "control_mode_entity": "RS485-Steuermodus",
+              "force_mode_entity": "Erzwungenes Laden/Entladen",
+              "force_power_entity": "Erzwungene Ladeleistung",
+              "max_power_entity": "Maximale Ladeleistung",
+              "capacity_entity": "Akkukapazität (Sensor)",
+              "charged_energy_entity": "Gesamt geladene Energie",
+              "discharged_energy_entity": "Gesamt entladene Energie",
+              "force_discharge_power_entity": "Erzwungene Entladeleistung",
+              "max_discharge_power_entity": "Maximale Entladeleistung",
+              "min_soc_entity": "Entladegrenze (SoC)",
+              "modbus_hub": "Name des Modbus-Hubs",
+              "modbus_slave": "Modbus-Slave-Adresse"
+            },
+            "data_description": {
+              "price_entity": "Sensor, der die veröffentlichten Stundenpreise in einem Attribut enthält, z. B. der Zonneplan-Stundenpreissensor.",
+              "control_mode_entity": "Hauptschalter zum Erzwingen: enable oder disable.",
+              "force_mode_entity": "Richtung beim Erzwingen: charge, discharge oder stop.",
+              "force_power_entity": "Wird beim Laden auf die verteilte Leistung gesetzt.",
+              "max_power_entity": "Bestimmt die Anzahl der Ladestunden und die Obergrenze der Leistung. Leer = 2500 W.",
+              "capacity_entity": "Leer = die feste Kapazität aus den Optionen.",
+              "charged_energy_entity": "Zusammen mit der entladenen Energie bestimmt dies den Wirkungsgrad. Leer = fester Wirkungsgrad.",
+              "force_discharge_power_entity": "Für den Verkauf nötig. Leer = Verkaufen ist nicht möglich.",
+              "max_discharge_power_entity": "Obergrenze der Verkaufsleistung. Leer = 2500 W.",
+              "min_soc_entity": "Unter diesem SoC entlädt die Marstek nicht. Leer = der feste Wert aus den Optionen."
+            }
+          }
         }
       }
     }
