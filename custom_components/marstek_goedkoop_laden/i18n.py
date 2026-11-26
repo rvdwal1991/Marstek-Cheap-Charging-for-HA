@@ -67,7 +67,7 @@ _PHRASES: list[tuple[str, str]] = [
     ("Laden op vol vermogen (negatieve prijs)", "Charging at full power (negative price)"),
     ("Negatieve prijs (", "Negative price ("),
     ("dit uur wordt overgeslagen, andere uren leveren meer op", "this hour is skipped, other hours earn more"),
-    ("Uren met de meeste opbrengst", "Hours with the highest gain"),
+    ("Energie naar waarde per uur", "Energy by value per hour"),
     ("Een ander uur levert meer op", "Another hour earns more"),
     ("Negatief venster", "Negative window"),
     ("Laden uitgesmeerd", "Charging spread out"),

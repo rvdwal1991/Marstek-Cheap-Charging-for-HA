@@ -4,6 +4,13 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.20.0 (2026-11-26)
+- **Behaviour change:** the energy in a negative-price window is now divided over the hours **by their
+  value** (more in the more negative hours, up to what an hour can take) instead of evenly over the
+  cheapest hours. Hours that would stay below the minimum charge power drop out and their share goes to
+  the others. The flow chart shows the kWh per hour. For the example −0.03 / −0.20 / −0.12 with 3 kWh to
+  charge, the expected gain goes from about €0.49 to €0.52.
+
 ## 1.19.0 (2026-11-26)
 - **Behaviour change:** *Charging at a negative price* now looks at the whole window of consecutive
   negative hours. It picks the hours with the lowest price (as few as needed to fill the battery),

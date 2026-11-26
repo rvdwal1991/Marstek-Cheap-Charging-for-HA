@@ -669,11 +669,13 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             neg = self.negative_plan
             if neg is not None and neg.status in (NEGATIVE_CHARGING, NEGATIVE_WAITING):
                 window_text = f"{clock(neg.window[0].start)} – {clock(neg.window[-1].end)} · {len(neg.window)} uur"
-                picked = ", ".join(f"{clock(a)} – {clock(b)}" for a, b in ranges(neg.hours))
+                picked = ", ".join(
+                    f"{clock(start)} {euro(kwh, 1)} kWh" for start, kwh in sorted((neg.allocation or {}).items())
+                ) or "–"
                 negative_steps = [
                     price_step,
                     step("Negatief venster", window_text, "ok"),
-                    step("Uren met de meeste opbrengst", picked, "ok"),
+                    step("Energie naar waarde per uur", picked, "ok"),
                 ]
                 if neg.status == NEGATIVE_CHARGING:
                     negative_steps.append(step("Laden uitgesmeerd", f"{neg.power_w} W · {euro(neg.energy_kwh, 1)} kWh · verwacht € {euro(neg.gain)}", "actie"))

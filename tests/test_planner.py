@@ -368,20 +368,34 @@ class NegatiefVensterTest(unittest.TestCase):
     def test_geen_negatief_uur_geen_plan(self):
         self.assertIsNone(self.run_plan([0.2, 0.1, 0.3], "2026-11-12T12:10:00", 40))
 
-    def test_voorbeeld_overslaan_van_het_minst_negatieve_uur(self):
-        # -0,03, -0,20, -0,12 en accu op 40 %: 3,1 kWh past in twee uur.
+    def test_voorbeeld_weinig_opbrengend_uur_valt_af(self):
+        # -0,03, -0,20, -0,12 en accu op 40 %: 3,1 kWh. Het eerste uur zou onder het
+        # minimale vermogen blijven en valt af.
         prices = [0.30, -0.03, -0.20, -0.12, 0.25]
         result = self.run_plan(prices, "2026-11-12T13:00:05", 40)
-        self.assertEqual(result.status, planner.NEGATIVE_WAITING)  # uur 1 wordt overgeslagen
+        self.assertEqual(result.status, planner.NEGATIVE_WAITING)
         self.assertEqual(result.hours, (at("2026-11-12T14:00:00"), at("2026-11-12T15:00:00")))
         self.assertIsNone(result.power_w)
         result = self.run_plan(prices, "2026-11-12T14:00:05", 40)
         self.assertEqual(result.status, planner.NEGATIVE_CHARGING)
         self.assertEqual(len(result.window), 3)
-        # 3,07 kWh uitgesmeerd over twee uur, niet op vol vermogen.
+        # Verdeeld naar waarde: het beste uur (-0,20) krijgt meer dan het andere (-0,12).
+        first, second = result.allocation[at("2026-11-12T14:00:00")], result.allocation[at("2026-11-12T15:00:00")]
+        self.assertAlmostEqual(first / second, 0.20 / 0.12, delta=0.05)
+        self.assertAlmostEqual(first + second, 3.07, delta=0.02)
+        self.assertGreater(result.gain, 3.07 * 0.16)  # beter dan gelijk verdelen
         self.assertTrue(1500 <= result.power_w < 2500)
-        self.assertAlmostEqual(result.gain, 3.07 * 0.16, delta=0.02)
-        self.assertIn("in 2 van 2 negatieve uren", result.text)  # van wat er nog komt
+        self.assertIn("in 2 van 2 negatieve uren", result.text)
+
+    def test_energie_naar_waarde_van_de_uren(self):
+        result = self.run_plan([-0.10, -0.30], "2026-11-12T12:00:05", 50)
+        low, high = result.allocation[at("2026-11-12T12:00:00")], result.allocation[at("2026-11-12T13:00:00")]
+        self.assertAlmostEqual(high / low, 3.0, delta=0.05)
+
+    def test_uur_dat_te_vol_zit_wordt_op_vol_vermogen_geladen(self):
+        # Een enkel negatief uur dat de accu niet kan vullen: vol vermogen.
+        result = self.run_plan([-0.2], "2026-11-12T12:10:00", 40)
+        self.assertEqual(result.power_w, 2500)
 
     def test_lege_accu_gebruikt_alle_uren(self):
         prices = [-0.03, -0.20, -0.12]
@@ -393,13 +407,13 @@ class NegatiefVensterTest(unittest.TestCase):
         result = self.run_plan([-0.1, -0.2], "2026-11-12T12:10:00", 99)
         self.assertEqual(result.status, planner.NEGATIVE_FULL)
 
-    def test_eerder_gekozen_uur_blijft_bij_bijna_gelijke_prijs(self):
-        prices = [-0.100, -0.101]
+    def test_eerder_gekozen_uur_krijgt_speling_bij_minimaal_vermogen(self):
+        prices = [-0.04, -0.20]
         first = at("2026-11-12T12:00:00")
-        result = self.run_plan(prices, "2026-11-12T12:10:00", 70, previous=(first,))
-        self.assertEqual(result.hours, (first,))
-        result = self.run_plan(prices, "2026-11-12T12:10:00", 70)
-        self.assertEqual(result.hours, (first + timedelta(hours=1),))
+        result = self.run_plan(prices, "2026-11-12T12:00:05", 60)
+        self.assertNotIn(first, result.hours)  # ~340 W is onder het minimum
+        result = self.run_plan(prices, "2026-11-12T12:00:05", 60, previous=(first,))
+        self.assertIn(first, result.hours)
 
 
 if __name__ == "__main__":

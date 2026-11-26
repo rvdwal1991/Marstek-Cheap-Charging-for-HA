@@ -642,6 +642,7 @@ class NegativePlan:
     energy_kwh: float = 0.0
     gain: float = 0.0  # verdiend doordat er voor het laden betaald wordt
     text: str = ""
+    allocation: dict | None = None  # kWh per gekozen uur (start -> kWh)
 
 
 def plan_negative(
@@ -657,9 +658,10 @@ def plan_negative(
     """Verdeel het laden over het negatieve venster waar we nu in zitten.
 
     Het venster is de aaneengesloten reeks uren met een prijs onder de grens.
-    Gekozen worden de uren met de laagste prijs, zoveel als nodig om de accu vol
-    te krijgen. Binnen die uren wordt de energie gelijk uitgesmeerd, zodat het
-    vermogen laag blijft. None als het huidige uur niet negatief is.
+    De energie die de accu nog kan opnemen wordt over de uren verdeeld naar hun
+    waarde: hoe negatiever de prijs, hoe meer er in dat uur geladen wordt, begrensd
+    door wat een uur aankan. Een uur dat te weinig oplevert voor het minimale
+    vermogen valt af. None als het huidige uur niet negatief is.
     """
     ordered = sorted(prices, key=lambda slot: slot.start)
     index = next((i for i, slot in enumerate(ordered) if slot.start <= now < slot.end), None)
@@ -689,22 +691,52 @@ def plan_negative(
     def room(slot: PriceSlot) -> float:
         return max_power_w * POWER_DERATE / 1000.0 * duration(slot)
 
-    ranked = sorted(
-        ahead,
-        key=lambda slot: slot.price - (NEGATIVE_STICKY if slot.start in previous else 0.0),
-    )
-    chosen: list[PriceSlot] = []
-    covered = 0.0
-    for slot in ranked:
-        chosen.append(slot)
-        covered += room(slot)
-        if covered >= need:
+    def value(slot: PriceSlot) -> float:
+        # Wat een uur waard is: hoe negatiever, hoe meer er betaald wordt om te laden.
+        return max(limit - slot.price, 1e-6)
+
+    def spread(candidates: list[PriceSlot]) -> dict[datetime, float]:
+        """Verdeel de energie naar de waarde van de uren, begrensd door wat een uur aankan."""
+        alloc: dict[datetime, float] = {}
+        open_slots = list(candidates)
+        left = need
+        while open_slots and left > 1e-9:
+            total = sum(value(slot) for slot in open_slots)
+            capped = [slot for slot in open_slots if left * value(slot) / total > room(slot)]
+            if not capped:
+                for slot in open_slots:
+                    alloc[slot.start] = left * value(slot) / total
+                left = 0.0
+                break
+            for slot in capped:
+                alloc[slot.start] = room(slot)
+                left -= room(slot)
+                open_slots.remove(slot)
+        return alloc
+
+    candidates = [slot for slot in ahead if duration(slot) > 0]
+    alloc = spread(candidates)
+    # Uren die te weinig opleveren om op het minimale vermogen te laden, vallen af; hun
+    # deel gaat naar de andere uren. Een eerder gekozen uur krijgt iets meer speling.
+    while True:
+        weak = [
+            slot for slot in candidates
+            if alloc.get(slot.start, 0.0) / duration(slot) * 1000.0
+            < min_power_w * (0.8 if slot.start in previous else 1.0)
+        ]
+        if not weak or len(weak) == len(candidates):
             break
-    chosen.sort(key=lambda slot: slot.start)
+        candidates = [slot for slot in candidates if slot not in weak]
+        alloc = spread(candidates)
+    if len(weak) == len(candidates):  # alles te klein: alleen het beste uur houden
+        best = max(candidates, key=value)
+        candidates = [best]
+        alloc = spread(candidates)
+
+    chosen = sorted((slot for slot in candidates if alloc.get(slot.start, 0.0) > 1e-9), key=lambda slot: slot.start)
     hours = tuple(slot.start for slot in chosen)
-    energy = min(need, covered)
-    remaining = sum(duration(slot) for slot in chosen)
-    gain = sum(-slot.price * energy * duration(slot) / remaining for slot in chosen) if remaining else 0.0
+    energy = sum(alloc[slot.start] for slot in chosen)
+    gain = sum(-slot.price * alloc[slot.start] for slot in chosen)
 
     current = ordered[index]
     if current.start not in hours:
@@ -712,15 +744,18 @@ def plan_negative(
             status=NEGATIVE_WAITING, window=window, hours=hours, energy_kwh=energy, gain=gain,
             text=f"Negatieve prijs (€ {current.price:.2f}): dit uur wordt overgeslagen, andere uren leveren meer op".replace(".", ","),
         )
-    raw = energy / max(remaining * TIME_DERATE, MIN_REMAINING_HOURS) * 1000.0
-    power = int(math.ceil(raw / POWER_STEP_W) * POWER_STEP_W)
-    power = int(min(max(power, min_power_w), max_power_w))
+    if alloc[current.start] >= room(current) - 1e-6:
+        power = int(max_power_w)  # het uur is vol: op vol vermogen
+    else:
+        power = int(math.ceil(alloc[current.start] / duration(current) * 1000.0 / POWER_STEP_W) * POWER_STEP_W)
+        power = int(min(max(power, min_power_w), max_power_w))
     text = (
         f"Negatieve prijs (€ {current.price:.2f}): laden op {power} W · "
         f"{energy:.1f} kWh in {len(chosen)} van {len(ahead)} negatieve uren · "
         f"verwacht € {gain:.2f}"
     ).replace(".", ",")
+    allocation = {slot.start: round(alloc[slot.start], 3) for slot in chosen}
     return NegativePlan(
         status=NEGATIVE_CHARGING, window=window, hours=hours, power_w=power,
-        energy_kwh=energy, gain=gain, text=text,
+        energy_kwh=energy, gain=gain, text=text, allocation=allocation,
     )

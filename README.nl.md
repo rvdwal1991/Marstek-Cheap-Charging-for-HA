@@ -102,19 +102,20 @@ Er wordt gekeken naar het hele **venster** met opeenvolgende negatieve uren, nie
 huidige uur, en daar wordt het meeste uit gehaald:
 
 1. Hij rekent uit hoeveel de accu nog kan opnemen (SoC tot 100 %).
-2. Hij kiest de uren met de **laagste prijs**, zo weinig als nodig om die energie op het maximale
-   vermogen kwijt te kunnen. Voorbeeld: drie negatieve uren van −€ 0,03, −€ 0,20 en −€ 0,12 en nog
-   3 kWh te laden: het uur van −€ 0,03 wordt overgeslagen en de andere twee worden gebruikt, omdat
-   die het meeste opleveren.
-3. In de gekozen uren wordt de energie **gelijkmatig uitgesmeerd**, zodat het vermogen zo laag
-   mogelijk blijft in plaats van kort op vol vermogen te laden. Kan de accu meer opnemen dan het
-   venster biedt, dan worden alle negatieve uren gebruikt.
+2. Hij verdeelt die energie over de uren **naar hun waarde**: hoe negatiever de prijs, hoe meer er
+   in dat uur geladen wordt (tot wat een uur aankan op het maximale vermogen). Voorbeeld: drie
+   negatieve uren van −€ 0,03, −€ 0,20 en −€ 0,12 en nog 3 kWh te laden. Het uur van −€ 0,20 krijgt
+   ongeveer 1,9 kWh en het uur van −€ 0,12 ongeveer 1,2 kWh. Het uur van −€ 0,03 zou onder het
+   minimale laadvermogen blijven en valt af; zijn deel gaat naar de andere twee.
+3. Doordat de energie over de uren is verdeeld, blijft het vermogen lager dan kort op vol vermogen
+   laden. Kan de accu meer opnemen dan het venster biedt, dan wordt elk uur tot het maximum gevuld.
+   Een enkel uur dat de accu niet kan vullen, wordt op vol vermogen geladen.
 4. De planregel en het stroomschema tonen het venster, de gekozen uren, het vermogen en de
    verwachte opbrengst (wat je krijgt om te laden).
 
 Zodra de prijs weer positief is of de accu vol is, gaat de Marstek terug naar anti-feed. Het plan
-wordt elke minuut opnieuw berekend; een gekozen uur blijft gekozen als een ander uur maar een
-fractie van een cent beter is.
+wordt elke minuut opnieuw berekend; een uur dat al in gebruik is krijgt iets extra speling
+voordat het afvalt omdat het onder het minimale vermogen blijft.
 
 De grens is instelbaar (*Negatieve prijs: grens*, standaard € 0,00). Er wordt gekeken naar de
 prijs uit de prijssensor, bij Zonneplan dus de prijs inclusief belastingen.

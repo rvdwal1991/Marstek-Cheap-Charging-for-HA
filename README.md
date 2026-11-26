@@ -103,18 +103,20 @@ It looks at the whole **window** of consecutive negative hours, not just the cur
 makes the most of it:
 
 1. It works out how much the battery can still take (SoC to 100 %).
-2. It picks the hours with the **lowest price**, as few as needed to fit that energy at the
-   maximum power. Example: three negative hours at −€0.03, −€0.20 and −€0.12 and 3 kWh still to
-   charge: the −€0.03 hour is skipped and the other two are used, because they earn the most.
-3. In the chosen hours the energy is **spread out evenly**, so the power stays as low as possible
-   instead of charging at full power for a short while. If the battery can take more than the
-   window offers, all negative hours are used.
+2. It divides that energy over the hours **by their value**: the more negative the price, the more
+   is charged in that hour (up to what an hour can take at the maximum power). Example: three
+   negative hours at −€0.03, −€0.20 and −€0.12 and 3 kWh still to charge. The −€0.20 hour gets
+   about 1.9 kWh and the −€0.12 hour about 1.2 kWh. The −€0.03 hour would stay below the minimum
+   charge power, so it drops out and its share goes to the other two.
+3. Because the energy is spread over the hours, the power stays lower than charging at full
+   power for a short while. If the battery can take more than the window offers, every hour is
+   filled to the maximum. A single hour that cannot fill the battery is charged at full power.
 4. The plan text and the flow chart show the window, the chosen hours, the power and the expected
    gain (what you are paid to charge).
 
 As soon as the price turns positive again or the battery is full, the Marstek goes back to
-anti-feed. The plan is recalculated every minute; an hour that was chosen stays chosen when another
-hour is only a fraction of a cent better.
+anti-feed. The plan is recalculated every minute; an hour that was already in use gets a little extra
+room before it drops out for being below the minimum power.
 
 The limit is adjustable (*Negative price: limit*, default €0.00). The price is taken from the
 price sensor, so with Zonneplan that is the price including taxes.
