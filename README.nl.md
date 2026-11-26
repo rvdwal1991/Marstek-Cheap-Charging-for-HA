@@ -325,6 +325,10 @@ python3 -m unittest discover -s tests -v
 ```
 
 
+## Wijzigingen
+
+Zie [CHANGELOG.md](CHANGELOG.md) (Engels), inclusief de breaking changes.
+
 ## Licentie
 
 Apache 2.0, zie [LICENSE](LICENSE).
