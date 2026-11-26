@@ -39,6 +39,16 @@ timmarna, plus några valfria extrafunktioner runt omkring.
 Varje läge har en egen brytare. **Prisstyrning är avstängd efter installationen**: ställ in
 integrationen, kontrollera att plantexten på laddningsplanens sensor ser rätt ut och slå sedan på den.
 
+### Det viktigaste
+
+- **Dynamiska priser.** Laddar under de billigaste publicerade timmarna, och bara så mycket som lönar sig efter den uppmätta verkningsgraden.
+- **Negativa priser.** Sprider laddningen över hela det negativa fönstret, viktat efter vad varje timme är värd; på begäran för maximal vinst, se [Laddning vid negativt pris](#laddning-vid-negativt-pris).
+- **Solprognos.** Använder prognosen i Energipanelen: laddar bara det solen inte fyller, drar av den väntade husförbrukningen per timme och lär sig av den faktiska produktionen hur pålitlig prognosen är, se [Solprognos](#solprognos).
+- **Avskrivning.** Med ett inköpspris räknas slitaget per kWh in i vinsten, säljmarginalen och break even-punkten för *Spärr under kostnadspris*, se [Vinst](#vinst).
+- **Kostnadspris.** Håller reda på vad lagret i batteriet kostade och urladdar det inte under det priset (*Spärr under kostnadspris*, *Ingen förlust*).
+- **Anslutning.** LilyGO med ESPHome, en Modbus-hubb (Elfin EW11 eller Venus E v3 direkt via Ethernet) eller integrationen *Marstek Venus Modbus*, se [Kompatibilitet](#kompatibilitet).
+- **Kort och språk.** Sju instrumentpanelskort som ställs in i gränssnittet, och åtta språk.
+
 ## Snabbstart
 
 1. Installera med HACS (knappen ovan, eller lägg till det här arkivet som ett eget arkiv, kategori

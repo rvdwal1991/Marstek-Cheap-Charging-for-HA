@@ -39,6 +39,16 @@ plus in pear opsjonele ekstra's dêromhinne.
 Elke modus hat in eigen skeakeler. **Priissturing stiet út nei it ynstallearjen**: stel de yntegraasje yn,
 kontrolearje oft de planrigel op de laadplan-sensor goed útsjocht en set him dan oan.
 
+### Haadpunten
+
+- **Dynamyske prizen.** Laadt yn de goedkeapste publisearre oeren, en allinnich safolle as nei it metten rendemint lonet.
+- **Negative prizen.** Ferspriedt it laden oer it hiele negative finster, weage nei wat elk oere wurdich is; op winsk foar maksimale winst, sjoch [Lade by in negative priis](#lade-by-in-negative-priis).
+- **Sinneprognose.** Brûkt de ferwachting út it Enerzjydashboerd: laadt allinnich wat de sinne net fol makket, lûkt it ferwachte húsferbrûk per oere ôf en leart fan de wiere opbringst hoe betrouber de ferwachting is, sjoch [Sinneprognose](#sinneprognose).
+- **Ôfskriuwing.** Mei in oankeappriis telt de slijtaazje per kWh mei yn de opbringst, de ferkeapmarzje en it brekpunt fan *Fêsthâlde ûnder kostpriis*, sjoch [Opbringst](#opbringst).
+- **Kostpriis.** Hâldt by wat it foarried yn de batterij kostet hat en ûntladt dat net ûnder dy priis (*Fêsthâlde ûnder kostpriis*, *Gjin ferlies*).
+- **Oanslúting.** LilyGO mei ESPHome, in Modbus-hub (Elfin EW11 of de Venus E v3 streekrjocht oer ethernet) of de yntegraasje *Marstek Venus Modbus*, sjoch [Kompatibiliteit](#kompatibiliteit).
+- **Kaarten en talen.** Sân dashboardkaarten dy't yn de GUI ynsteld wurde kinne, en acht talen.
+
 ## Fluchstart
 
 1. Ynstallearje mei HACS (knop hjirboppe, of foegje dit repository ta as oanpast repository, kategory

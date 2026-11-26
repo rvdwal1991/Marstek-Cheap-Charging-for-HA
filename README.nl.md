@@ -39,6 +39,16 @@ uren, plus een paar optionele extra's eromheen.
 Elke modus heeft een eigen schakelaar. **Prijssturing staat na de installatie uit**: stel de
 integratie in, controleer of de planregel op de laadplan-sensor klopt en zet hem dan aan.
 
+### Kernpunten
+
+- **Dynamische prijzen.** Laadt in de goedkoopste gepubliceerde uren, en alleen zoveel als na het gemeten rendement loont.
+- **Negatieve prijzen.** Spreidt het laden over het hele negatieve venster, gewogen naar wat elk uur waard is; desgewenst voor maximale winst, zie [Laden bij een negatieve prijs](#laden-bij-een-negatieve-prijs).
+- **Zonneverwachting.** Gebruikt de verwachting uit het Energie-dashboard: laadt alleen wat de zon niet vult, trekt het verwachte huisverbruik per uur af en leert aan de werkelijke opbrengst hoe betrouwbaar de verwachting is, zie [Zonneverwachting](#zonneverwachting).
+- **Afschrijving.** Met een aanschafprijs telt de slijtage per kWh mee in de opbrengst, de verkoopmarge en het break-evenpunt van *Vasthouden onder kostprijs*, zie [Opbrengst](#opbrengst).
+- **Kostprijs.** Houdt bij wat de voorraad in de accu kostte en ontlaadt die niet onder die prijs (*Vasthouden onder kostprijs*, *Geen verlies*).
+- **Aansluiting.** LilyGO met ESPHome, een Modbus-hub (Elfin EW11 of de Venus E v3 rechtstreeks via ethernet) of de integratie *Marstek Venus Modbus*, zie [Compatibiliteit](#compatibiliteit).
+- **Kaarten en talen.** Zeven dashboardkaarten die je in de GUI instelt, en acht talen.
+
 ## Snelstart
 
 1. Installeer met HACS (knop hierboven, of voeg deze repository toe als aangepaste repository,

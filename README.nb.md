@@ -39,6 +39,16 @@ pluss noen valgfrie tillegg rundt det.
 Hver modus har sin egen bryter. **Prisstyring er av etter installasjon**: sett opp integrasjonen,
 kontroller at planteksten på ladeplan-sensoren ser riktig ut, og slå den deretter på.
 
+### Det viktigste
+
+- **Dynamiske priser.** Lader i de billigste publiserte timene, og bare så mye som lønner seg etter den målte virkningsgraden.
+- **Negative priser.** Fordeler ladingen over hele det negative vinduet, vektet etter hva hver time er verdt; om ønskelig for maksimal gevinst, se [Lading ved negativ pris](#lading-ved-negativ-pris).
+- **Solprognose.** Bruker prognosen i Energi-dashbordet: lader bare det solen ikke fyller, trekker fra forventet husforbruk per time og lærer av den faktiske produksjonen hvor pålitelig prognosen er, se [Solprognose](#solprognose).
+- **Avskrivning.** Med en kjøpspris teller slitasjen per kWh med i gevinsten, salgsmarginen og break even-punktet for *Tilbakehold under kostpris*, se [Gevinst](#gevinst).
+- **Kostpris.** Holder styr på hva beholdningen i batteriet kostet og utlader den ikke under den prisen (*Tilbakehold under kostpris*, *Ingen tap*).
+- **Tilkobling.** LilyGO med ESPHome, en Modbus-hub (Elfin EW11 eller Venus E v3 direkte over Ethernet) eller integrasjonen *Marstek Venus Modbus*, se [Kompatibilitet](#kompatibilitet).
+- **Kort og språk.** Syv dashbordkort som stilles inn i grensesnittet, og åtte språk.
+
 ## Hurtigstart
 
 1. Installer med HACS (knappen over, eller legg til dette depotet som egendefinert depot, kategori

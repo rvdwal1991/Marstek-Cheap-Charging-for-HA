@@ -40,6 +40,16 @@ Cada modo tiene su propio interruptor. **El control por precio está desactivado
 configura la integración, comprueba que el texto del plan en el sensor del plan de carga tiene
 buena pinta y entonces actívalo.
 
+### Lo esencial
+
+- **Precios dinámicos.** Carga en las horas más baratas ya publicadas, y solo lo que compensa tras el rendimiento medido.
+- **Precios negativos.** Reparte la carga por toda la ventana negativa, ponderada por lo que vale cada hora; opcionalmente para la máxima ganancia, ver [Carga con precio negativo](#carga-con-precio-negativo).
+- **Previsión solar.** Usa la previsión del panel de Energía: carga solo lo que el sol no llenará, resta el consumo previsto de la casa hora a hora y aprende de la producción real lo fiable que es la previsión, ver [Previsión solar](#previsión-solar).
+- **Amortización.** Con un precio de compra, el desgaste por kWh cuenta en la ganancia, el margen de venta y el punto de equilibrio de *Retener bajo el precio de coste*, ver [Beneficio](#beneficio).
+- **Precio de coste.** Lleva la cuenta de lo que costaron las existencias de la batería y no las descarga por debajo de ese precio (*Retener bajo el precio de coste*, *Sin pérdidas*).
+- **Conexión.** LilyGO con ESPHome, un hub Modbus (Elfin EW11 o la Venus E v3 directamente por Ethernet) o la integración *Marstek Venus Modbus*, ver [Compatibilidad](#compatibilidad).
+- **Tarjetas e idiomas.** Siete tarjetas de panel que se configuran en la interfaz, y ocho idiomas.
+
 ## Inicio rápido
 
 1. Instala con HACS (botón de arriba, o añade este repositorio como repositorio personalizado,

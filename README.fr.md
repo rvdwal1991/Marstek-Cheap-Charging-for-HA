@@ -40,6 +40,16 @@ Chaque mode a son propre interrupteur. **Le pilotage par les prix est désactiv�
 configurez l'intégration, vérifiez que le texte du plan sur le capteur du plan de charge est
 cohérent, puis activez-le.
 
+### L'essentiel
+
+- **Prix dynamiques.** Charge pendant les heures les moins chères publiées, et seulement autant que le rendement mesuré le justifie.
+- **Prix négatifs.** Étale la charge sur toute la fenêtre négative, pondérée par la valeur de chaque heure ; au choix pour un gain maximal, voir [Charge à prix négatif](#charge-à-prix-négatif).
+- **Prévision solaire.** Utilise la prévision du tableau de bord Énergie : ne charge que ce que le soleil ne remplira pas, déduit la consommation prévue de la maison heure par heure et apprend, d'après la production réelle, la fiabilité de la prévision, voir [Prévision solaire](#prévision-solaire).
+- **Amortissement.** Avec un prix d'achat, l'usure par kWh compte dans le gain, la marge de vente et le seuil de rentabilité de *Maintien sous le prix de revient*, voir [Gain](#gain).
+- **Prix de revient.** Suit ce que le stock dans la batterie a coûté et ne le décharge pas en dessous de ce prix (*Maintien sous le prix de revient*, *Sans perte*).
+- **Raccordement.** LilyGO avec ESPHome, un hub Modbus (Elfin EW11 ou la Venus E v3 directement en Ethernet) ou l'intégration *Marstek Venus Modbus*, voir [Compatibilité](#compatibilité).
+- **Cartes et langues.** Sept cartes de tableau de bord à configurer dans l'interface, et huit langues.
+
 ## Démarrage rapide
 
 1. Installez avec HACS (bouton ci-dessus, ou ajoutez ce dépôt comme dépôt personnalisé, catégorie

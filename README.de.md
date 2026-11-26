@@ -39,6 +39,16 @@ günstigsten Stunden, dazu ein paar optionale Extras drumherum.
 Jeder Modus hat einen eigenen Schalter. **Die Preissteuerung ist nach der Installation aus**: Richte die Integration ein,
 prüfe, ob der Plantext des Ladeplan-Sensors stimmig aussieht, und schalte sie dann ein.
 
+### Das Wichtigste
+
+- **Dynamische Preise.** Lädt in den günstigsten veröffentlichten Stunden, und nur so viel, wie es sich nach dem gemessenen Wirkungsgrad lohnt.
+- **Negative Preise.** Verteilt das Laden auf das gesamte negative Fenster, gewichtet nach dem Wert jeder Stunde; auf Wunsch für maximalen Gewinn, siehe [Laden bei negativem Preis](#laden-bei-negativem-preis).
+- **Solarprognose.** Nutzt die Prognose aus dem Energie-Dashboard: lädt nur, was die Sonne nicht füllt, zieht den erwarteten Hausverbrauch pro Stunde ab und lernt anhand der tatsächlichen Erzeugung, wie zuverlässig die Prognose ist, siehe [Solarprognose](#solarprognose).
+- **Abschreibung.** Mit einem Anschaffungspreis zählt der Verschleiß pro kWh im Ertrag, in der Verkaufsmarge und in der Gewinnschwelle von *Halten unter Einstandspreis* mit, siehe [Ertrag](#ertrag).
+- **Einstandspreis.** Verfolgt, was der Vorrat im Akku gekostet hat, und entlädt ihn nicht unter diesem Preis (*Halten unter Einstandspreis*, *Kein Verlust*).
+- **Anschluss.** LilyGO mit ESPHome, ein Modbus-Hub (Elfin EW11 oder die Venus E v3 direkt über Ethernet) oder die Integration *Marstek Venus Modbus*, siehe [Kompatibilität](#kompatibilität).
+- **Karten und Sprachen.** Sieben Dashboard-Karten, die in der GUI eingestellt werden, und acht Sprachen.
+
 ## Schnellstart
 
 1. Installiere über HACS (Button oben, oder füge dieses Repository als benutzerdefiniertes Repository hinzu, Kategorie

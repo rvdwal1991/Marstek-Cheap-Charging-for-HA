@@ -39,6 +39,16 @@ plus a few optional extras around it.
 Each mode has its own switch. **Price control is off after installing**: set the integration up,
 check that the plan text on the charge plan sensor looks right, then turn it on.
 
+### Key points
+
+- **Dynamic prices.** Charges in the cheapest published hours, and only as much as is worth it after the measured round-trip efficiency.
+- **Negative prices.** Spreads charging over the whole negative window, weighted by what each hour is worth; optionally for maximum gain, see [Charging at a negative price](#charging-at-a-negative-price).
+- **Solar forecast.** Uses the forecast from the Energy dashboard: charges only what the sun will not fill, subtracts the expected house consumption per hour and learns from the real production how reliable the forecast is, see [Solar forecast](#solar-forecast).
+- **Depreciation.** With a purchase price, the wear per kWh counts in the gain, the sell margin and the break-even of *Hold below cost price*, see [Gain](#gain).
+- **Cost price.** Tracks what the stock in the battery cost and does not discharge it below that price (*Hold below cost price*, *No loss*).
+- **Connection.** LilyGO with ESPHome, a Modbus hub (Elfin EW11 or the Venus E v3 straight over Ethernet) or the *Marstek Venus Modbus* integration, see [Compatibility](#compatibility).
+- **Cards and languages.** Seven dashboard cards that you set up in the GUI, and eight languages.
+
 ## Quick start
 
 1. Install with HACS (button above, or add this repository as a custom repository, category
