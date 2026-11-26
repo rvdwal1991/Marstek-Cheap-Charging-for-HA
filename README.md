@@ -15,15 +15,25 @@ zero on the meter). This integration adds one thing: charging from the grid in t
 hours. There is also a separate option, off by default, to **sell surplus** in the most
 expensive hours.
 
-> **Hardware: only tested with the LilyGO RS485 setup.** This integration is built on, and has
-> only been tested with, a Marstek Venus (5.12 kWh) that is controlled over RS485 by a
-> **LilyGO T-CAN485 running ESPHome**, using the
-> [MarstekVenus-LilygoRS485](https://github.com/Superduper1969/MarstekVenus-LilygoRS485) configuration. It uses the entities that this setup exposes:
-> *RS485 Control Mode*, *Forcible Charge/Discharge*, *Forcible Charge Power* (required) and, optionally,
-> *Max. Charge Power*, *Max. Discharge Power*, *Forcible Discharge Power*, *Discharging Cutoff Capacity*
-> and the total charged/discharged energy counters. Other ways of connecting the battery (cloud,
-> Modbus TCP, other integrations) are untested and most likely do not work, because they do not
-> offer these RS485 control entities.
+> **Hardware.** Two ways of connecting a Marstek Venus (5.12 kWh) are supported:
+>
+> - **LilyGO T-CAN485 running ESPHome** over RS485, using the
+>   [MarstekVenus-LilygoRS485](https://github.com/Superduper1969/MarstekVenus-LilygoRS485)
+>   configuration. This is the setup the integration was built on and tested with. It uses the
+>   entities that this setup exposes: *RS485 Control Mode*, *Forcible Charge/Discharge*,
+>   *Forcible Charge Power* (required) and, optionally, *Max. Charge Power*, *Max. Discharge Power*,
+>   *Forcible Discharge Power*, *Discharging Cutoff Capacity* and the total charged/discharged
+>   energy counters.
+> - **Modbus in Home Assistant** (for example an Elfin EW11 or another RS485-to-TCP converter), using
+>   the [MarstekVenus-ElfinEW11](https://github.com/Superduper1969/MarstekVenus-ElfinEW11)
+>   configuration. The integration reads that setup's register sensors (RS485 control mode, force
+>   mode, forcible charge/discharge power, SoC) and writes registers 42000, 42010, 42020 and 42021
+>   with `modbus.write_register`. **New and so far only tested with simulated Modbus calls, not on a
+>   real Elfin EW11.** Without maximum charge/discharge power and cut-off registers, *Hold* and
+>   *No loss* are not available in this mode.
+>
+> Other ways of connecting the battery (cloud, other integrations) are untested and most likely do
+> not work, because they do not offer these RS485 control entities.
 >
 > **Dynamic energy prices:** this integration only makes sense with a **dynamic electricity
 > contract**, where the price changes every hour. It charges in the cheapest hours and avoids
@@ -187,7 +197,9 @@ same in both languages.
    *Integration*), or copy `custom_components/marstek_goedkoop_laden` to
    `/config/custom_components/`. Restart Home Assistant.
 2. Go to *Settings → Devices & services → Add integration → Marstek Goedkoop Laden*.
-3. Choose the price sensor and the Marstek entities. Whatever is detected is pre-filled.
+3. Choose how your Marstek is connected (*LilyGO RS485 with ESPHome* or *Modbus in Home Assistant*),
+   then the price sensor and the Marstek entities. Whatever is detected is pre-filled. For Modbus you
+   also enter the name of your Modbus hub (for example `MarstekVenus`) and the slave address.
 
 Requires Home Assistant 2026.3 or newer.
 

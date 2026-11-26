@@ -19,6 +19,25 @@ CONF_FORCE_DISCHARGE_POWER_ENTITY = "force_discharge_power_entity"
 CONF_MAX_DISCHARGE_POWER_ENTITY = "max_discharge_power_entity"
 CONF_MIN_SOC_ENTITY = "min_soc_entity"
 
+# Verbinding met de Marstek: ESPHome-entiteiten (LilyGO RS485) of Modbus-registers
+# via een Modbus-hub in Home Assistant (bijvoorbeeld een Elfin EW11).
+CONF_CONNECTION = "connection"
+CONF_MODBUS_HUB = "modbus_hub"
+CONF_MODBUS_SLAVE = "modbus_slave"
+CONNECTION_ESPHOME = "esphome"
+CONNECTION_MODBUS = "modbus"
+DEFAULT_MODBUS_HUB = "MarstekVenus"
+DEFAULT_MODBUS_SLAVE = 1
+
+# Modbus-registers van de Marstek Venus (RS485-protocol)
+REG_CONTROL_MODE = 42000
+REG_FORCE_MODE = 42010
+REG_FORCE_CHARGE_POWER = 42020
+REG_FORCE_DISCHARGE_POWER = 42021
+RAW_CONTROL_ENABLE = 21930  # 0x55AA
+RAW_CONTROL_DISABLE = 21947  # 0x55BB
+RAW_FORCE = {0: "stop", 1: "charge", 2: "discharge"}
+
 # Instellingen van de rekenregel
 CONF_CAPACITY_KWH = "capacity_kwh"
 CONF_TOP_HOURS = "top_hours"

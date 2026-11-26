@@ -19,6 +19,19 @@ from homeassistant.util import dt as dt_util
 from .const import (
     COMMAND_SETTLE_SECONDS,
     CONF_CAPACITY_ENTITY,
+    CONF_CONNECTION,
+    CONF_MODBUS_HUB,
+    CONF_MODBUS_SLAVE,
+    CONNECTION_MODBUS,
+    DEFAULT_MODBUS_HUB,
+    DEFAULT_MODBUS_SLAVE,
+    RAW_CONTROL_DISABLE,
+    RAW_CONTROL_ENABLE,
+    RAW_FORCE,
+    REG_CONTROL_MODE,
+    REG_FORCE_CHARGE_POWER,
+    REG_FORCE_DISCHARGE_POWER,
+    REG_FORCE_MODE,
     CONF_CAPACITY_KWH,
     CONF_CHARGED_ENERGY_ENTITY,
     CONF_CONTROL_MODE_ENTITY,
@@ -287,6 +300,8 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         prices = parse_prices(price_state.attributes.get(attribute) if price_state else None)
         control = self._state(CONF_CONTROL_MODE_ENTITY)
         force = self._state(CONF_FORCE_MODE_ENTITY)
+        if self.is_modbus:
+            control, force = self._decode_modbus(control, force)
         return {
             "prices": prices,
             "soc": self._number(CONF_SOC_ENTITY),
@@ -803,7 +818,49 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
 
     # ----------------------------------------------------------------- sturing
 
+    @property
+    def is_modbus(self) -> bool:
+        return self.conf.get(CONF_CONNECTION) == CONNECTION_MODBUS
+
+    @staticmethod
+    def _decode_modbus(control: str | None, force: str | None) -> tuple[str | None, str | None]:
+        """Zet de ruwe registerwaarden om naar de woorden van de ESPHome-selects."""
+        def raw(value: str | None) -> int | None:
+            try:
+                return int(float(value)) if value is not None else None
+            except ValueError:
+                return None
+
+        control_raw = raw(control)
+        control_text = (
+            MODE_ENABLE if control_raw == RAW_CONTROL_ENABLE
+            else MODE_DISABLE if control_raw == RAW_CONTROL_DISABLE
+            else None
+        )
+        return control_text, RAW_FORCE.get(raw(force))
+
+    async def _async_write_register(self, address: int, value: int) -> None:
+        await self.hass.services.async_call(
+            "modbus",
+            "write_register",
+            {
+                "hub": self.conf.get(CONF_MODBUS_HUB) or DEFAULT_MODBUS_HUB,
+                "slave": int(self.conf.get(CONF_MODBUS_SLAVE) or DEFAULT_MODBUS_SLAVE),
+                "address": address,
+                "value": int(value),
+            },
+            blocking=True,
+        )
+
     async def _async_select(self, key: str, option: str) -> None:
+        if self.is_modbus:
+            if key == CONF_CONTROL_MODE_ENTITY:
+                value = RAW_CONTROL_ENABLE if option == MODE_ENABLE else RAW_CONTROL_DISABLE
+                await self._async_write_register(REG_CONTROL_MODE, value)
+            else:
+                code = {v: k for k, v in RAW_FORCE.items()}[option]
+                await self._async_write_register(REG_FORCE_MODE, code)
+            return
         await self.hass.services.async_call(
             "select",
             "select_option",
@@ -812,6 +869,14 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         )
 
     async def _async_set_number(self, key: str, watts: float) -> None:
+        if self.is_modbus:
+            address = {
+                CONF_FORCE_POWER_ENTITY: REG_FORCE_CHARGE_POWER,
+                CONF_FORCE_DISCHARGE_POWER_ENTITY: REG_FORCE_DISCHARGE_POWER,
+            }.get(key)
+            if address is not None:
+                await self._async_write_register(address, int(watts))
+            return
         await self.hass.services.async_call(
             "number",
             "set_value",

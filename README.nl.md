@@ -10,14 +10,24 @@
 Laadt een Marstek Venus-thuisbatterij bij in de goedkoopste uren van een dynamisch
 stroomcontract, zodat hij vol is voordat de stroom duur wordt.
 
-**Hardware: alleen getest met de LilyGO RS485.** Deze integratie is gebouwd op, en alleen getest
-met, een Marstek Venus (5,12 kWh) die via RS485 wordt aangestuurd door een **LilyGO T-CAN485 met
-ESPHome**, met de configuratie van [MarstekVenus-LilygoRS485](https://github.com/Superduper1969/MarstekVenus-LilygoRS485). Hij gebruikt de entiteiten die deze opzet levert: *RS485 Control Mode*, *Forcible
-Charge/Discharge*, *Forcible Charge Power* (verplicht) en, optioneel, *Max. Charge Power*,
-*Max. Discharge Power*, *Forcible Discharge Power*, *Discharging Cutoff Capacity* en de
-totaaltellers van geladen en ontladen energie. Andere manieren om de accu te koppelen (cloud,
-Modbus TCP, andere integraties) zijn niet getest en werken vermoedelijk niet, omdat ze deze
-RS485-besturing niet bieden.
+**Hardware.** Er zijn twee manieren om een Marstek Venus (5,12 kWh) te koppelen:
+
+- **LilyGO T-CAN485 met ESPHome** via RS485, met de configuratie van
+  [MarstekVenus-LilygoRS485](https://github.com/Superduper1969/MarstekVenus-LilygoRS485). Dit is de
+  opzet waarop de integratie is gebouwd en waarmee hij is getest. Hij gebruikt de entiteiten die
+  deze opzet levert: *RS485 Control Mode*, *Forcible Charge/Discharge*, *Forcible Charge Power*
+  (verplicht) en, optioneel, *Max. Charge Power*, *Max. Discharge Power*, *Forcible Discharge
+  Power*, *Discharging Cutoff Capacity* en de totaaltellers van geladen en ontladen energie.
+- **Modbus in Home Assistant** (bijvoorbeeld een Elfin EW11 of een andere RS485-naar-TCP-converter),
+  met de configuratie van [MarstekVenus-ElfinEW11](https://github.com/Superduper1969/MarstekVenus-ElfinEW11).
+  De integratie leest de registersensoren van die opzet (RS485-besturing, forceermodus,
+  geforceerd laad-/ontlaadvermogen, SoC) en schrijft de registers 42000, 42010, 42020 en 42021 met
+  `modbus.write_register`. **Nieuw en tot nu toe alleen getest met nagebootste Modbus-aanroepen, niet
+  op een echte Elfin EW11.** Zonder registers voor maximaal laad-/ontlaadvermogen en ontlaadgrens
+  zijn *Vasthouden* en *Geen verlies* in deze modus niet beschikbaar.
+
+Andere manieren om de accu te koppelen (cloud, andere integraties) zijn niet getest en werken
+vermoedelijk niet, omdat ze deze RS485-besturing niet bieden.
 
 **Dynamische energieprijzen:** deze integratie heeft alleen zin met een **dynamisch stroomcontract**,
 waarbij de prijs elk uur verandert. Hij laadt in de goedkoopste uren en mijdt de dure, dus bij een
@@ -184,7 +194,9 @@ planregel, het stroomschema en de kaarten Engels.
    *Integratie*), of kopieer `custom_components/marstek_goedkoop_laden` naar
    `/config/custom_components/`. Herstart Home Assistant.
 2. Ga naar *Instellingen → Apparaten en diensten → Integratie toevoegen → Marstek Goedkoop Laden*.
-3. Kies de prijssensor en de entiteiten van de Marstek. Wat herkend wordt, staat al ingevuld.
+3. Kies hoe je Marstek is gekoppeld (*LilyGO RS485 met ESPHome* of *Modbus in Home Assistant*) en
+   daarna de prijssensor en de entiteiten van de Marstek. Wat herkend wordt, staat al ingevuld. Bij
+   Modbus vul je ook de naam van je Modbus-hub in (bijvoorbeeld `MarstekVenus`) en het slaveadres.
 
 Vereist: Home Assistant 2026.3 of nieuwer.
 

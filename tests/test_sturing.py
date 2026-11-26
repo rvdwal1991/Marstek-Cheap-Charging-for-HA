@@ -124,6 +124,26 @@ CONF = {
 }
 
 
+MODBUS_CONF = {
+    "connection": "modbus",
+    "modbus_hub": "MarstekVenus",
+    "modbus_slave": 1,
+    "price_entity": "sensor.prijs",
+    "soc_entity": "sensor.soc",
+    "control_mode_entity": "sensor.rs485_raw",
+    "force_mode_entity": "sensor.force_raw",
+    "force_power_entity": "sensor.laad_raw",
+    "force_discharge_power_entity": "sensor.ontlaad_raw",
+    "house_power": 150,
+}
+MODBUS_SENSORS = {
+    42000: "sensor.rs485_raw",
+    42010: "sensor.force_raw",
+    42020: "sensor.laad_raw",
+    42021: "sensor.ontlaad_raw",
+}
+
+
 class _State:
     def __init__(self, state, attributes=None):
         self.state = str(state)
@@ -153,6 +173,12 @@ class _Hass:
         self.services = types.SimpleNamespace(async_call=self._call)
 
     async def _call(self, domain, service, data, blocking=False):
+        if domain == "modbus":
+            self.calls.append((data["hub"], data["slave"], data["address"], data["value"]))
+            sensor = MODBUS_SENSORS.get(data["address"])
+            if sensor:
+                self.values[sensor] = _State(data["value"])
+            return
         value = data.get("option", data.get("value"))
         self.calls.append((data["entity_id"], value))
         self.values[data["entity_id"]] = _State(value)
@@ -176,6 +202,72 @@ def run(coro):
 
 def at(text):
     CLOCK["now"] = datetime.fromisoformat(text + "+01:00")
+
+
+class ModbusTest(unittest.TestCase):
+    """Elfin EW11 / Modbus-hub: ruwe registerwaarden lezen, registers schrijven."""
+
+    def make(self, soc):
+        hass, coordinator = make(soc, MODBUS_CONF)
+        hass.values.update(
+            {
+                "sensor.rs485_raw": _State(21947),
+                "sensor.force_raw": _State(1),
+                "sensor.laad_raw": _State(2500),
+                "sensor.ontlaad_raw": _State(2500),
+            }
+        )
+        return hass, coordinator
+
+    def test_laadnacht_schrijft_registers(self):
+        at("2026-11-10T19:40:00")
+        hass, coordinator = self.make(12)
+        run(coordinator.async_set_enabled(True))
+        self.assertEqual(hass.calls, [])
+
+        at("2026-11-11T02:00:20")
+        run(coordinator.async_refresh())
+        # vermogen (42020), richting charge (42010), RS485 aan 0x55AA (42000)
+        self.assertEqual(
+            hass.calls,
+            [
+                ("MarstekVenus", 1, 42020, 2100),
+                ("MarstekVenus", 1, 42010, 1),
+                ("MarstekVenus", 1, 42000, 21930),
+            ],
+        )
+
+        hass.calls.clear()
+        at("2026-11-11T03:30:00")
+        hass.set("sensor.soc", 60)
+        run(coordinator.async_refresh())
+        self.assertEqual(coordinator.data.status, "laden")
+
+        hass.calls.clear()
+        at("2026-11-11T04:50:00")
+        hass.set("sensor.soc", 99)
+        run(coordinator.async_refresh())
+        self.assertEqual(coordinator.data.status, "klaar")
+        # RS485 uit 0x55BB, richting charge, vermogen terug naar het maximum
+        self.assertEqual(
+            hass.calls,
+            [
+                ("MarstekVenus", 1, 42000, 21947),
+                ("MarstekVenus", 1, 42010, 1),
+                ("MarstekVenus", 1, 42020, 2500),
+            ],
+        )
+
+    def test_ruwe_waarden_worden_gelezen(self):
+        decode = coordinator_module.ChargePlanCoordinator._decode_modbus
+        self.assertEqual(decode("21930", "1"), ("enable", "charge"))
+        self.assertEqual(decode("21947.0", "2"), ("disable", "discharge"))
+        self.assertEqual(decode("0", "0"), (None, "stop"))
+        self.assertEqual(decode(None, "x"), (None, None))
+
+    def test_geen_vasthouden_zonder_max_ontlaadregister(self):
+        hass, coordinator = self.make(50)
+        self.assertFalse(coordinator.can_hold)
 
 
 class SturingTest(unittest.TestCase):

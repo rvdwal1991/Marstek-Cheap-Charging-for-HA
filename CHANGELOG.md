@@ -4,6 +4,18 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.17.0 (2026-11-26)
+- **New:** support for a Marstek connected through a **Modbus hub in Home Assistant**, for example an
+  Elfin EW11 with [MarstekVenus-ElfinEW11](https://github.com/Superduper1969/MarstekVenus-ElfinEW11).
+  Setup now first asks how the Marstek is connected (*LilyGO RS485 with ESPHome* or *Modbus in Home
+  Assistant*). The Modbus variant reads the raw register sensors and writes registers 42000, 42010,
+  42020 and 42021 through `modbus.write_register`.
+- Not available with Modbus: maximum charge and discharge power, the discharge cut-off and the battery
+  capacity entity (those registers are not part of that setup), so *Hold* and *No loss* are not
+  available there. The fixed capacity and cut-off from the options are used instead.
+- Existing installations keep working unchanged (they stay on the ESPHome variant). Tested with
+  simulated Modbus calls only, not yet on a real Elfin EW11.
+
 ## 1.16.1 (2026-11-26)
 - **Fix:** a charge was marked `klaar` (done) after its first hour when the planned charge hours were
   not consecutive (for example 22:00, 01:00, 02:00). The remaining hours were skipped. It now carries

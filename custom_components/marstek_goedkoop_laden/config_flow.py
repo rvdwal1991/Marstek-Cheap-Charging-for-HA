@@ -12,6 +12,13 @@ from homeassistant.helpers import selector
 
 from .const import (
     CONF_CAPACITY_ENTITY,
+    CONF_CONNECTION,
+    CONF_MODBUS_HUB,
+    CONF_MODBUS_SLAVE,
+    CONNECTION_ESPHOME,
+    CONNECTION_MODBUS,
+    DEFAULT_MODBUS_HUB,
+    DEFAULT_MODBUS_SLAVE,
     CONF_CAPACITY_KWH,
     CONF_CHARGED_ENERGY_ENTITY,
     CONF_CONTROL_MODE_ENTITY,
@@ -78,7 +85,25 @@ ENTITY_FIELDS: tuple[tuple[str, str, bool, tuple[str, ...]], ...] = (
     (CONF_MIN_SOC_ENTITY, "number", False, ("discharging_cutoff_capacity",)),
 )
 
+# Modbus (bijvoorbeeld Elfin EW11): alles zijn sensoren met de ruwe registerwaarde;
+# schrijven gaat via modbus.write_register. Capaciteit, maximaal vermogen en
+# ontlaadgrens zijn daar geen registers van deze opzet en vallen dus weg.
+MODBUS_FIELDS: tuple[tuple[str, str, bool, tuple[str, ...]], ...] = (
+    (CONF_PRICE_ENTITY, "sensor", True, ("zonneplan_current_hourly_electricity_tariff", "current_electricity_tariff")),
+    (CONF_SOC_ENTITY, "sensor", True, ("battery_soc",)),
+    (CONF_CONTROL_MODE_ENTITY, "sensor", True, ("my_battery_rs485_control_mode",)),
+    (CONF_FORCE_MODE_ENTITY, "sensor", True, ("my_battery_force_charge_discharge_mode",)),
+    (CONF_FORCE_POWER_ENTITY, "sensor", True, ("forcible_charge_power",)),
+    (CONF_FORCE_DISCHARGE_POWER_ENTITY, "sensor", False, ("forcible_discharge_power",)),
+    (CONF_CHARGED_ENERGY_ENTITY, "sensor", False, ("total_charging_energy",)),
+    (CONF_DISCHARGED_ENERGY_ENTITY, "sensor", False, ("total_discharging_energy",)),
+)
+
 OPTIONAL_KEYS = tuple(key for key, _, required, _ in ENTITY_FIELDS if not required)
+
+
+def _fields(connection: str | None):
+    return MODBUS_FIELDS if connection == CONNECTION_MODBUS else ENTITY_FIELDS
 
 
 def _guess(hass: HomeAssistant, domain: str, endings: tuple[str, ...]) -> str | None:
@@ -91,9 +116,14 @@ def _guess(hass: HomeAssistant, domain: str, endings: tuple[str, ...]) -> str | 
     return None
 
 
-def _entity_schema(hass: HomeAssistant, current: dict[str, Any]) -> dict[Any, Any]:
+def _entity_schema(
+    hass: HomeAssistant, current: dict[str, Any], connection: str | None = None
+) -> dict[Any, Any]:
     schema: dict[Any, Any] = {}
-    for key, domain, required, endings in ENTITY_FIELDS:
+    if connection == CONNECTION_MODBUS:
+        schema[vol.Required(CONF_MODBUS_HUB, default=current.get(CONF_MODBUS_HUB) or DEFAULT_MODBUS_HUB)] = selector.TextSelector()
+        schema[vol.Required(CONF_MODBUS_SLAVE, default=current.get(CONF_MODBUS_SLAVE) or DEFAULT_MODBUS_SLAVE)] = _number(1, 247, 1)
+    for key, domain, required, endings in _fields(connection):
         suggested = current.get(key) if key in current else _guess(hass, domain, endings)
         marker = vol.Required if required else vol.Optional
         schema[marker(key, description={"suggested_value": suggested})] = selector.EntitySelector(
@@ -148,11 +178,14 @@ def _param_schema(current: dict[str, Any]) -> dict[Any, Any]:
     }
 
 
-def _normalize(user_input: dict[str, Any]) -> dict[str, Any]:
+def _normalize(user_input: dict[str, Any], connection: str = CONNECTION_ESPHOME) -> dict[str, Any]:
     """Leeggemaakte optionele velden expliciet op None zetten."""
     data = dict(user_input)
+    data[CONF_CONNECTION] = connection
     for key in OPTIONAL_KEYS:
         data.setdefault(key, None)
+    if CONF_MODBUS_SLAVE in data:
+        data[CONF_MODBUS_SLAVE] = int(data[CONF_MODBUS_SLAVE])
     return data
 
 
@@ -162,12 +195,25 @@ class MarstekGoedkoopLadenConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return self.async_show_menu(step_id="user", menu_options=[CONNECTION_ESPHOME, CONNECTION_MODBUS])
+
+    async def async_step_esphome(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return await self._async_entities(CONNECTION_ESPHOME, "esphome", user_input)
+
+    async def async_step_modbus(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return await self._async_entities(CONNECTION_MODBUS, "modbus", user_input)
+
+    async def _async_entities(
+        self, connection: str, step_id: str, user_input: dict[str, Any] | None
+    ) -> ConfigFlowResult:
         if user_input is not None:
             await self.async_set_unique_id(user_input[CONF_CONTROL_MODE_ENTITY])
             self._abort_if_unique_id_configured()
-            return self.async_create_entry(title="Marstek Goedkoop Laden", data=_normalize(user_input))
+            return self.async_create_entry(
+                title="Marstek Goedkoop Laden", data=_normalize(user_input, connection)
+            )
         return self.async_show_form(
-            step_id="user", data_schema=vol.Schema(_entity_schema(self.hass, {}))
+            step_id=step_id, data_schema=vol.Schema(_entity_schema(self.hass, {}, connection))
         )
 
     @staticmethod
@@ -180,8 +226,9 @@ class MarstekGoedkoopLadenOptionsFlow(OptionsFlow):
     """Entiteiten en de rekenregel aanpassen."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        if user_input is not None:
-            return self.async_create_entry(data=_normalize(user_input))
         current = {**self.config_entry.data, **self.config_entry.options}
-        schema = {**_entity_schema(self.hass, current), **_param_schema(current)}
+        connection = current.get(CONF_CONNECTION) or CONNECTION_ESPHOME
+        if user_input is not None:
+            return self.async_create_entry(data=_normalize(user_input, connection))
+        schema = {**_entity_schema(self.hass, current, connection), **_param_schema(current)}
         return self.async_show_form(step_id="init", data_schema=vol.Schema(schema))

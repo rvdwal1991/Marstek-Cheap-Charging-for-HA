@@ -3,6 +3,14 @@
     "step": {
       "user": {
         "title": "Marstek Goedkoop Laden",
+        "description": "How is your Marstek connected?",
+        "menu_options": {
+          "esphome": "LilyGO RS485 with ESPHome",
+          "modbus": "Modbus in Home Assistant (e.g. Elfin EW11)"
+        }
+      },
+      "esphome": {
+        "title": "Marstek Goedkoop Laden",
         "description": "Pick the price sensor and the Marstek entities (LilyGO RS485). Recognised entities are filled in already.",
         "data": {
           "price_entity": "Price sensor",
@@ -29,6 +37,30 @@
           "force_discharge_power_entity": "Needed for selling. Empty = selling is not possible.",
           "max_discharge_power_entity": "Upper limit of the sell power. Empty = 2500 W.",
           "min_soc_entity": "The Marstek does not discharge below this SoC. Empty = the fixed value from the options."
+        }
+      },
+      "modbus": {
+        "title": "Marstek Goedkoop Laden",
+        "description": "Pick the price sensor and the Modbus sensors of the Marstek (for example from MarstekVenus-ElfinEW11). Writing goes through the Modbus hub you name here.",
+        "data": {
+          "price_entity": "Price sensor",
+          "soc_entity": "State of charge",
+          "control_mode_entity": "RS485 control mode (sensor, register 42000)",
+          "force_mode_entity": "Force charge/discharge mode (sensor, register 42010)",
+          "force_power_entity": "Forcible charge power (sensor, register 42020)",
+          "max_power_entity": "Maximum charge power",
+          "capacity_entity": "Battery capacity (sensor)",
+          "charged_energy_entity": "Total charged energy",
+          "discharged_energy_entity": "Total discharged energy",
+          "force_discharge_power_entity": "Forcible discharge power (sensor, register 42021)",
+          "max_discharge_power_entity": "Maximum discharge power",
+          "min_soc_entity": "Discharge cut-off (SoC)",
+          "modbus_hub": "Modbus hub name",
+          "modbus_slave": "Modbus slave address"
+        },
+        "data_description": {
+          "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
+          "modbus_hub": "The name of the hub in your modbus: configuration, for example MarstekVenus."
         }
       }
     },
@@ -71,7 +103,9 @@
           "negative_price_limit": "Negative price: limit",
           "language": "Language",
           "battery_price": "Battery purchase price",
-          "battery_cycles": "Battery lifetime (cycles)"
+          "battery_cycles": "Battery lifetime (cycles)",
+          "modbus_hub": "Modbus hub name",
+          "modbus_slave": "Modbus slave address"
         },
         "data_description": {
           "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
