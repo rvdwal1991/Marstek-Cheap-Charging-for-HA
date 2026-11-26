@@ -402,6 +402,16 @@ class ZonneverwachtingTest(unittest.TestCase):
         self.assertEqual(coordinator._solar_hours, ())
         self.assertEqual(coordinator.params.solar, ())
 
+    def test_lege_verwachting_wordt_snel_opnieuw_geprobeerd(self):
+        at("2026-11-10T19:40:00")
+        hass, coordinator = make(12)
+        hass.config_entries = types.SimpleNamespace(async_get_entry=lambda entry_id: None)  # nog niet geladen
+        run(coordinator._async_refresh_solar())
+        self.assertEqual(coordinator._solar_hours, ())
+        at("2026-11-10T19:46:00")
+        run(coordinator._async_refresh_solar())
+        self.assertEqual(self.calls["n"], 2)  # na 6 minuten opnieuw, niet pas na 30
+
     def test_zonder_energiedashboard_verandert_niets(self):
         _module("homeassistant.components.energy", async_get_manager=None)  # import mislukt/kapot
         hass, coordinator = make(12)

@@ -439,6 +439,9 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         except Exception:  # noqa: BLE001 - de verwachting is optioneel
             _LOGGER.debug("Zonneverwachting niet beschikbaar", exc_info=True)
             self._solar_hours = ()
+        if not self._solar_hours:
+            # Na een herstart zijn de verwachtingen er soms nog niet: over 5 minuten opnieuw.
+            self._solar_checked = now - timedelta(minutes=25)
 
     async def _async_update_data(self) -> Plan:
         await self._async_refresh_solar()
