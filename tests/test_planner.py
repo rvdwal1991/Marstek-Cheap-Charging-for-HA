@@ -433,5 +433,54 @@ class NegatiefVensterTest(unittest.TestCase):
         self.assertIn(first, result.hours)
 
 
+class ZonneverwachtingTest(unittest.TestCase):
+    """De zon vult de accu overdag bij, dus 's nachts hoeft er minder uit het net."""
+
+    @staticmethod
+    def sun(day, per_hour_wh, hours=range(9, 17)):
+        return tuple((at(f"{day}T{h:02d}:00:00"), per_hour_wh) for h in hours)
+
+    def run_plan(self, soc, solar, factor=1.0):
+        return planner.compute_plan(
+            prices=PRICES, now=at("2026-11-10T19:40:00"), soc=soc, capacity_kwh=5.12,
+            max_power_w=2500, efficiency=ETA, charging=False, active=True,
+            params=planner.PlanParams(solar=solar, solar_factor=factor, house_power_w=400),
+            tz=TZ,
+        )
+
+    def test_zonder_verwachting_volledig_bijladen(self):
+        base = self.run_plan(12, ())
+        self.assertGreater(base.energy_kwh, 4.5)
+        self.assertEqual(base.solar_kwh, 0)
+
+    def test_veel_zon_laat_ruimte_over(self):
+        result = self.run_plan(12, self.sun("2026-11-11", 3000))
+        self.assertGreater(result.solar_kwh, 5)
+        # Genoeg zon om de hele accu bij te vullen: alleen het eigen verbruik tot de
+        # zon opkomt wordt bijgeladen (een paar kWh minder dan vol).
+        base = self.run_plan(12, ())
+        self.assertLess(result.energy_kwh, base.energy_kwh - 1.5)
+        self.assertIn("de zon vult de rest bij", result.text)
+        self.assertTrue(any(step["titel"] == "Zon verwacht" for step in result.steps))
+
+    def test_weinig_zon_verandert_niets(self):
+        base = self.run_plan(12, ())
+        result = self.run_plan(12, self.sun("2026-11-11", 350))  # onder het eigen verbruik
+        self.assertEqual(result.energy_kwh, base.energy_kwh)
+        self.assertEqual(result.solar_kwh, 0)
+
+    def test_betrouwbaarheid_dempt_de_verwachting(self):
+        sunny = self.run_plan(12, self.sun("2026-11-11", 1200), factor=1.0)
+        careful = self.run_plan(12, self.sun("2026-11-11", 1200), factor=0.5)
+        self.assertLess(sunny.energy_kwh, careful.energy_kwh)
+
+    def test_accu_al_genoeg_gevuld_voor_het_zonne_overschot(self):
+        # Accu op 60 % en veel zon: niets bijladen, de zon doet het.
+        result = self.run_plan(60, self.sun("2026-11-11", 3000))
+        self.assertEqual(result.status, planner.STATUS_FULL)
+        self.assertEqual(result.charge_hours, ())
+        self.assertIn("De zon vult de accu bij", result.text)
+
+
 if __name__ == "__main__":
     unittest.main()

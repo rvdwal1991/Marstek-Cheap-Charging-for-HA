@@ -129,6 +129,28 @@ Spielraum, bevor sie wegen Unterschreitung der Mindestleistung ausscheidet.
 Die Grenze ist einstellbar (*Negativer Preis: Grenze*, Standard € 0,00). Der Preis stammt vom
 Preissensor, bei Zonneplan ist das also der Preis inklusive Steuern.
 
+## Solarprognose
+
+Mit Solarmodulen wird der Akku tagsüber kostenlos gefüllt. Lädst du ihn nachts voll aus dem
+Netz, bleibt für den Solarüberschuss kein Platz mehr, und er geht für wenig oder gar kein Geld ins Netz,
+was jetzt wichtiger wird, da die Netto-Messung (*salderingsregeling*) ausläuft. Deshalb
+berücksichtigt die Integration den erwarteten Solarertrag:
+
+1. Sie liest die Prognose aus dem **Energie-Dashboard** von Home Assistant (*Einstellungen → Dashboards →
+   Energie → Solarmodule → Solarproduktionsprognose*). Forecast.Solar, Solcast, Open-Meteo und
+   andere Prognose-Integrationen funktionieren, und es ist nichts Zusätzliches einzurichten. Ohne Prognose
+   dort ändert sich nichts.
+2. Sie berechnet den erwarteten Überschuss: je Stunde die Prognose, multipliziert mit der Einstellung
+   für die Zuverlässigkeit (Standard 70 %), minus deinen Eigenverbrauch (die Einstellung *Verkauf: durchschnittlicher Eigenverbrauch*).
+3. Sie lädt nachts nur so viel, dass bis zum Sonnenaufgang Platz für diesen Überschuss bleibt: die Energie, die dein
+   Eigenverbrauch bis dahin aufzehrt, plus das, was noch gebraucht wird. An einem
+   sonnigen Tag können das ein paar kWh statt eines vollen Akkus sein oder gar nichts (der Plantext
+   sagt dann, dass die Sonne den Akku füllt).
+4. Ein bewölkter Tag ergibt einen kleinen oder keinen Überschuss, und dann wird der Akku wie bisher voll geladen.
+
+Mit *Solarprognose verwenden* lässt sich das ausschalten. Die Prognose wird alle 30 Minuten gelesen. Sie
+verringert nur die Lademenge; Ladestunden verschiebt sie nicht, und am Verkaufen ändert sie nichts.
+
 ## Halten unter Einstandspreis
 
 Aus dem Netz geladene Energie hat einen Einstandspreis: den Ladepreis geteilt durch den Wirkungsgrad. Würde
@@ -268,6 +290,8 @@ Unter *Konfigurieren* bei der Integration:
 | Sprache | Automatisch | Sprache von Plantext, Flussdiagramm und Karten: Automatisch, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska oder Norsk. |
 | Anschaffungspreis des Akkus | € 0 | Für die Abschreibung. 0 schaltet die Abschreibung aus. |
 | Lebensdauer des Akkus (Zyklen) | 6000 | Erwartete Anzahl voller Zyklen. Abschreibung pro kWh = Preis ÷ (Zyklen × Kapazität); zum Beispiel sind € 1.500 über 6.000 Zyklen à 5,12 kWh etwa € 0,049 pro kWh. |
+| Solarprognose verwenden | An | Berücksichtigt beim nächtlichen Laden den erwarteten Solarertrag aus dem Energie-Dashboard. |
+| Zuverlässigkeit der Solarprognose | 70 % | Der Teil der Prognose, auf den gezählt wird. Niedriger ist vorsichtiger. |
 | Mindestgewinn pro kWh | € 0,02 | Was das Laden nach Abzug der Ladeverluste mindestens einbringen muss. Stunden, die weniger als einen halben Cent über der Grenze liegen, zählen trotzdem, damit eine fast flache Nacht nicht wegen eines Bruchteils eines Cents zerstückelt wird. |
 | Anzahl der teuersten Stunden | 6 | Mit wie vielen späteren teuren Stunden eine Stunde verglichen wird. |
 | Stunden Vorausschau | 18 | Wie weit hinter einer Stunde nach teuren Stunden gesucht wird. |

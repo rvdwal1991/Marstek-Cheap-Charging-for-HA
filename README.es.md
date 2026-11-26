@@ -131,6 +131,30 @@ antes de quedar fuera por estar por debajo de la potencia mínima.
 El límite es ajustable (*Precio negativo: límite*, por defecto € 0,00). El precio se toma del
 sensor de precios, así que con Zonneplan es el precio con impuestos incluidos.
 
+## Previsión solar
+
+Con paneles solares, la batería se llena gratis durante el día. Si la cargas del todo desde la
+red por la noche, el excedente solar se queda sin sitio y va a la red por poco o nada, algo que
+importa más ahora que termina el balance neto (*salderingsregeling*). Por eso la integración
+tiene en cuenta el rendimiento solar esperado:
+
+1. Lee la previsión del **panel de Energía** de Home Assistant (*Ajustes → Paneles →
+   Energía → Paneles solares → Previsión de producción solar*). Funcionan Forecast.Solar,
+   Solcast, Open-Meteo y otras integraciones de previsión, y no hay que configurar nada más. Sin
+   previsión allí, no cambia nada.
+2. Calcula el excedente esperado: por hora la previsión, multiplicada por el ajuste de
+   fiabilidad (por defecto 70 %), menos tu consumo propio (el ajuste *Venta: consumo propio
+   medio*).
+3. Por la noche carga solo lo justo para que quede espacio para ese excedente cuando salga el
+   sol: la energía que gasta tu consumo propio hasta entonces, más lo que aún hace falta. En un
+   día soleado pueden ser unos pocos kWh en lugar de una batería llena, o nada en absoluto (el
+   texto del plan dice entonces que el sol llenará la batería).
+4. Un día nublado da un excedente pequeño o nulo, y entonces la batería se carga del todo como
+   antes.
+
+Se puede desactivar con *Usar la previsión solar*. La previsión se lee cada 30 minutos. Solo
+reduce la cantidad a cargar; no mueve las horas de carga ni cambia la venta.
+
 ## Retener bajo el precio de coste
 
 La energía cargada desde la red tiene un precio de coste: el precio de carga dividido por el
@@ -271,6 +295,8 @@ En *Configurar* dentro de la integración:
 | Idioma | Automático | Idioma del texto del plan, el diagrama de flujo y las tarjetas: Automático, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska o Norsk. |
 | Precio de compra de la batería | € 0 | Se usa para la amortización. 0 desactiva la amortización. |
 | Vida útil de la batería (ciclos) | 6000 | Número esperado de ciclos completos. Amortización por kWh = precio ÷ (ciclos × capacidad); por ejemplo € 1500 en 6000 ciclos de 5,12 kWh son unos € 0,049 por kWh. |
+| Usar la previsión solar | Activado | Tener en cuenta el rendimiento solar esperado del panel de Energía al cargar por la noche. |
+| Fiabilidad de la previsión solar | 70 % | La parte de la previsión con la que contar. Más baja es más prudente. |
 | Beneficio mínimo por kWh | € 0,02 | Lo mínimo que debe rendir cargar, tras las pérdidas de carga. Las horas que están menos de medio céntimo por encima del límite también cuentan, para que una noche casi plana no se trocee por una fracción de céntimo. |
 | Número de horas más caras con las que comparar | 6 | Con cuántas horas caras posteriores se compara una hora. |
 | Horas a mirar hacia delante | 18 | Hasta dónde mirar después de una hora para buscar horas caras. |

@@ -75,6 +75,10 @@ class PlanParams:
     margin: float = 0.02
     min_power_w: int = 400
     depreciation: float = 0.0  # afschrijving in euro per bruikbare kWh
+    # Verwachte zonne-opbrengst: (begin van het uur, Wh in dat uur). Leeg = niet gebruiken.
+    solar: tuple[tuple[datetime, float], ...] = ()
+    solar_factor: float = 0.7  # hoeveel van de verwachting we vertrouwen
+    house_power_w: float = 400.0  # gemiddeld eigen verbruik overdag
 
 
 @dataclass(frozen=True)
@@ -110,6 +114,8 @@ class Plan:
     cost_eur: float | None = None
     value_eur: float | None = None
     gain_eur: float | None = None
+    # Verwacht zonne-overschot (kWh) waarmee het bijladen is verlaagd; 0 = niet gebruikt.
+    solar_kwh: float = 0.0
 
     @property
     def charge_start(self) -> datetime | None:
@@ -194,6 +200,50 @@ def step(title: str, detail: str, kind: str) -> dict:
     return {"titel": title, "detail": detail, "soort": kind}
 
 
+# Onder deze hoeveelheid (kWh) is bijladen op basis van de zonneverwachting niet de moeite.
+MIN_SOLAR_CHARGE_KWH = 0.2
+
+
+def _solar_energy(
+    params: PlanParams,
+    soc: float,
+    capacity_kwh: float,
+    efficiency: float,
+    window_end: datetime,
+    energy: float,
+) -> tuple[float, float | None, float]:
+    """Hoeveel er nog uit het net moet worden bijgeladen als de zon de rest bijvult.
+
+    Laadt de accu 's nachts vol, dan past het zonne-overschot van overdag er niet
+    meer in en gaat het (bijna gratis) naar het net. Daarom wordt er alleen zoveel
+    bijgeladen dat er bij het begin van het zonne-overschot genoeg ruimte is: de
+    ruimte die het eigen verbruik tot dan al maakt plus wat er nog bij moet.
+
+    Geeft (verwacht overschot in kWh, doel-SoC in %, energie uit het net in kWh).
+    Is er geen bruikbare verwachting, dan (0, None, energie).
+    """
+    eta = one_way_efficiency(efficiency)
+    house_kw = params.house_power_w / 1000.0
+    horizon = window_end + timedelta(hours=params.lookahead_hours)
+    hours = sorted(
+        (start, wh * params.solar_factor / 1000.0)
+        for start, wh in params.solar
+        if window_end <= start < horizon
+    )
+    surplus = sum(max(0.0, kwh - house_kw) for _, kwh in hours)
+    first = next((start for start, kwh in hours if kwh > house_kw), None)
+    if first is None or surplus < 0.2:
+        return 0.0, None, energy
+    drain = house_kw * max(0.0, (first - window_end).total_seconds() / 3600.0) / eta
+    room_needed = min(capacity_kwh, surplus * eta)
+    target = min(capacity_kwh, max(drain, capacity_kwh - room_needed + drain))
+    now_kwh = soc / 100.0 * capacity_kwh
+    from_grid = max(0.0, target - now_kwh) / eta
+    if from_grid >= energy:
+        return 0.0, None, energy
+    return surplus, target / capacity_kwh * 100.0, from_grid
+
+
 def compute_plan(
     *,
     prices: list[PriceSlot],
@@ -246,6 +296,15 @@ def compute_plan(
         if soc >= FULL_SOC
         else (100.0 - soc) / 100.0 * capacity_kwh / one_way_efficiency(efficiency)
     )
+    solar_kwh, solar_target = 0.0, None
+    solar_full = False
+    if energy > 0 and window_end is not None and params.solar:
+        solar_kwh, solar_target, energy_solar = _solar_energy(
+            params, soc, capacity_kwh, efficiency, window_end, energy
+        )
+        if solar_kwh > 0:
+            solar_full = energy_solar < MIN_SOLAR_CHARGE_KWH
+            energy = 0.0 if solar_full else energy_solar
     needed = 0 if energy == 0 else max(1, math.ceil(energy / (max_power_w / 1000.0 * POWER_DERATE)))
 
     previous = set(memory.charge_hours)
@@ -302,6 +361,15 @@ def compute_plan(
         need_step = step("Accu niet vol", f"Nog {_euro(energy, 1)} kWh nodig", "ok")
     else:
         need_step = step("Accu is vol", "Bijladen is niet nodig", "stop")
+    solar_step = (
+        step(
+            "Zon verwacht",
+            f"{_euro(solar_kwh, 1)} kWh zonne-overschot verwacht · bijladen tot {solar_target:.0f} %",
+            "ok",
+        )
+        if solar_kwh > 0 and solar_target is not None
+        else None
+    )
 
     if done_until is not None:
         return Plan(
@@ -340,6 +408,8 @@ def compute_plan(
         )
         if partial:
             text += " · het goedkope venster is te kort om vol te komen"
+        if solar_kwh > 0:
+            text += " · de zon vult de rest bij"
         return Plan(
             status=STATUS_CHARGING if 0 in chosen else STATUS_PLANNED,
             charge_hours=hours,
@@ -352,9 +422,11 @@ def compute_plan(
             value_eur=round(value, 2),
             # Afgerond zo dat de getoonde bedragen op elkaar aansluiten.
             gain_eur=round(round(value, 2) - round(cost, 2), 2),
+            solar_kwh=round(solar_kwh, 2),
             steps=(
                 window_step,
                 need_step,
+                *((solar_step,) if solar_step else ()),
                 step(
                     f"Laden, {len(chosen)} uur",
                     f"Ca. {power} W, gemiddeld € {_euro(average)}"
@@ -362,6 +434,15 @@ def compute_plan(
                     "actie",
                 ),
             ),
+            **common,
+        )
+
+    if run and solar_full and solar_step:
+        return Plan(
+            status=STATUS_FULL,
+            text="De zon vult de accu bij · bijladen is niet nodig",
+            solar_kwh=round(solar_kwh, 2),
+            steps=(window_step, solar_step, step("Geen bijladen", "Stopt bij deze stap", "eind")),
             **common,
         )
 

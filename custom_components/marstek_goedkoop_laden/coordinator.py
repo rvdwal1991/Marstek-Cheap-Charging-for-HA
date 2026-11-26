@@ -57,6 +57,10 @@ from .const import (
     CONF_LANGUAGE,
     CONF_NEGATIVE_PRICE_LIMIT,
     CONF_NEGATIVE_STRATEGY,
+    CONF_SOLAR_RELIABILITY,
+    CONF_USE_SOLAR,
+    DEFAULT_SOLAR_RELIABILITY,
+    DEFAULT_USE_SOLAR,
     NEGATIVE_STRATEGY_MAX_GAIN,
     CONF_PRICE_ATTRIBUTE,
     CONF_PRICE_ENTITY,
@@ -204,6 +208,9 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
         self._discharge_power_before: float | None = None
         self._sell_hours: tuple[datetime, ...] = ()
         self.inputs: dict[str, Any] = {}
+        # Verwachte zonne-opbrengst uit het Energie-dashboard: (uurbegin, Wh).
+        self._solar_hours: tuple[tuple[datetime, float], ...] = ()
+        self._solar_checked: datetime | None = None
         # Tijdlijn en controles voor de dashboardkaart.
         self.flow: dict[str, Any] = {"tijdlijn": [], "banen": []}
         # Verwachte opbrengst van de huidige plannen, in euro (schatting).
@@ -357,6 +364,9 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
             margin=float(conf.get(CONF_MARGIN, DEFAULT_MARGIN)),
             min_power_w=int(conf.get(CONF_MIN_POWER, DEFAULT_MIN_POWER)),
             depreciation=self.depreciation,
+            solar=self._solar_hours if conf.get(CONF_USE_SOLAR, DEFAULT_USE_SOLAR) else (),
+            solar_factor=float(conf.get(CONF_SOLAR_RELIABILITY, DEFAULT_SOLAR_RELIABILITY)) / 100.0,
+            house_power_w=float(conf.get(CONF_HOUSE_POWER, DEFAULT_HOUSE_POWER)),
         )
 
     @property
@@ -389,7 +399,49 @@ class ChargePlanCoordinator(DataUpdateCoordinator[Plan]):
 
     # ------------------------------------------------------------------ update
 
+    async def _async_refresh_solar(self) -> None:
+        """Lees de zonneverwachting uit het Energie-dashboard van Home Assistant (om de 30 min).
+
+        Dat dashboard kent de verwachting van Forecast.Solar, Solcast, Open-Meteo en
+        andere integraties, dus er is niets extra in te stellen. Lukt het niet, of
+        staat er geen verwachting in, dan blijft de lijst leeg en verandert er niets.
+        """
+        now = dt_util.utcnow()
+        if not self.conf.get(CONF_USE_SOLAR, DEFAULT_USE_SOLAR):
+            self._solar_hours = ()
+            return
+        if self._solar_checked is not None and now - self._solar_checked < timedelta(minutes=30):
+            return
+        self._solar_checked = now
+        try:
+            from homeassistant.components.energy import async_get_manager
+            from homeassistant.components.energy.websocket_api import async_get_energy_platforms
+
+            manager = await async_get_manager(self.hass)
+            entry_ids: set[str] = set()
+            for source in (manager.data or {}).get("energy_sources", []):
+                if source.get("type") == "solar":
+                    entry_ids.update(source.get("config_entry_solar_forecast") or [])
+            platforms = await async_get_energy_platforms(self.hass) if entry_ids else {}
+            per_hour: dict[datetime, float] = {}
+            for entry_id in entry_ids:
+                entry = self.hass.config_entries.async_get_entry(entry_id)
+                if entry is None or entry.domain not in platforms:
+                    continue
+                forecast = await platforms[entry.domain](self.hass, entry_id)
+                for stamp, wh in ((forecast or {}).get("wh_hours") or {}).items():
+                    moment = dt_util.parse_datetime(stamp)
+                    if moment is None:
+                        continue
+                    hour = moment.replace(minute=0, second=0, microsecond=0)
+                    per_hour[hour] = per_hour.get(hour, 0.0) + float(wh)
+            self._solar_hours = tuple(sorted(per_hour.items()))
+        except Exception:  # noqa: BLE001 - de verwachting is optioneel
+            _LOGGER.debug("Zonneverwachting niet beschikbaar", exc_info=True)
+            self._solar_hours = ()
+
     async def _async_update_data(self) -> Plan:
+        await self._async_refresh_solar()
         inputs = self._read_inputs()
         self.inputs = inputs
         plan = compute_plan(

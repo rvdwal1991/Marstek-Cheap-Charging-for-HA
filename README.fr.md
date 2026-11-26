@@ -135,6 +135,32 @@ supplémentaire avant d'être écartée pour cause de puissance sous le minimum.
 La limite est réglable (*Prix négatif : limite*, par défaut € 0,00). Le prix provient du capteur
 de prix ; avec Zonneplan, c'est donc le prix taxes comprises.
 
+## Prévision solaire
+
+Avec des panneaux solaires, la batterie se remplit gratuitement dans la journée. Si vous la chargez
+à fond depuis le réseau la nuit, le surplus solaire n'a plus de place et part vers le réseau pour
+presque rien, ce qui compte davantage maintenant que la compensation (*salderingsregeling*) touche
+à sa fin. L'intégration tient donc compte de la production solaire attendue :
+
+1. Elle lit la prévision dans le **tableau de bord Énergie** de Home Assistant (*Paramètres →
+   Tableaux de bord → Énergie → Panneaux solaires → Prévision de production solaire*).
+   Forecast.Solar, Solcast, Open-Meteo et d'autres intégrations de prévision fonctionnent, et
+   il n'y a rien de plus à configurer. Sans prévision à cet endroit, rien ne change.
+2. Elle calcule le surplus attendu : par heure, la prévision multipliée par le réglage de
+   fiabilité (par défaut 70 %), moins votre propre consommation (le réglage *Vente : consommation
+   propre moyenne*).
+3. Elle ne charge la nuit que ce qu'il faut pour qu'il reste de la place pour ce surplus au lever
+   du soleil : l'énergie que votre propre consommation aura utilisée d'ici là, plus ce qui est encore
+   nécessaire. Par une journée ensoleillée, cela peut représenter quelques kWh au lieu d'une
+   batterie pleine, voire rien du tout (le texte du plan indique alors que le soleil remplira la
+   batterie).
+4. Une journée nuageuse donne un surplus faible ou nul, et la batterie est alors chargée à fond
+   comme avant.
+
+Cette fonction peut être désactivée avec *Utiliser la prévision solaire*. La prévision est lue
+toutes les 30 minutes. Elle ne fait que réduire la quantité à charger ; elle ne déplace pas les
+heures de charge et ne change rien à la vente.
+
 ## Maintien sous le prix de revient
 
 L'énergie chargée depuis le réseau a un prix de revient : le prix de charge divisé par le
@@ -277,6 +303,8 @@ Sous *Configurer* dans l'intégration :
 | Langue | Automatique | Langue du texte du plan, du schéma de flux et des cartes : Automatique, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska ou Norsk. |
 | Prix d'achat de la batterie | € 0 | Sert à l'amortissement. 0 désactive l'amortissement. |
 | Durée de vie de la batterie (cycles) | 6000 | Nombre attendu de cycles complets. Amortissement par kWh = prix ÷ (cycles × capacité) ; par exemple € 1 500 sur 6 000 cycles de 5,12 kWh font environ € 0,049 par kWh. |
+| Utiliser la prévision solaire | Activé | Tient compte de la production solaire attendue du tableau de bord Énergie lors de la charge de nuit. |
+| Fiabilité de la prévision solaire | 70 % | La part de la prévision sur laquelle compter. Plus bas = plus prudent. |
 | Gain minimal par kWh | € 0,02 | Ce que la charge doit rapporter au minimum, après les pertes de charge. Les heures qui dépassent la limite de moins d'un demi-centime comptent quand même, afin qu'une nuit presque plate ne soit pas découpée pour une fraction de centime. |
 | Nombre d'heures les plus chères | 6 | Avec combien d'heures chères ultérieures une heure est comparée. |
 | Heures à anticiper | 18 | Jusqu'où regarder après une heure pour trouver les heures chères. |

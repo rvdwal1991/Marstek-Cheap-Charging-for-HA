@@ -131,6 +131,29 @@ utrymme innan den faller bort för att den ligger under minsta effekt.
 Gränsen går att justera (*Negativt pris: gräns*, standard € 0,00). Priset hämtas från
 prissensorn, så hos Zonneplan är det priset inklusive skatter.
 
+## Solprognos
+
+Med solpaneler fylls batteriet gratis under dagen. Om du laddar det fullt från nätet på
+natten finns det ingen plats kvar för solöverskottet, som går till nätet för lite eller inga
+pengar, vilket spelar större roll nu när nettodebiteringen (*salderingsregeling*) upphör. Därför
+tar integrationen hänsyn till det förväntade solutbytet:
+
+1. Den läser prognosen från **Energipanelen** i Home Assistant (*Inställningar → Instrumentpaneler →
+   Energi → Solpaneler → Prognos för solproduktion*). Forecast.Solar, Solcast, Open-Meteo och
+   andra prognosintegrationer fungerar, och inget extra behöver ställas in. Utan en prognos
+   där ändras ingenting.
+2. Den räknar ut det förväntade överskottet: per timme prognosen, multiplicerad med
+   tillförlitlighetsinställningen (standard 70 %), minus din egen förbrukning (inställningen
+   *Försäljning: genomsnittlig egen förbrukning*).
+3. Den laddar på natten bara så mycket att det finns plats för det överskottet när solen
+   går upp: den energi som din egen förbrukning drar fram till dess, plus det som fortfarande behövs. En
+   solig dag kan det vara några kWh i stället för ett fullt batteri, eller ingenting alls (plantexten
+   säger då att solen fyller batteriet).
+4. En molnig dag ger litet eller inget överskott, och då laddas batteriet fullt som förut.
+
+Det kan stängas av med *Använd solprognosen*. Prognosen läses var 30:e minut. Den
+sänker bara mängden som ska laddas; den flyttar inte laddtimmar och ändrar inte försäljningen.
+
 ## Spärr under kostnadspris
 
 Energi som laddats från nätet har ett kostnadspris: laddpriset delat med verkningsgraden. Om
@@ -271,6 +294,8 @@ Under *Konfigurera* på integrationen:
 | Språk | Automatisk | Språk för plantext, flödesschema och kort: Automatisk, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska eller Norsk. |
 | Batteriets inköpspris | € 0 | Används för avskrivning. 0 stänger av avskrivningen. |
 | Batteriets livslängd (cykler) | 6000 | Förväntat antal fulla cykler. Avskrivning per kWh = pris ÷ (cykler × kapacitet); till exempel € 1 500 över 6 000 cykler på 5,12 kWh blir cirka € 0,049 per kWh. |
+| Använd solprognosen | På | Ta hänsyn till det förväntade solutbytet från Energipanelen vid nattladdning. |
+| Solprognosens tillförlitlighet | 70 % | Den del av prognosen som man räknar med. Lägre är försiktigare. |
 | Minsta vinst per kWh | € 0,02 | Vad laddningen minst måste ge, efter laddförluster. Timmar som ligger mindre än en halv cent över gränsen räknas ändå, så en nästan platt natt delas inte upp på grund av en bråkdel av en cent. |
 | Antal dyraste timmar att jämföra med | 6 | Hur många dyra timmar senare på dagen en timme jämförs med. |
 | Antal timmar att se framåt | 18 | Hur långt efter en timme som man letar efter dyra timmar. |

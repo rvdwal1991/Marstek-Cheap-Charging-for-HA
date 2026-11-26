@@ -340,6 +340,75 @@ class MarstekModbusIntegrationTest(unittest.TestCase):
         self.assertEqual(hass.calls[-1], ("select.force_mode", "standby"))
 
 
+class ZonneverwachtingTest(unittest.TestCase):
+    """De verwachting komt uit het Energie-dashboard van Home Assistant."""
+
+    def setUp(self):
+        self._saved = {k: sys.modules.get(k) for k in (
+            "homeassistant.components", "homeassistant.components.energy",
+            "homeassistant.components.energy.websocket_api")}
+        calls = {"n": 0}
+
+        async def get_manager(hass):
+            calls["n"] += 1
+            return types.SimpleNamespace(data={"energy_sources": [
+                {"type": "solar", "config_entry_solar_forecast": ["entry1"]},
+                {"type": "grid"},
+            ]})
+
+        async def forecast(hass, entry_id):
+            return {"wh_hours": {
+                "2026-11-11T10:00:00+01:00": 1500,
+                "2026-11-11T10:30:00+01:00": 500,  # halfuursperiode telt bij het uur op
+                "2026-11-11T11:00:00+01:00": 2000,
+            }}
+
+        async def platforms(hass):
+            return {"forecast_solar": forecast}
+
+        _module("homeassistant.components")
+        _module("homeassistant.components.energy", async_get_manager=get_manager)
+        _module("homeassistant.components.energy.websocket_api", async_get_energy_platforms=platforms)
+        self.calls = calls
+
+    def tearDown(self):
+        for key, module in self._saved.items():
+            if module is None:
+                sys.modules.pop(key, None)
+            else:
+                sys.modules[key] = module
+
+    def test_verwachting_wordt_gelezen_en_bewaard(self):
+        at("2026-11-10T19:40:00")
+        hass, coordinator = make(12)
+        hass.config_entries = types.SimpleNamespace(
+            async_get_entry=lambda entry_id: types.SimpleNamespace(domain="forecast_solar")
+        )
+        run(coordinator._async_refresh_solar())
+        hours = dict(coordinator._solar_hours)
+        self.assertEqual(hours[datetime.fromisoformat("2026-11-11T10:00:00+01:00")], 2000)
+        self.assertEqual(hours[datetime.fromisoformat("2026-11-11T11:00:00+01:00")], 2000)
+        self.assertEqual(coordinator.params.solar, coordinator._solar_hours)
+        # Binnen 30 minuten niet opnieuw ophalen.
+        run(coordinator._async_refresh_solar())
+        self.assertEqual(self.calls["n"], 1)
+
+    def test_uit_zetten(self):
+        hass, coordinator = make(12, dict(CONF, use_solar_forecast=False))
+        hass.config_entries = types.SimpleNamespace(
+            async_get_entry=lambda entry_id: types.SimpleNamespace(domain="forecast_solar")
+        )
+        run(coordinator._async_refresh_solar())
+        self.assertEqual(coordinator._solar_hours, ())
+        self.assertEqual(coordinator.params.solar, ())
+
+    def test_zonder_energiedashboard_verandert_niets(self):
+        _module("homeassistant.components.energy", async_get_manager=None)  # import mislukt/kapot
+        hass, coordinator = make(12)
+        run(coordinator._async_refresh_solar())
+        self.assertEqual(coordinator._solar_hours, ())
+
+
 class SturingTest(unittest.TestCase):
     def test_sturing_uit_stuurt_niets(self):
         at("2026-11-11T02:05:00")

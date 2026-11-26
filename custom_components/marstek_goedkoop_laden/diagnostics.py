@@ -38,6 +38,11 @@ async def async_get_config_entry_diagnostics(
             "terugkoopprijs": coordinator.sell_plan.refill_price,
             "tekst": coordinator.sell_plan.text,
         },
+        "zonneverwachting": {
+            "uren": len(coordinator._solar_hours),
+            "totaal_kwh": round(sum(wh for _, wh in coordinator._solar_hours) / 1000.0, 1),
+            "gebruikt_overschot_kwh": plan.solar_kwh,
+        },
         "laatste_opdracht": coordinator.last_command,
         "invoer": inputs,
         "prijzen": [

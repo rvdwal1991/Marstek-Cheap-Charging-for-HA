@@ -135,7 +135,9 @@
           "battery_cycles": "Levensduur accu (cycli)",
           "modbus_hub": "Naam van de Modbus-hub",
           "modbus_slave": "Modbus-slaveadres",
-          "negative_strategy": "Negatieve prijs: verdeling van de energie"
+          "negative_strategy": "Negatieve prijs: verdeling van de energie",
+          "use_solar_forecast": "Zonneverwachting gebruiken",
+          "solar_reliability": "Betrouwbaarheid zonneverwachting"
         },
         "data_description": {
           "price_entity": "Sensor met de gepubliceerde uurprijzen in een attribuut, bijvoorbeeld de Zonneplan-uurprijssensor.",
@@ -161,7 +163,9 @@
           "language": "Taal van planregel, stroomschema en kaarten. Automatisch volgt de taal van Home Assistant.",
           "battery_price": "Aanschafprijs van de accu in euro, voor de afschrijving. 0 betekent dat er geen afschrijving wordt meegeteld.",
           "battery_cycles": "Aantal volledige cycli dat de accu naar verwachting meegaat. Afschrijving per kWh = prijs ÷ (cycli × capaciteit).",
-          "negative_strategy": "Naar waarde verdeeld: meer in de negatievere uren, lager vermogen. Maximale opbrengst: de beste uren eerst vol op vol vermogen."
+          "negative_strategy": "Naar waarde verdeeld: meer in de negatievere uren, lager vermogen. Maximale opbrengst: de beste uren eerst vol op vol vermogen.",
+          "use_solar_forecast": "Houdt bij het bijladen 's nachts rekening met de verwachte zonne-opbrengst uit het Energie-dashboard, zodat er ruimte is voor de zon.",
+          "solar_reliability": "Het deel van de verwachting waarop je rekent. Lager is voorzichtiger."
         }
       }
     }

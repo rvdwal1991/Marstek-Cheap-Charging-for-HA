@@ -129,6 +129,31 @@ voordat het afvalt omdat het onder het minimale vermogen blijft.
 De grens is instelbaar (*Negatieve prijs: grens*, standaard € 0,00). Er wordt gekeken naar de
 prijs uit de prijssensor, bij Zonneplan dus de prijs inclusief belastingen.
 
+## Zonneverwachting
+
+Met zonnepanelen wordt de accu overdag gratis gevuld. Laad je hem 's nachts vol uit het net, dan
+is er geen ruimte meer voor het zonne-overschot en gaat dat voor weinig of niets naar het net,
+wat nu de salderingsregeling stopt zwaarder weegt. Daarom houdt de integratie rekening met de
+verwachte zonne-opbrengst:
+
+1. Hij leest de verwachting uit het **Energie-dashboard** van Home Assistant (*Instellingen →
+   Dashboards → Energie → Zonnepanelen → Zonne-opbrengstverwachting*). Forecast.Solar, Solcast,
+   Open-Meteo en andere verwachtingsintegraties werken, en er hoeft niets extra te worden
+   ingesteld. Staat daar geen verwachting, dan verandert er niets.
+2. Hij rekent het verwachte overschot uit: per uur de verwachting, vermenigvuldigd met de
+   betrouwbaarheid (standaard 70 %), min je eigen verbruik (de instelling *Verkoop: gemiddeld
+   eigen verbruik*).
+3. Hij laadt 's nachts alleen zoveel bij dat er bij zonsopkomst ruimte is voor dat overschot: de
+   energie die je eigen verbruik tot dan opmaakt, plus wat er nog bij moet. Op een zonnige dag is
+   dat een paar kWh in plaats van een volle accu, of niets (de planregel zegt dan dat de zon de
+   accu bijvult).
+4. Een bewolkte dag geeft weinig of geen overschot, en dan wordt de accu vol geladen zoals
+   voorheen.
+
+Dit kan uit met *Zonneverwachting gebruiken*. De verwachting wordt elke 30 minuten gelezen. Hij
+verlaagt alleen de hoeveelheid die wordt bijgeladen; hij verschuift geen laaduren en verandert
+niets aan verkopen.
+
 ## Vasthouden onder de kostprijs
 
 Bijgeladen stroom heeft een kostprijs: de laadprijs gedeeld door het rendement. Zou de accu die
@@ -267,6 +292,8 @@ Via *Configureren* op de integratie:
 | Taal | Automatisch | Taal van planregel, stroomschema en kaarten: Automatisch, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska of Norsk. |
 | Aanschafprijs accu | € 0 | Voor de afschrijving. 0 zet de afschrijving uit. |
 | Levensduur accu (cycli) | 6000 | Verwacht aantal volledige cycli. Afschrijving per kWh = prijs ÷ (cycli × capaciteit); bijvoorbeeld € 1.500 over 6.000 cycli van 5,12 kWh is ongeveer € 0,049 per kWh. |
+| Zonneverwachting gebruiken | Aan | Houd bij het bijladen 's nachts rekening met de verwachte zonne-opbrengst uit het Energie-dashboard. |
+| Betrouwbaarheid zonneverwachting | 70 % | Het deel van de verwachting waarop je rekent. Lager is voorzichtiger. |
 | Minimale winst per kWh | € 0,02 | Wat bijladen na aftrek van het laadverlies minstens moet opleveren. Uren die minder dan een halve cent boven de grens liggen tellen ook mee, zodat een bijna vlakke nacht niet om een fractie van een cent wordt versnipperd. |
 | Aantal duurste uren | 6 | Met hoeveel dure uren erna een uur wordt vergeleken. |
 | Uren vooruit kijken | 18 | Hoe ver na een uur naar dure uren wordt gezocht. |

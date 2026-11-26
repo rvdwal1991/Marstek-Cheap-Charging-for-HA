@@ -129,6 +129,29 @@ slingringsmonn før den faller bort for å ligge under minsteeffekten.
 Grensen kan justeres (*Negativ pris: grense*, standard € 0,00). Prisen hentes fra
 prissensoren, så hos Zonneplan er det prisen inkludert avgifter.
 
+## Solprognose
+
+Med solceller fylles batteriet gratis om dagen. Hvis du lader det fullt fra nettet om natten, har
+solenergien ingen plass igjen og går til nettet for lite eller ingenting, noe som betyr mer
+nå som nettmålingsordningen (*salderingsregeling*) avsluttes. Derfor tar integrasjonen
+hensyn til forventet solproduksjon:
+
+1. Den leser prognosen fra **Energi-dashbordet** i Home Assistant (*Innstillinger → Dashbord →
+   Energi → Solcellepaneler → Prognose for solproduksjon*). Forecast.Solar, Solcast, Open-Meteo og
+   andre prognoseintegrasjoner fungerer, og ingenting ekstra må settes opp. Uten en prognose
+   der endrer ingenting seg.
+2. Den regner ut forventet overskudd: per time prognosen, multiplisert med innstillingen for
+   pålitelighet (standard 70 %), minus ditt eget forbruk (innstillingen *Salg: gjennomsnittlig
+   eget forbruk*).
+3. Den lader om natten bare så mye at det er plass til dette overskuddet når solen
+   står opp: energien det egne forbruket bruker fram til da, pluss det som fortsatt trengs. På en
+   solrik dag kan det være noen få kWh i stedet for et fullt batteri, eller ingenting
+   (planteksten sier da at solen fyller batteriet).
+4. En skyet dag gir lite eller ikke noe overskudd, og da lades batteriet fullt som før.
+
+Dette kan slås av med *Bruk solprognosen*. Prognosen leses hvert 30. minutt. Den
+reduserer bare mengden som skal lades; den flytter ikke ladetimer og endrer ikke salg.
+
 ## Tilbakehold under kostpris
 
 Strøm som er ladet fra nettet har en kostpris: ladeprisen delt på virkningsgraden. Hvis
@@ -269,6 +292,8 @@ Under *Konfigurer* på integrasjonen:
 | Språk | Automatisk | Språk for plantekst, flytskjema og kort: Automatisk, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska eller Norsk. |
 | Kjøpspris for batteriet | € 0 | Brukes til avskrivning. 0 slår av avskrivning. |
 | Batteriets levetid (sykluser) | 6000 | Forventet antall fulle sykluser. Avskrivning per kWh = pris ÷ (sykluser × kapasitet); for eksempel er € 1500 over 6000 sykluser på 5,12 kWh omtrent € 0,049 per kWh. |
+| Bruk solprognosen | På | Ta hensyn til forventet solproduksjon fra Energi-dashbordet ved lading om natten. |
+| Pålitelighet for solprognosen | 70 % | Den delen av prognosen det skal regnes med. Lavere er mer forsiktig. |
 | Minste gevinst per kWh | € 0,02 | Hva lading minst må gi, etter ladetap. Timer som ligger mindre enn en halv cent over grensen teller likevel med, så en nesten flat natt ikke deles opp for en brøkdel av en cent. |
 | Antall dyreste timer | 6 | Hvor mange dyre timer senere en time sammenlignes med. |
 | Timer å se fremover | 18 | Hvor langt etter en time det letes etter dyre timer. |

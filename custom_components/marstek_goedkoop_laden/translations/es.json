@@ -135,7 +135,9 @@
           "battery_cycles": "Vida útil de la batería (ciclos)",
           "modbus_hub": "Nombre del hub Modbus",
           "modbus_slave": "Dirección esclava Modbus",
-          "negative_strategy": "Precio negativo: cómo repartir la energía"
+          "negative_strategy": "Precio negativo: cómo repartir la energía",
+          "use_solar_forecast": "Usar la previsión solar",
+          "solar_reliability": "Fiabilidad de la previsión solar"
         },
         "data_description": {
           "price_entity": "Sensor que guarda los precios horarios publicados en un atributo, por ejemplo el sensor de tarifa horaria de Zonneplan.",
@@ -161,7 +163,9 @@
           "language": "Idioma del texto del plan, del diagrama de flujo y de las tarjetas. Automático sigue el idioma de Home Assistant.",
           "battery_price": "Precio de compra de la batería en euros, para la amortización. 0 significa que no se cuenta amortización.",
           "battery_cycles": "Número de ciclos completos que se espera que dure la batería. Amortización por kWh = precio ÷ (ciclos × capacidad).",
-          "negative_strategy": "Repartir por valor: más en las horas más negativas, menor potencia. Beneficio máximo: llenar primero las mejores horas a plena potencia."
+          "negative_strategy": "Repartir por valor: más en las horas más negativas, menor potencia. Beneficio máximo: llenar primero las mejores horas a plena potencia.",
+          "use_solar_forecast": "Tiene en cuenta el rendimiento solar esperado del panel de Energía al cargar por la noche, para que quede espacio para el sol.",
+          "solar_reliability": "La parte de la previsión con la que contar. Más baja es más prudente."
         }
       }
     }

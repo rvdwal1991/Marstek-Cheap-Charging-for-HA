@@ -63,6 +63,8 @@ NEGATIVE_STRATEGY_VALUE = "value"  # energie verdelen naar de waarde van de uren
 NEGATIVE_STRATEGY_MAX_GAIN = "max_gain"  # beste uren eerst vol: hoogste opbrengst
 CONF_LANGUAGE = "language"
 CONF_BATTERY_PRICE = "battery_price"
+CONF_USE_SOLAR = "use_solar_forecast"
+CONF_SOLAR_RELIABILITY = "solar_reliability"
 CONF_BATTERY_CYCLES = "battery_cycles"
 
 DEFAULT_PRICE_ATTRIBUTE = "forecast"
@@ -84,6 +86,8 @@ DEFAULT_NEGATIVE_PRICE_LIMIT = 0.0
 DEFAULT_NEGATIVE_STRATEGY = "value"
 DEFAULT_LANGUAGE = "auto"
 DEFAULT_BATTERY_PRICE = 0.0
+DEFAULT_USE_SOLAR = True
+DEFAULT_SOLAR_RELIABILITY = 70  # procent van de verwachting waarop we rekenen
 DEFAULT_BATTERY_CYCLES = 6000
 
 # Opties van de Marstek-selects (LilyGO RS485 / ESPHome)

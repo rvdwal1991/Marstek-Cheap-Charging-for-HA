@@ -4,6 +4,17 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.23.0 (2026-11-26)
+- **New: solar forecast.** The integration reads the expected solar yield from the Home Assistant Energy
+  dashboard (Forecast.Solar, Solcast, Open-Meteo and others; nothing extra to set up) and charges less
+  from the grid at night when the sun will fill the battery during the day, so the solar surplus is not
+  lost to the grid. The plan text and flow chart show the expected surplus. With no forecast in the
+  Energy dashboard nothing changes.
+- **Behaviour change** (only with a solar forecast in the Energy dashboard): the night charge can be
+  lower than a full battery, or skipped. Turn it off with *Use the solar forecast*, or set the
+  reliability (default 70 %) lower to be more careful. The own consumption of *Selling: average own
+  consumption* is used for the daytime load. Not tested on a real forecast yet, only with simulated data.
+
 ## 1.22.0 (2026-11-26)
 - **New: six more languages** besides Dutch and English: Frysk, Deutsch, Français, Español, Svenska and
   Norsk (Bokmål). They cover the plan text, the flow chart, the cards, the Home Assistant screens and

@@ -135,7 +135,9 @@
           "battery_cycles": "Batteriets livslängd (cykler)",
           "modbus_hub": "Namn på Modbus-hubben",
           "modbus_slave": "Modbus-slavadress",
-          "negative_strategy": "Negativt pris: fördelning av energin"
+          "negative_strategy": "Negativt pris: fördelning av energin",
+          "use_solar_forecast": "Använd solprognosen",
+          "solar_reliability": "Solprognosens tillförlitlighet"
         },
         "data_description": {
           "price_entity": "Sensor med de publicerade timpriserna i ett attribut, till exempel Zonneplans timprissensor.",
@@ -161,7 +163,9 @@
           "language": "Språk för plantext, flödesschema och kort. Automatiskt följer språket i Home Assistant.",
           "battery_price": "Batteriets inköpspris i euro, för avskrivningen. 0 betyder att ingen avskrivning räknas med.",
           "battery_cycles": "Antal fulla cykler som batteriet förväntas hålla. Avskrivning per kWh = pris ÷ (cykler × kapacitet).",
-          "negative_strategy": "Fördelat efter värde: mer under de mest negativa timmarna, lägre effekt. Maximal vinst: fyll de bästa timmarna först med full effekt."
+          "negative_strategy": "Fördelat efter värde: mer under de mest negativa timmarna, lägre effekt. Maximal vinst: fyll de bästa timmarna först med full effekt.",
+          "use_solar_forecast": "Tar hänsyn till det förväntade solutbytet från Energipanelen vid nattladdning, så att det finns plats för solen.",
+          "solar_reliability": "Den del av prognosen som man räknar med. Lägre är försiktigare."
         }
       }
     }

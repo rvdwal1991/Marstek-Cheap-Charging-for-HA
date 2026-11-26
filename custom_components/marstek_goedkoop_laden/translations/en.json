@@ -135,7 +135,9 @@
           "battery_cycles": "Battery lifetime (cycles)",
           "modbus_hub": "Modbus hub name",
           "modbus_slave": "Modbus slave address",
-          "negative_strategy": "Negative price: how to divide the energy"
+          "negative_strategy": "Negative price: how to divide the energy",
+          "use_solar_forecast": "Use the solar forecast",
+          "solar_reliability": "Solar forecast reliability"
         },
         "data_description": {
           "price_entity": "Sensor that holds the published hourly prices in an attribute, for example the Zonneplan hourly tariff sensor.",
@@ -161,7 +163,9 @@
           "language": "Language of the plan text, flow chart and cards. Automatic follows the Home Assistant language.",
           "battery_price": "Purchase price of the battery in euros, for depreciation. 0 means no depreciation is counted.",
           "battery_cycles": "Number of full cycles the battery is expected to last. Depreciation per kWh = price ÷ (cycles × capacity).",
-          "negative_strategy": "Spread by value: more in the more negative hours, lower power. Maximum gain: fill the best hours first at full power."
+          "negative_strategy": "Spread by value: more in the more negative hours, lower power. Maximum gain: fill the best hours first at full power.",
+          "use_solar_forecast": "Takes the expected solar yield from the Energy dashboard into account when charging at night, so there is room for the sun.",
+          "solar_reliability": "The part of the forecast to count on. Lower is more careful."
         }
       }
     }

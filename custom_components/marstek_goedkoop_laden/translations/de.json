@@ -135,7 +135,9 @@
           "battery_cycles": "Lebensdauer des Akkus (Zyklen)",
           "modbus_hub": "Name des Modbus-Hubs",
           "modbus_slave": "Modbus-Slave-Adresse",
-          "negative_strategy": "Negativer Preis: Aufteilung der Energie"
+          "negative_strategy": "Negativer Preis: Aufteilung der Energie",
+          "use_solar_forecast": "Solarprognose verwenden",
+          "solar_reliability": "Zuverlässigkeit der Solarprognose"
         },
         "data_description": {
           "price_entity": "Sensor, der die veröffentlichten Stundenpreise in einem Attribut enthält, z. B. der Zonneplan-Stundenpreissensor.",
@@ -161,7 +163,9 @@
           "language": "Sprache von Planzeile, Flussdiagramm und Karten. Automatisch folgt der Sprache von Home Assistant.",
           "battery_price": "Anschaffungspreis des Akkus in Euro, für die Abschreibung. 0 bedeutet, dass keine Abschreibung eingerechnet wird.",
           "battery_cycles": "Anzahl der vollen Zyklen, die der Akku voraussichtlich hält. Abschreibung pro kWh = Preis ÷ (Zyklen × Kapazität).",
-          "negative_strategy": "Nach Wert verteilen: mehr in den stärker negativen Stunden, geringere Leistung. Maximaler Ertrag: die besten Stunden zuerst mit voller Leistung füllen."
+          "negative_strategy": "Nach Wert verteilen: mehr in den stärker negativen Stunden, geringere Leistung. Maximaler Ertrag: die besten Stunden zuerst mit voller Leistung füllen.",
+          "use_solar_forecast": "Berücksichtigt beim nächtlichen Laden den erwarteten Solarertrag aus dem Energie-Dashboard, damit Platz für die Sonne bleibt.",
+          "solar_reliability": "Der Teil der Prognose, auf den gezählt wird. Niedriger ist vorsichtiger."
         }
       }
     }

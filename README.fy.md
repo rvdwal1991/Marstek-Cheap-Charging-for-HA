@@ -127,6 +127,29 @@ romte foardat er ôffalt omdat er ûnder it minimale fermogen sit.
 De grins is ynstelber (*Negative priis: grins*, standert € 0,00). De priis komt fan de
 priissensor, dus by Zonneplan is dat de priis ynklusyf belesting.
 
+## Sinneprognose
+
+Mei sinnepanielen wurdt de batterij oerdeis fergees fol. As do him yn de nacht fol út it net
+laadst, hat it sinne-oerskot gjin romte mear en giet it foar lyts of neat nei it net,
+wat mear útmakket no't de salderingsregeling (*salderingsregeling*) ophâldt. Dus
+hâldt de yntegraasje rekken mei de ferwachte sinne-opbringst:
+
+1. Hy lêst de prognose út it **Enerzjydashboerd** fan Home Assistant (*Ynstellingen → Dashboerden →
+   Enerzjy → Sinnepanielen → Prognose sinneproduksje*). Forecast.Solar, Solcast, Open-Meteo en
+   oare prognoseyntegraasjes wurkje, en der hoecht neat ekstra ynsteld te wurden. Sûnder in prognose
+   dêr feroaret der neat.
+2. Hy rekkenet it ferwachte oerskot út: per oere de prognose, kear de ynstelling foar
+   betrouberens (standert 70 %), minus dyn eigen ferbrûk (de ynstelling *Ferkeapje: gemiddeld eigen
+   ferbrûk*).
+3. Hy laadt yn de nacht mar safolle dat der romte is foar dat oerskot as de sinne
+   opkomt: de enerzjy dy't dyn eigen ferbrûk oant dan opmakket, plus wat der noch nedich is. Op in
+   sinnige dei kin dat in pear kWh wêze yn plak fan in folle batterij, of hielendal neat (de planrigel
+   seit dan dat de sinne de batterij folt).
+4. In bewolkte dei jout in lyts of gjin oerskot, en dan wurdt de batterij lykas earder fol laden.
+
+Dit kin útset wurde mei *Sinneprognose brûke*. De prognose wurdt alle 30 minuten lêzen. Hy
+ferleget allinnich de te laden hoemannichte; hy ferpleatst gjin laadoeren en feroaret neat oan ferkeapjen.
+
 ## Fêsthâlde ûnder de kostpriis
 
 Enerzjy dy't út it net laden is hat in kostpriis: de laadpriis dield troch it rendemint. As
@@ -267,6 +290,8 @@ De yntegraasje lêst de prizen út in attribút fan ien sensor (standert `foreca
 | Taal | Automatysk | Taal fan planrigel, stroomskema en kaarten: Automatysk, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska of Norsk. |
 | Oankeappriis accu | € 0 | Foar de ôfskriuwing. 0 set de ôfskriuwing út. |
 | Libbensdoer accu (syklussen) | 6000 | Ferwachte oantal folsleine syklussen. Ôfskriuwing per kWh = priis ÷ (syklussen × kapasiteit); bygelyks € 1.500 oer 6.000 syklussen fan 5,12 kWh is sa'n € 0,049 per kWh. |
+| Sinneprognose brûke | Oan | Hâld by it laden yn de nacht rekken mei de ferwachte sinne-opbringst út it Enerzjydashboerd. |
+| Betrouberens fan de sinneprognose | 70 % | It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger. |
 | Minimale winst per kWh | € 0,02 | Wat laden nei ôftrek fan it laadferlies minstens opbringe moat. Oeren dy't minder as in heale sint boppe de grins lizze telle ek mei, sadat in hast platte nacht net om in fraksje fan in sint opsnipele wurdt. |
 | Oantal djoerste oeren om mei te fergelykjen | 6 | Mei hoefolle djoere oeren letter op de dei in oere fergelike wurdt. |
 | Oantal oeren foarút sjen | 18 | Hoe fier foarby in oere sjoen wurdt nei djoere oeren. |

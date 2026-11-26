@@ -135,7 +135,9 @@
           "battery_cycles": "Libbensdoer accu (syklussen)",
           "modbus_hub": "Namme fan de Modbus-hub",
           "modbus_slave": "Modbus-slaveadres",
-          "negative_strategy": "Negative priis: ferdieling fan de enerzjy"
+          "negative_strategy": "Negative priis: ferdieling fan de enerzjy",
+          "use_solar_forecast": "Sinneprognose brûke",
+          "solar_reliability": "Betrouberens fan de sinneprognose"
         },
         "data_description": {
           "price_entity": "Sensor mei de publisearre oerenprizen yn in attribút, bygelyks de Zonneplan-oerenpriissensor.",
@@ -161,7 +163,9 @@
           "language": "Taal fan planrigel, stroomskema en kaarten. Automatysk folget de taal fan Home Assistant.",
           "battery_price": "Oankeappriis fan de accu yn euro's, foar de ôfskriuwing. 0 betsjut dat der gjin ôfskriuwing meirekkene wurdt.",
           "battery_cycles": "Oantal folsleine syklussen dat de accu nei ferwachting meigiet. Ôfskriuwing per kWh = priis ÷ (syklussen × kapasiteit).",
-          "negative_strategy": "Nei wearde ferdield: mear yn de negativere oeren, leger fermogen. Maksimale opbringst: de bêste oeren earst fol op fol fermogen."
+          "negative_strategy": "Nei wearde ferdield: mear yn de negativere oeren, leger fermogen. Maksimale opbringst: de bêste oeren earst fol op fol fermogen.",
+          "use_solar_forecast": "Hâldt by it laden yn de nacht rekken mei de ferwachte sinne-opbringst út it Enerzjydashboerd, sadat der romte is foar de sinne.",
+          "solar_reliability": "It part fan de prognose dêr't op rekkene wurdt. Leger is foarsichtiger."
         }
       }
     }

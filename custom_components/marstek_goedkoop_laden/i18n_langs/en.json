@@ -555,6 +555,26 @@
   [
    "Geen",
    "No"
+  ],
+  [
+   "Zon verwacht",
+   "Sun expected"
+  ],
+  [
+   "zonne-overschot verwacht",
+   "solar surplus expected"
+  ],
+  [
+   "bijladen tot ",
+   "charging up to "
+  ],
+  [
+   "De zon vult de accu bij · bijladen is niet nodig",
+   "The sun will fill the battery · charging not needed"
+  ],
+  [
+   " · de zon vult de rest bij",
+   " · the sun fills the rest"
   ]
  ],
  "pre": [

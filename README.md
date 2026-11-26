@@ -129,6 +129,29 @@ room before it drops out for being below the minimum power.
 The limit is adjustable (*Negative price: limit*, default €0.00). The price is taken from the
 price sensor, so with Zonneplan that is the price including taxes.
 
+## Solar forecast
+
+With solar panels the battery gets filled for free during the day. If you charge it full from the
+grid at night, the solar surplus has no room left and goes to the grid for little or nothing,
+which matters more now that net metering (*salderingsregeling*) is ending. So the integration
+takes the expected solar yield into account:
+
+1. It reads the forecast from the **Energy dashboard** of Home Assistant (*Settings → Dashboards →
+   Energy → Solar panels → Solar production forecast*). Forecast.Solar, Solcast, Open-Meteo and
+   other forecast integrations work, and there is nothing extra to set up. Without a forecast
+   there, nothing changes.
+2. It works out the expected surplus: per hour the forecast, multiplied by the reliability
+   setting (default 70 %), minus your own consumption (the *Selling: average own consumption*
+   setting).
+3. It charges at night only so much that there is room for that surplus by the time the sun
+   comes up: the energy your own consumption uses up until then, plus what is still needed. On a
+   sunny day that can be a few kWh instead of a full battery, or nothing at all (the plan text
+   then says the sun will fill the battery).
+4. A cloudy day gives a small or no surplus, and then the battery is charged full as before.
+
+This can be turned off with *Use the solar forecast*. The forecast is read every 30 minutes. It
+only lowers the amount to charge; it does not move charge hours and does not change selling.
+
 ## Hold below cost price
 
 Energy charged from the grid has a cost price: the charge price divided by the efficiency. If
@@ -269,6 +292,8 @@ Under *Configure* on the integration:
 | Language | Automatic | Language of the plan text, flow chart and cards: Automatic, Nederlands, English, Frysk, Deutsch, Français, Español, Svenska or Norsk. |
 | Battery purchase price | €0 | Used for depreciation. 0 turns depreciation off. |
 | Battery lifetime (cycles) | 6000 | Expected number of full cycles. Depreciation per kWh = price ÷ (cycles × capacity); for example €1,500 over 6,000 cycles of 5.12 kWh is about €0.049 per kWh. |
+| Use the solar forecast | On | Take the expected solar yield from the Energy dashboard into account when charging at night. |
+| Solar forecast reliability | 70 % | The part of the forecast to count on. Lower is more careful. |
 | Minimum gain per kWh | €0.02 | What charging must earn at least, after charge losses. Hours less than half a cent above the limit still count, so a nearly flat night is not cut up over a fraction of a cent. |
 | Number of most expensive hours | 6 | How many expensive hours later on an hour is compared with. |
 | Hours to look ahead | 18 | How far past an hour to look for expensive hours. |
