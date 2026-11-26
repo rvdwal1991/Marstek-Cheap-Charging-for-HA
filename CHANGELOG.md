@@ -4,6 +4,13 @@ All notable changes. Entries marked **Breaking** or **Behaviour change** can cha
 see or what the integration does after updating. No entity has been removed or renamed so far, and the
 attribute names of the sensors and the `stroomschema` structure have only been extended.
 
+## 1.26.1 (2026-11-26)
+- **Docs:** a *Key points* list under the mode table in all eight READMEs: dynamic prices, negative
+  prices, solar forecast with learning, depreciation, cost price, connections, cards and languages.
+- **Fix (Swedish):** the card names in the card picker and the README title were still Dutch
+  ("Goedkoop Laden"); they now read "Billig Laddning".
+- No change in behaviour.
+
 ## 1.26.0 (2026-11-26)
 - **New: the solar forecast reliability is learned.** Forecasts are often too rosy, especially in winter
   (on one roof the panels delivered about 40 % of the forecast). The integration now compares each
