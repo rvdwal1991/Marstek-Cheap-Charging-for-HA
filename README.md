@@ -24,9 +24,12 @@ expensive hours.
 > Modbus TCP, other integrations) are untested and most likely do not work, because they do not
 > offer these RS485 control entities.
 >
-> The integration was built around the Dutch market and Zonneplan prices (hourly prices,
-> published for the next day between 13:00 and 15:00). Any price sensor with an hourly price
-> list as an attribute will do, see [Price sensor](#price-sensor).
+> **Dynamic energy prices:** this integration only makes sense with a **dynamic electricity
+> contract**, where the price changes every hour. It charges in the cheapest hours and avoids
+> the expensive ones, so with a fixed tariff there is nothing to gain. It was built around the
+> Dutch market and Zonneplan prices (hourly prices, published for the next day between 13:00 and
+> 15:00). Any price sensor with an hourly price list as an attribute will do, see
+> [Price sensor](#price-sensor).
 >
 > **Language:** the plan text, the flow chart and the cards follow the *Language* option
 > (Automatic, Nederlands or English; Automatic follows Home Assistant: Dutch for Dutch, English

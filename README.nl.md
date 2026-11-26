@@ -19,6 +19,12 @@ totaaltellers van geladen en ontladen energie. Andere manieren om de accu te kop
 Modbus TCP, andere integraties) zijn niet getest en werken vermoedelijk niet, omdat ze deze
 RS485-besturing niet bieden.
 
+**Dynamische energieprijzen:** deze integratie heeft alleen zin met een **dynamisch stroomcontract**,
+waarbij de prijs elk uur verandert. Hij laadt in de goedkoopste uren en mijdt de dure, dus bij een
+vast tarief valt er niets te winnen. Hij is gebouwd rond de Nederlandse markt en de prijzen van
+Zonneplan (uurprijzen, voor de volgende dag gepubliceerd tussen 13:00 en 15:00). Elke prijssensor
+met een uurprijslijst als attribuut volstaat, zie [Prijssensor](#prijssensor).
+
 Planregel, stroomschema en kaarten volgen de optie *Taal* (Automatisch, Nederlands of English;
 automatisch volgt Home Assistant: Nederlands bij Nederlands, anders Engels). Entiteitsnamen volgen
 de taal van Home Assistant. Statuswaarden en attribuutnamen
