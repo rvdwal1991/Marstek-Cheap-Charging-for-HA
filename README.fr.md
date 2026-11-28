@@ -7,6 +7,9 @@
 [![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=rvdwal1991&repository=Marstek-Cheap-Charging-for-HA&category=integration)
 [![Open your Home Assistant instance and start setting up the integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=marstek_goedkoop_laden)
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
+[![Validate](https://github.com/rvdwal1991/Marstek-Cheap-Charging-for-HA/actions/workflows/validate.yml/badge.svg)](https://github.com/rvdwal1991/Marstek-Cheap-Charging-for-HA/actions/workflows/validate.yml)
+
 Recharge une batterie domestique Marstek Venus depuis le réseau pendant les heures les moins
 chères d'un contrat d'électricité dynamique, afin qu'elle soit pleine avant que les prix ne montent.
 
